@@ -1,0 +1,45 @@
+@host = http://localhost:5202
+@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0IiwibmFtZSI6ImFkbWluIiwianRpIjoiMTBlOWYzMjItNGNlMS00NjExLWJmM2UtMjI2MDA1NjA0YjNmIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYWRtaW4iLCJleHAiOjE3NjI4NzIwMDIsImlzcyI6IlF1ZXN0aW9ubmFpcmUuQXBpIiwiYXVkIjoiUXVlc3Rpb25uYWlyZS5BcGkifQ.n6NIe2Tkmcgdol9jECJ8nTA7vH9l9o6Z5F-VzvptK1U
+
+### Получение списка всех вопросов
+GET {{host}}/admin/questions
+Authorization: Bearer {{jwt_token}}
+
+
+### Создание вопроса типа Rating (без вариантов)
+POST {{host}}/admin/questions
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "Text": "Оцените качество преподавания материала",
+    "Type": 0, 
+    "Options": null
+}
+
+### Создание вопроса типа Choice (с вариантами)
+POST {{host}}/admin/questions
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "Text": "Какой язык программирования вы считаете основным в своей работе?",
+    "Type": 2,
+    "Options": [
+        "C#",
+        "Java",
+        "Python",
+        "JavaScript"
+    ]
+}
+
+### Попытка создать вопрос с некорректными данными (должна вернуть ошибку 400)
+POST {{host}}/admin/questions
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "Text": "Некорректный вопрос",
+    "Type": 1, 
+    "Options": ["Эта опция не должна быть здесь"]
+}

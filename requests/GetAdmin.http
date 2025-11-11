@@ -1,0 +1,5 @@
+@host = http://localhost:5202
+@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0IiwibmFtZSI6ImFkbWluIiwianRpIjoiMTBlOWYzMjItNGNlMS00NjExLWJmM2UtMjI2MDA1NjA0YjNmIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYWRtaW4iLCJleHAiOjE3NjI4NzIwMDIsImlzcyI6IlF1ZXN0aW9ubmFpcmUuQXBpIiwiYXVkIjoiUXVlc3Rpb25uYWlyZS5BcGkifQ.n6NIe2Tkmcgdol9jECJ8nTA7vH9l9o6Z5F-VzvptK1U
+
+GET {{host}}/admin/data
+Authorization: Bearer {{jwt_token}}

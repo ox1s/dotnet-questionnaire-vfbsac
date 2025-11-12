@@ -1,0 +1,50 @@
+@host = http://localhost:5202
+@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0IiwibmFtZSI6ImFkbWluIiwianRpIjoiZWJiZjY4NzktMzc2My00NmYxLWFhNzEtNGY5MjE2OTQ5YTc2IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYWRtaW4iLCJleHAiOjE3NjI4NzU5MzcsImlzcyI6IlF1ZXN0aW9ubmFpcmUuQXBpIiwiYXVkIjoiUXVlc3Rpb25uYWlyZS5BcGkifQ.ytQ0NVSecJ2Hqwljtvfx0ZS5eTKUExwRmzK4azC5lcs
+
+### Получение анкеты с ID=1 со всеми вопросами
+GET {{host}}/forms/1
+Authorization: Bearer {{jwt_token}}
+
+### Попытка получить несуществующую анкету (должна вернуть 404)
+GET {{host}}/forms/999
+Authorization: Bearer {{jwt_token}}
+
+### Получение списка всех анкет
+GET {{host}}/forms
+Authorization: Bearer {{jwt_token}}
+
+### Создание новой анкеты
+POST {{host}}/forms
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "Name": "Анкета удовлетворенности студентов (Осень 2025)"
+}
+
+### Добавление вопроса в анкету
+POST {{host}}/forms/1/questions/3
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "Order": 1
+}
+
+### Попытка добавить тот же вопрос еще раз (должна вернуть 409 Conflict)
+POST {{host}}/forms/1/questions/1
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "Order": 2
+}
+
+### Попытка добавить несуществующий вопрос (должна вернуть 404 Not Found)
+POST {{host}}/forms/1/questions/999
+Content-Type: application/json
+Authorization: Bearer {{jwt_token}}
+
+{
+    "Order": 3
+}

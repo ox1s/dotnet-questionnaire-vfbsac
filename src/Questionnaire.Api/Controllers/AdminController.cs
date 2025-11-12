@@ -10,6 +10,7 @@ using Questionnaire.Application.Questions.Queries.GetAll;
 
 using ContractsQuestionType = Questionnaire.Contracts.Questions.QuestionType;
 using DomainQuestionType = Questionnaire.Domain.Entities.QuestionType;
+using Questionnaire.Api.Common;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -53,7 +54,7 @@ public class AdminController : ApiController
         var createQuestionResult = await _mediator.Send(command);
 
         return createQuestionResult.Match(
-            question => Ok(ToDto(question)),
+            question => Ok(ApiMappers.ToDto(question)),
             errors => Problem(errors));
     }
 
@@ -64,30 +65,10 @@ public class AdminController : ApiController
         var getQuestionsResult = await _mediator.Send(query);
 
         return getQuestionsResult.Match(
-            questions => Ok(questions.Select(ToDto)), 
+            questions => Ok(questions.Select(ApiMappers.ToDto)),  
             errors => Problem(errors));
     }
 
-    private static QuestionResponse ToDto(Question question)
-    {
-        return new QuestionResponse(
-            question.Id,
-            question.Text,
-            ToDto(question.Type),
-            question.Options.Select(o => new OptionResponse(o.Id, o.Text)).ToList()
-        );
-    }
-
-    private static ContractsQuestionType ToDto(DomainQuestionType domainType)
-    {
-        return domainType switch
-        {
-            DomainQuestionType.Rating => ContractsQuestionType.Rating,
-            DomainQuestionType.Text => ContractsQuestionType.Text,
-            DomainQuestionType.Choice => ContractsQuestionType.Choice,
-            _ => throw new InvalidOperationException("Cannot map domain question type to contract."),
-        };
-    }
 
     private static DomainQuestionType ToDomain(ContractsQuestionType contractType)
     {

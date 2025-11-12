@@ -16,5 +16,5 @@ public class AnswerDetail
     public string? TextResponse { get; set; }
 
     // Для QuestionType.Choice
-    public ICollection<QuestionOption> SelectedOptions { get; set; } = new List<QuestionOption>();
+    public ICollection<AnswerDetailSelectedOption> SelectedOptions { get; set; } = new List<AnswerDetailSelectedOption>();
 }

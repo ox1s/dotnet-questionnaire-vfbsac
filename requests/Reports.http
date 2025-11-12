@@ -1,0 +1,11 @@
+@host = http://localhost:5202
+@jwt_token_admin = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImFkbWluIiwianRpIjoiMzk4ZjQ0YTEtODA4ZC00NjgxLThjMmQtOGI3OTNkZjY3YzJiIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYWRtaW4iLCJleHAiOjE3NjI5NDU2NjgsImlzcyI6IlF1ZXN0aW9ubmFpcmUuQXBpIiwiYXVkIjoiUXVlc3Rpb25uYWlyZS5BcGkifQ.ofiWTA3M-7fI2mh6HQVYLKdIeP2LH5fraB50GBuynhY
+
+### Получение сводного отчета по анкете с ID=1
+# Перед выполнением нужно, чтобы по этой анкете были даны ответы
+GET {{host}}/reports/summary/1
+Authorization: Bearer {{jwt_token_admin}}
+
+### Экспорт отчета по анкете с ID=1 в .docx
+GET {{host}}/reports/export/1
+Authorization: Bearer {{jwt_token_admin}}

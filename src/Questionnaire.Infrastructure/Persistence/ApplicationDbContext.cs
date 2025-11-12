@@ -20,6 +20,7 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<FormQuestion> FormQuestions => Set<FormQuestion>();
     public DbSet<Answer> Answers => Set<Answer>();
     public DbSet<AnswerDetail> AnswerDetails => Set<AnswerDetail>();
+    public DbSet<AnswerDetailSelectedOption> AnswerDetailSelectedOptions => Set<AnswerDetailSelectedOption>();
     public DbSet<FormRole> FormRoles => Set<FormRole>();
 
     protected override void OnModelCreating(ModelBuilder builder)
@@ -30,7 +31,9 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasKey(fq => new { fq.FormId, fq.QuestionId });
         builder.Entity<FormRole>()
             .HasKey(fr => new { fr.FormId, fr.RoleId });
-
+        builder.Entity<AnswerDetailSelectedOption>()
+            .HasKey(aso => new { aso.AnswerDetailId, aso.QuestionOptionId });
+            
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         base.OnModelCreating(builder);

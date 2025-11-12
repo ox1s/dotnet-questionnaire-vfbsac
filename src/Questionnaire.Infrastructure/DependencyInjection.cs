@@ -22,8 +22,9 @@ public static class DependencyInjection
             .AddPersistence(configuration)
             .AddAuth(configuration);
 
-        services.AddHttpContextAccessor(); 
-        services.AddScoped<ICurrentUserProvider, CurrentUserProvider>(); 
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
+        services.AddScoped<IReportGenerator, OpenXmlReportGenerator>();
 
         return services;
     }

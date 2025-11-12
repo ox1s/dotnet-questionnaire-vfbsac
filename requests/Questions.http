@@ -1,5 +1,5 @@
 @host = http://localhost:5202
-@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0IiwibmFtZSI6ImFkbWluIiwianRpIjoiMTBlOWYzMjItNGNlMS00NjExLWJmM2UtMjI2MDA1NjA0YjNmIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYWRtaW4iLCJleHAiOjE3NjI4NzIwMDIsImlzcyI6IlF1ZXN0aW9ubmFpcmUuQXBpIiwiYXVkIjoiUXVlc3Rpb25uYWlyZS5BcGkifQ.n6NIe2Tkmcgdol9jECJ8nTA7vH9l9o6Z5F-VzvptK1U
+@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImFkbWluIiwianRpIjoiNTFiMGU0ZjEtMmM2ZC00MzljLTgxZjctZDBkOTgyODJiY2FiIiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYWRtaW4iLCJleHAiOjE3NjI5Mzk2NDUsImlzcyI6IlF1ZXN0aW9ubmFpcmUuQXBpIiwiYXVkIjoiUXVlc3Rpb25uYWlyZS5BcGkifQ.rM7NNTQAKw7AnA3J7icmlEeEJYWCo1UgF6yI2-PtPc0
 
 ### Получение списка всех вопросов
 GET {{host}}/admin/questions
@@ -12,7 +12,7 @@ Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 {
-    "Text": "Оцените качество преподавания материала",
+    "Text": "Оцените материальную базу",
     "Type": 0, 
     "Options": null
 }

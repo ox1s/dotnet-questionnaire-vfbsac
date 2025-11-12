@@ -8,6 +8,7 @@ using Microsoft.IdentityModel.Tokens;
 using Questionnaire.Application.Common.Interfaces;
 using Questionnaire.Infrastructure.Authentication;
 using Questionnaire.Infrastructure.Persistence;
+using Questionnaire.Infrastructure.Services;
 
 namespace Questionnaire.Infrastructure;
 
@@ -19,7 +20,10 @@ public static class DependencyInjection
     {
         services
             .AddPersistence(configuration)
-            .AddAuth(configuration); 
+            .AddAuth(configuration);
+
+        services.AddHttpContextAccessor(); 
+        services.AddScoped<ICurrentUserProvider, CurrentUserProvider>(); 
 
         return services;
     }

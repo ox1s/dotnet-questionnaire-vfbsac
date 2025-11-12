@@ -20,14 +20,17 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<FormQuestion> FormQuestions => Set<FormQuestion>();
     public DbSet<Answer> Answers => Set<Answer>();
     public DbSet<AnswerDetail> AnswerDetails => Set<AnswerDetail>();
+    public DbSet<FormRole> FormRoles => Set<FormRole>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<UserRole>()
             .HasKey(ur => new { ur.UserId, ur.RoleId });
         builder.Entity<FormQuestion>()
-                .HasKey(fq => new { fq.FormId, fq.QuestionId });
-                
+            .HasKey(fq => new { fq.FormId, fq.QuestionId });
+        builder.Entity<FormRole>()
+            .HasKey(fr => new { fr.FormId, fr.RoleId });
+
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         base.OnModelCreating(builder);

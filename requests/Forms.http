@@ -1,6 +1,5 @@
 @host = http://localhost:5202
-@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0IiwibmFtZSI6ImFkbWluIiwianRpIjoiZWJiZjY4NzktMzc2My00NmYxLWFhNzEtNGY5MjE2OTQ5YTc2IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYWRtaW4iLCJleHAiOjE3NjI4NzU5MzcsImlzcyI6IlF1ZXN0aW9ubmFpcmUuQXBpIiwiYXVkIjoiUXVlc3Rpb25uYWlyZS5BcGkifQ.ytQ0NVSecJ2Hqwljtvfx0ZS5eTKUExwRmzK4azC5lcs
-
+@jwt_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwibmFtZSI6ImFkbWluIiwianRpIjoiZDYyNWQzNTAtZDU5Yi00NWIzLTljZDAtY2Y5YzJlZWVlNmM3IiwiaHR0cDovL3NjaGVtYXMubWljcm9zb2Z0LmNvbS93cy8yMDA4LzA2L2lkZW50aXR5L2NsYWltcy9yb2xlIjoiYWRtaW4iLCJleHAiOjE3NjI5NDE2MDcsImlzcyI6IlF1ZXN0aW9ubmFpcmUuQXBpIiwiYXVkIjoiUXVlc3Rpb25uYWlyZS5BcGkifQ.5ocgolvZZ1-C6pg5NUm1-fXAfyR0lDODnS536UlusEA
 ### Получение анкеты с ID=1 со всеми вопросами
 GET {{host}}/forms/1
 Authorization: Bearer {{jwt_token}}
@@ -19,7 +18,7 @@ Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 {
-    "Name": "Анкета удовлетворенности студентов (Осень 2025)"
+    "Name": "Анкета удовлетворенности студентов предметом"
 }
 
 ### Добавление вопроса в анкету
@@ -28,7 +27,7 @@ Content-Type: application/json
 Authorization: Bearer {{jwt_token}}
 
 {
-    "Order": 1
+    "Order": 3
 }
 
 ### Попытка добавить тот же вопрос еще раз (должна вернуть 409 Conflict)

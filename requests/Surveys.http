@@ -1,0 +1,51 @@
+@host = http://localhost:5202
+@jwt_token_student = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwibmFtZSI6InN0dWRlbnQiLCJqdGkiOiIzYTdhMDI0OC0wMGY1LTRkNDAtYjM5Mi0yNzE5Y2RjYmVhOTgiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL3JvbGUiOiJzdHVkZW50IiwiZXhwIjoxNzYyOTQyMTE4LCJpc3MiOiJRdWVzdGlvbm5haXJlLkFwaSIsImF1ZCI6IlF1ZXN0aW9ubmFpcmUuQXBpIn0.028GJPuL5OqKsvRzuocC8nlW1QG-b37bCHvYjT2x3sQ
+
+### Получение списка доступных анкет для студента
+# Перед этим нужно вручную в БД связать анкету с ролью "student" в таблице FormRoles
+GET {{host}}/surveys
+Authorization: Bearer {{jwt_token_student}}
+
+
+### Отправка ответов на анкету (валидный случай)
+POST {{host}}/surveys/submit
+Content-Type: application/json
+Authorization: Bearer {{jwt_token_student}}
+
+{
+    "formId": 1,
+    "details": [
+        {
+            "questionId": 1,
+            "weight": 10,
+            "mark": 8,
+            "textResponse": null
+        },
+        {
+            "questionId": 2,
+            "weight": null,
+            "mark": null,
+            "textResponse": "Все было отлично!"
+        }
+    ]
+}
+
+
+### Отправка ответов на анкету (НЕвалидный случай)
+# Оценка (mark=11) больше веса (weight=10)
+# Должен вернуться статус 400 Bad Request
+POST {{host}}/surveys/submit
+Content-Type: application/json
+Authorization: Bearer {{jwt_token_student}}
+
+{
+    "formId": 1,
+    "details": [
+        {
+            "questionId": 1,
+            "weight": 10,
+            "mark": 11,
+            "textResponse": null
+        }
+    ]
+}

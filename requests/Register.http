@@ -4,8 +4,8 @@ POST {{host}}/auth/register
 Content-Type: application/json
 
 {
-    "Login": "admin",
-    "Password": "admin",
-    "Role" : "admin"
+    "Login": "student",
+    "Password": "student",
+    "Role" : "student"
 }
 

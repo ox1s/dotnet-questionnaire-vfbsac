@@ -1,35 +1,57 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuthStore } from './store/authStore';
+import LoginPage from './pages/LoginPage';
+import DashboardPage  from './pages/DashboardPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import SurveyPage from './pages/SurveyPage'
+import { Box, CircularProgress, CssBaseline } from '@mui/material';
+import AdminQuestionsPage from './pages/AdminQuestionsPage';
+import AdminRoute from './components/AdminRoute';
 
 function App() {
-  const [count, setCount] = useState(0)
+    const initialize = useAuthStore((state) => state.initialize);
+    const isLoading = useAuthStore((state) => state.isLoading);
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    useEffect(() => {
+        initialize();
+    }, []);
+
+    if (isLoading) {
+        return (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
+
+     return (
+        <>
+            <CssBaseline />
+            <Router>
+                <Routes>
+                    <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />} />
+                    
+                    {/* Все защищенные роуты находятся внутри ОДНОГО ProtectedRoute */}
+                    <Route element={<ProtectedRoute />}>
+                        {/* Роуты для всех аутентифицированных пользователей */}
+                        <Route path="/" element={<DashboardPage />} />
+                        <Route path="/surveys/:id" element={<SurveyPage />} />
+
+                        {/* Роуты ТОЛЬКО для админов, вложенные в AdminRoute */}
+                        <Route element={<AdminRoute />}>
+                            <Route path="/admin/questions" element={<AdminQuestionsPage />} />
+                            {/* Здесь будут другие админские роуты, например /admin/forms */}
+                        </Route>
+                    </Route>
+
+                    {/* Если пользователь залогинен, но ввел несуществующий URL, перенаправляем на главную */}
+                    <Route path="*" element={<Navigate to="/" />} />
+                </Routes>
+            </Router>
+        </>
+    );
 }
 
-export default App
+export default App;

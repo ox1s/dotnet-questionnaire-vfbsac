@@ -2,8 +2,21 @@ using Questionnaire.Api;
 using Questionnaire.Application;
 using Questionnaire.Infrastructure;
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
 {
+    builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(name: MyAllowSpecificOrigins,
+                policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+        });
+
     builder.Services
         .AddPresentation()
         .AddApplication()
@@ -21,7 +34,8 @@ var app = builder.Build();
     }
 
     app.UseHttpsRedirection();
-    
+    app.UseCors(MyAllowSpecificOrigins);
+
     app.UseAuthentication();
     app.UseAuthorization();
 

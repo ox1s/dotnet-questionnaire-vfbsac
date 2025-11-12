@@ -14,7 +14,7 @@ namespace Questionnaire.Api.Controllers;
 
 [ApiController]
 [Route("forms")]
-[Authorize(Roles = "admin")]
+[Authorize]
 public class FormsController : ApiController
 {
     private readonly ISender _mediator;
@@ -37,6 +37,7 @@ public class FormsController : ApiController
     }
 
     [HttpPost]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> CreateForm(CreateFormRequest request)
     {
         var command = new CreateFormCommand(request.Name);
@@ -47,6 +48,7 @@ public class FormsController : ApiController
             errors => Problem(errors));
     }
     [HttpPost("{formId:int}/questions/{questionId:int}")]
+    [Authorize(Roles = "admin")]
     public async Task<IActionResult> AddQuestionToForm(
             [FromRoute] int formId,
             [FromRoute] int questionId,

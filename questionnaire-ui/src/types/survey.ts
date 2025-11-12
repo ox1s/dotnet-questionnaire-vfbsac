@@ -1,8 +1,7 @@
-// Тип для вопроса, соответствует QuestionResponse из C#
 export interface Question {
     id: number;
     text: string;
-    type: QuestionType; // 0 = Rating, 1 = Text, 2 = Choice
+    type: number; // 0 = Rating, 1 = Text, 2 = Choice
     options: QuestionOption[];
 }
 
@@ -11,11 +10,7 @@ export interface QuestionOption {
     text: string;
 }
 
-export enum QuestionType {
-    Rating,
-    Text,
-    Choice,
-}
+export type QuestionType = 'Rating' | 'Text' | 'Choice';
 
 // Тип для анкеты в списке
 export interface Survey {

@@ -9,6 +9,8 @@ using Questionnaire.Application.Forms.Queries.GetAll;
 using Questionnaire.Api.Common;
 using Questionnaire.Application.Forms.Queries.GetById;
 using Questionnaire.Contracts.Questions;
+using Questionnaire.Application.Forms.Commands.Delete;
+using Questionnaire.Application.Forms.Commands.RemoveQuestion;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -69,6 +71,30 @@ public class FormsController : ApiController
 
         return getFormResult.Match(
             form => Ok(MapToDetailedFormResponse(form)),
+            errors => Problem(errors));
+    }
+
+    [HttpDelete("{id:int}")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> DeleteForm(int id)
+    {
+        var command = new DeleteFormCommand(id);
+        var result = await _mediator.Send(command);
+
+        return result.Match(
+            _ => NoContent(),
+            errors => Problem(errors));
+    }
+    
+    [HttpDelete("{formId:int}/questions/{questionId:int}")]
+    [Authorize(Roles = "admin")]
+    public async Task<IActionResult> RemoveQuestionFromForm(int formId, int questionId)
+    {
+        var command = new RemoveQuestionFromFormCommand(formId, questionId);
+        var result = await _mediator.Send(command);
+
+        return result.Match(
+            _ => NoContent(),
             errors => Problem(errors));
     }
 

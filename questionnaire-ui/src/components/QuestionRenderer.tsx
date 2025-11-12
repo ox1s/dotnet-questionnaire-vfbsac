@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, FormControl, FormLabel, TextField, Typography, Select, MenuItem, InputLabel } from '@mui/material';
 import type { Question, AnswerDetail } from '../types/survey';
-import {QuestionType} from '../types/survey';
 
 interface QuestionRendererProps {
     question: Question;
@@ -23,7 +22,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, answer, o
 
     const renderQuestionType = () => {
         switch (question.type) {
-            case QuestionType.Rating:
+            case 0: // Rating
                 // Генерируем опции для выпадающих списков
                 const weightOptions = Array.from({ length: 10 }, (_, i) => i + 1); // [1, 2, ..., 10]
                 const markOptions = Array.from({ length: (answer.weight || 0) + 1 }, (_, i) => i); // [0, 1, ..., weight]
@@ -61,7 +60,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, answer, o
                         </FormControl>
                     </Box>
                 );
-            case QuestionType.Text:
+            case 1: // Text
                 return (
                     <TextField
                         label="Ваш ответ"
@@ -72,7 +71,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({ question, answer, o
                         onChange={(e) => onAnswerChange(question.id, { textResponse: e.target.value })}
                     />
                 );
-            case QuestionType.Choice:
+            case 2: // Choice
                 return <Typography color="text.secondary">Вопросы с выбором вариантов будут доступны позже.</Typography>;
             default:
                 return null;

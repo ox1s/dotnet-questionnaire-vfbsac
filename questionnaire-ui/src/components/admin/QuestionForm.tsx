@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Select, MenuItem, FormControl, InputLabel, Typography } from '@mui/material';
-import { QuestionType } from '../../types/survey';
+import type { QuestionType } from '../../types/survey';
 import type { CreateQuestionPayload } from '../../api/adminService';
+
+const questionTypeToNumberMap: Record<QuestionType, number> = {
+    'Rating': 0,
+    'Text': 1,
+    'Choice': 2,
+};
 
 interface QuestionFormProps {
     onSubmit: (payload: CreateQuestionPayload) => void;
@@ -10,15 +16,15 @@ interface QuestionFormProps {
 
 const QuestionForm: React.FC<QuestionFormProps> = ({ onSubmit, onCancel }) => {
     const [text, setText] = useState('');
-    const [type, setType] = useState<QuestionType>(QuestionType.Text);
-    const [options, setOptions] = useState<string>(''); // Храним как строку, разделенную переносами
+    const [type, setType] = useState<QuestionType>('Text');
+    const [options, setOptions] = useState<string>('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         const payload: CreateQuestionPayload = {
             text,
-            type,
-            options: type === QuestionType.Choice ? options.split('\n').filter(opt => opt.trim() !== '') : undefined,
+            type: questionTypeToNumberMap[type],
+            options: type === 'Choice' ? options.split('\n').filter(opt => opt.trim() !== '') : undefined,
         };
         onSubmit(payload);
     };
@@ -41,13 +47,13 @@ const QuestionForm: React.FC<QuestionFormProps> = ({ onSubmit, onCancel }) => {
                     label="Тип вопроса"
                     onChange={(e) => setType(e.target.value as QuestionType)}
                 >
-                    <MenuItem value={QuestionType.Rating}>Оценка с весом</MenuItem>
-                    <MenuItem value={QuestionType.Text}>Текстовый ответ</MenuItem>
-                    <MenuItem value={QuestionType.Choice}>Выбор вариантов</MenuItem>
+                   <MenuItem value="Rating">Оценка с весом</MenuItem>
+                    <MenuItem value="Text">Текстовый ответ</MenuItem>
+                    <MenuItem value="Choice">Выбор вариантов</MenuItem>
                 </Select>
             </FormControl>
 
-            {type === QuestionType.Choice && (
+             {type === 'Choice' && (
                 <TextField
                     label="Варианты ответа (каждый с новой строки)"
                     fullWidth

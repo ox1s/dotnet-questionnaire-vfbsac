@@ -7,6 +7,7 @@ using Questionnaire.Domain.Entities;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Questionnaire.Application.Questions.Queries.GetAll;
+using Questionnaire.Application.Questions.Commands.Delete;
 
 using ContractsQuestionType = Questionnaire.Contracts.Questions.QuestionType;
 using DomainQuestionType = Questionnaire.Domain.Entities.QuestionType;
@@ -65,7 +66,18 @@ public class AdminController : ApiController
         var getQuestionsResult = await _mediator.Send(query);
 
         return getQuestionsResult.Match(
-            questions => Ok(questions.Select(ApiMappers.ToDto)),  
+            questions => Ok(questions.Select(ApiMappers.ToDto)),
+            errors => Problem(errors));
+    }
+    
+    [HttpDelete("questions/{id:int}")]
+    public async Task<IActionResult> DeleteQuestion(int id)
+    {
+        var command = new DeleteQuestionCommand(id);
+        var result = await _mediator.Send(command);
+
+        return result.Match(
+            _ => NoContent(),
             errors => Problem(errors));
     }
 

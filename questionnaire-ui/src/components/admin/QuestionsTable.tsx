@@ -1,17 +1,16 @@
 import React from 'react';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
 import type { Question } from '../../types/survey';
-import { QuestionType } from '../../types/survey';
 
 interface QuestionsTableProps {
     questions: Question[];
 }
 
-const QuestionTypeMap: { [key in QuestionType]: string } = {
-    [QuestionType.Rating]: 'Оценка',
-    [QuestionType.Text]: 'Текст',
-    [QuestionType.Choice]: 'Выбор',
-};
+const numberToQuestionTypeMap: { [key: number]: string } = {
+    0: 'Оценка',
+    1: 'Текст',
+    2: 'Выбор',
+};;
 
 const QuestionsTable: React.FC<QuestionsTableProps> = ({ questions }) => {
     return (
@@ -37,7 +36,7 @@ const QuestionsTable: React.FC<QuestionsTableProps> = ({ questions }) => {
                             <TableRow key={q.id}>
                                 <TableCell>{q.id}</TableCell>
                                 <TableCell>{q.text}</TableCell>
-                                <TableCell>{QuestionTypeMap[q.type]}</TableCell>
+                                <TableCell>{numberToQuestionTypeMap[q.type as keyof typeof numberToQuestionTypeMap]}</TableCell>
                                 <TableCell>{/* Кнопки Edit/Delete будут здесь */}</TableCell>
                             </TableRow>
                         ))

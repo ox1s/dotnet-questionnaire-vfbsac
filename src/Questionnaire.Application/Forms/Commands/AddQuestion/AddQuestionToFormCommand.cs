@@ -1,9 +1,8 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 
 namespace Questionnaire.Application.Forms.Commands.AddQuestion;
 
-public record AddQuestionToFormCommand(
+public sealed record AddQuestionToFormCommand(
     int FormId,
     int QuestionId,
-    int Order) : IRequest<ErrorOr<Success>>;
+    int Order) : ICommand;

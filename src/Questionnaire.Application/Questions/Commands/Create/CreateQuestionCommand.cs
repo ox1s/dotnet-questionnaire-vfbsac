@@ -1,10 +1,9 @@
-using ErrorOr;
-using MediatR;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Application.Abstractions.Messaging;
+using Questionnaire.Contracts.Questions;
 
 namespace Questionnaire.Application.Questions.Commands.Create;
 
-public record CreateQuestionCommand(
+public sealed record CreateQuestionCommand(
     string Text,
-    QuestionType Type,
-    List<string>? Options) : IRequest<ErrorOr<Question>>;
+    Contracts.Questions.QuestionType Type,
+    List<string>? Options) : ICommand<QuestionResponse>;

@@ -4,4 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\Questionnaire.SharedKernel\Questionnaire.SharedKernel.csproj" />
+  </ItemGroup>
 </Project>

@@ -1,12 +1,13 @@
-using ErrorOr;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
+using Questionnaire.Contracts.Forms;
 using Questionnaire.Domain.Entities;
+using Questionnaire.SharedKernel;
+using Microsoft.EntityFrameworkCore;
 
 namespace Questionnaire.Application.Forms.Queries.GetAll;
 
-public class GetAllFormsQueryHandler : IRequestHandler<GetAllFormsQuery, ErrorOr<IEnumerable<Form>>>
+internal sealed class GetAllFormsQueryHandler : IQueryHandler<GetAllFormsQuery, IEnumerable<FormResponse>>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,12 +16,18 @@ public class GetAllFormsQueryHandler : IRequestHandler<GetAllFormsQuery, ErrorOr
         _context = context;
     }
 
-    public async Task<ErrorOr<IEnumerable<Form>>> Handle(GetAllFormsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<FormResponse>>> Handle(GetAllFormsQuery query, CancellationToken cancellationToken)
     {
         var forms = await _context.Forms
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        return forms;
+        var response = forms.Select(f => new FormResponse(
+            f.Id,
+            f.Name,
+            f.IsActive,
+            null));
+
+        return Result.Success(response);
     }
 }

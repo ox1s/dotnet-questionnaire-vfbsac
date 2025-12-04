@@ -5,16 +5,19 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Questionnaire.Application.Common.Interfaces;
 using Questionnaire.Domain.Entities;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Infrastructure.Authentication;
 
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtSettings _jwtSettings;
+    private readonly IDateTimeProvider _dateTimeProvider;
 
-    public JwtTokenGenerator(IOptions<JwtSettings> jwtOptions)
+    public JwtTokenGenerator(IOptions<JwtSettings> jwtOptions, IDateTimeProvider dateTimeProvider)
     {
         _jwtSettings = jwtOptions.Value;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public string GenerateToken(User user)
@@ -32,7 +35,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         }
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes);
+        DateTime expires = _dateTimeProvider.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes);
 
         var token = new JwtSecurityToken(
             issuer: _jwtSettings.Issuer,

@@ -1,9 +1,8 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 
 namespace Questionnaire.Application.Surveys.Commands.Submit;
 
-public record SubmitSurveyCommand(
+public sealed record SubmitSurveyCommand(
     int FormId,
-    List<AnswerDetailItem> Details) : IRequest<ErrorOr<Success>>;
+    List<AnswerDetailItem> Details) : ICommand;
 

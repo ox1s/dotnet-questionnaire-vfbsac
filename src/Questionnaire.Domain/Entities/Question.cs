@@ -1,6 +1,8 @@
+using Questionnaire.SharedKernel;
+
 namespace Questionnaire.Domain.Entities;
 
-public class Question
+public class Question : Entity
 {
     public int Id { get; set; }
     public string Text { get; set; } = string.Empty;

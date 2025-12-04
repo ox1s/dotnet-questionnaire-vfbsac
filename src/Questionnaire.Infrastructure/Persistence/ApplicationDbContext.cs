@@ -1,16 +1,16 @@
 using Microsoft.EntityFrameworkCore;
+using Questionnaire.Application.Abstractions;
 using Questionnaire.Application.Common.Interfaces;
 using Questionnaire.Domain.Entities;
+using Questionnaire.SharedKernel;
+using static Questionnaire.Infrastructure.Persistence.Schemas;
 
 namespace Questionnaire.Infrastructure.Persistence;
 
-public class ApplicationDbContext : DbContext, IApplicationDbContext
+internal sealed class ApplicationDbContext(
+    DbContextOptions<ApplicationDbContext> options,
+    IDomainEventsDispatcher domainEventsDispatcher) : DbContext(options), IApplicationDbContext
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
-    {
-    }
-
     public DbSet<User> Users => Set<User>();
     public DbSet<Role> Roles => Set<Role>();
     public DbSet<UserRole> UserRoles => Set<UserRole>();
@@ -22,6 +22,31 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
     public DbSet<AnswerDetail> AnswerDetails => Set<AnswerDetail>();
     public DbSet<AnswerDetailSelectedOption> AnswerDetailSelectedOptions => Set<AnswerDetailSelectedOption>();
     public DbSet<FormRole> FormRoles => Set<FormRole>();
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        int result = await base.SaveChangesAsync(cancellationToken);
+        await PublishDomainEventsAsync();
+        return result;
+    }
+
+    private async Task PublishDomainEventsAsync()
+    {
+        List<IDomainEvent> domainEvents = ChangeTracker
+            .Entries<Entity>()
+            .Select(entry => entry.Entity)
+            .SelectMany(entity =>
+            {
+                List<IDomainEvent> domainEvents = entity.DomainEvents;
+
+                entity.ClearDomainEvents();
+
+                return domainEvents;
+            })
+            .ToList();
+
+        await domainEventsDispatcher.DispatchAsync(domainEvents);
+    }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -35,6 +60,8 @@ public class ApplicationDbContext : DbContext, IApplicationDbContext
             .HasKey(aso => new { aso.AnswerDetailId, aso.QuestionOptionId });
             
         builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        builder.HasDefaultSchema(Schemas.Default);
 
         base.OnModelCreating(builder);
     }

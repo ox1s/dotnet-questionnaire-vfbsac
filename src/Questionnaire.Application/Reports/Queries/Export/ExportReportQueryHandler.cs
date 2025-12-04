@@ -1,33 +1,35 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
 using Questionnaire.Application.Reports.Queries.GetSummary;
+using Questionnaire.Contracts.Reports;
+using Questionnaire.Domain.Forms;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Application.Reports.Queries.Export;
 
-public class ExportReportQueryHandler : IRequestHandler<ExportReportQuery, ErrorOr<byte[]>>
+internal sealed class ExportReportQueryHandler : IQueryHandler<ExportReportQuery, byte[]>
 {
-    private readonly ISender _mediator;
+    private readonly ISender _sender;
     private readonly IReportGenerator _reportGenerator;
 
-    public ExportReportQueryHandler(ISender mediator, IReportGenerator reportGenerator)
+    public ExportReportQueryHandler(ISender sender, IReportGenerator reportGenerator)
     {
-        _mediator = mediator;
+        _sender = sender;
         _reportGenerator = reportGenerator;
     }
 
-    public async Task<ErrorOr<byte[]>> Handle(ExportReportQuery request, CancellationToken cancellationToken)
+    public async Task<Result<byte[]>> Handle(ExportReportQuery query, CancellationToken cancellationToken)
     {
-        var summaryQuery = new GetSummaryReportQuery(request.FormId);
-        var summaryResult = await _mediator.Send(summaryQuery, cancellationToken);
+        var summaryQuery = new GetSummaryReportQuery(query.FormId);
+        Result<SummaryReportResponse> summaryResult = await _sender.Send(summaryQuery, cancellationToken);
 
-        if (summaryResult.IsError)
+        if (summaryResult.IsFailure)
         {
-            return summaryResult.Errors;
+            return Result.Failure<byte[]>(summaryResult.Error);
         }
 
-        var fileBytes = _reportGenerator.GenerateSummaryReport(summaryResult.Value);
+        byte[] fileBytes = _reportGenerator.GenerateSummaryReport(summaryResult.Value);
 
-        return fileBytes;
+        return Result.Success(fileBytes);
     }
 }

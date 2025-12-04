@@ -1,13 +1,15 @@
-using ErrorOr;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Authentication.Common;
 using Questionnaire.Application.Common.Interfaces;
+using Questionnaire.Contracts.Authentication;
 using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Users;
+using Questionnaire.SharedKernel;
+using Microsoft.EntityFrameworkCore;
 
 namespace Questionnaire.Application.Authentication.Commands.Register;
 
-public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<AuthenticationResult>>
+internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand, AuthenticationResponse>
 {
     private readonly IApplicationDbContext _context;
     private readonly IPasswordHasher _passwordHasher;
@@ -20,11 +22,11 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
-    public async Task<ErrorOr<AuthenticationResult>> Handle(RegisterCommand command, CancellationToken cancellationToken)
+    public async Task<Result<AuthenticationResponse>> Handle(RegisterCommand command, CancellationToken cancellationToken)
     {
         if (await _context.Users.AnyAsync(u => u.Login == command.Login, cancellationToken))
         {
-            return AuthenticationErrors.DuplicateLogin;
+            return Result.Failure<AuthenticationResponse>(AuthenticationErrors.DuplicateLogin);
         }
 
         var role = await _context.Roles.FirstOrDefaultAsync(r => r.Name == command.Role, cancellationToken);
@@ -34,7 +36,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
             _context.Roles.Add(role);
         }
 
-        var passwordHash = _passwordHasher.HashPassword(command.Password);
+        string passwordHash = _passwordHasher.HashPassword(command.Password);
 
         var user = new User
         {
@@ -48,8 +50,10 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, ErrorOr<A
         await _context.SaveChangesAsync(cancellationToken);
 
         user.UserRoles = new List<UserRole> { new() { Role = role } };
-        var token = _jwtTokenGenerator.GenerateToken(user);
+        string token = _jwtTokenGenerator.GenerateToken(user);
 
-        return new AuthenticationResult(user, token);
+        var response = new AuthenticationResponse(user.Id, user.Login, token);
+
+        return Result.Success(response);
     }
 }

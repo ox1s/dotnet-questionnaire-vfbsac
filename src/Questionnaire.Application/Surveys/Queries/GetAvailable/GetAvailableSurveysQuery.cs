@@ -1,7 +1,6 @@
-using ErrorOr;
-using MediatR;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Application.Abstractions.Messaging;
+using Questionnaire.Contracts.Forms;
 
 namespace Questionnaire.Application.Surveys.Queries.GetAvailable;
 
-public record GetAvailableSurveysQuery : IRequest<ErrorOr<IEnumerable<Form>>>;
+public sealed record GetAvailableSurveysQuery : IQuery<IEnumerable<FormResponse>>;

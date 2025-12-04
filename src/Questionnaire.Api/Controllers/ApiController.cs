@@ -1,29 +1,27 @@
-using ErrorOr;
 using Microsoft.AspNetCore.Mvc;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Api.Controllers;
 
 [ApiController]
 public class ApiController : ControllerBase
 {
-    protected IActionResult Problem(List<Error> errors)
+    protected IActionResult Problem(Error error)
     {
-        if (errors.Count is 0)
+        if (error == Error.None)
         {
             return Problem();
         }
 
-        var firstError = errors[0];
-
-        var statusCode = firstError.Type switch
+        int statusCode = error.Type switch
         {
             ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.Validation => StatusCodes.Status400BadRequest,
             ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+            ErrorType.Problem => StatusCodes.Status400BadRequest,
             _ => StatusCodes.Status500InternalServerError,
         };
 
-        return Problem(statusCode: statusCode, title: firstError.Description);
+        return Problem(statusCode: statusCode, title: error.Description);
     }
 }

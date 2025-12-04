@@ -1,10 +1,20 @@
+using Serilog;
 using Questionnaire.Api;
+using Questionnaire.Api.Middleware;
 using Questionnaire.Application;
 using Questionnaire.Infrastructure;
+using Questionnaire.Infrastructure.Persistence;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Настроить Serilog
+// Конфигурация загружается из appsettings.json, дополнительные настройки только через DI
+builder.Host.UseSerilog((context, services, configuration) => 
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services));
 {
     builder.Services.AddCors(options =>
         {
@@ -29,9 +39,13 @@ var app = builder.Build();
 
     if (app.Environment.IsDevelopment())
     {
+        await app.ApplyMigrationsAsync();
         app.UseSwagger();
         app.UseSwaggerUI();
     }
+
+    app.UseRequestContextLogging();
+    app.UseExceptionHandler();
 
     app.UseHttpsRedirection();
     app.UseCors(MyAllowSpecificOrigins);
@@ -39,7 +53,18 @@ var app = builder.Build();
     app.UseAuthentication();
     app.UseAuthorization();
 
+    app.MapHealthChecks("/health");
+
     app.MapControllers();
 
-    app.Run();
+    try
+    {
+        app.Run();
+    }
+    finally
+    {
+        // Обеспечить правильное закрытие Serilog при завершении приложения
+        // даже при возникновении необработанных исключений
+        Log.CloseAndFlush();
+    }
 }

@@ -1,10 +1,11 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
+using Questionnaire.Domain.Forms;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Application.Forms.Commands.Delete;
 
-public class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand, ErrorOr<Success>>
+internal sealed class DeleteFormCommandHandler : ICommandHandler<DeleteFormCommand>
 {
     private readonly IApplicationDbContext _context;
 
@@ -13,17 +14,17 @@ public class DeleteFormCommandHandler : IRequestHandler<DeleteFormCommand, Error
         _context = context;
     }
 
-    public async Task<ErrorOr<Success>> Handle(DeleteFormCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteFormCommand command, CancellationToken cancellationToken)
     {
-        var form = await _context.Forms.FindAsync(request.Id);
+        var form = await _context.Forms.FindAsync([command.Id], cancellationToken);
         if (form is null)
         {
-            return Error.NotFound("Form not found.");
+            return Result.Failure(FormErrors.NotFound(command.Id));
         }
 
         _context.Forms.Remove(form);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success;
+        return Result.Success();
     }
 }

@@ -1,7 +1,6 @@
-using ErrorOr;
-using MediatR;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Application.Abstractions.Messaging;
+using Questionnaire.Contracts.Forms;
 
 namespace Questionnaire.Application.Forms.Queries.GetAll;
 
-public record GetAllFormsQuery : IRequest<ErrorOr<IEnumerable<Form>>>;
+public sealed record GetAllFormsQuery : IQuery<IEnumerable<FormResponse>>;

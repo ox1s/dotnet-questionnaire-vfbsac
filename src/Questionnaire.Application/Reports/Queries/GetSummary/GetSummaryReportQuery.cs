@@ -1,6 +1,6 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
+using Questionnaire.Contracts.Reports;
 
 namespace Questionnaire.Application.Reports.Queries.GetSummary;
 
-public record GetSummaryReportQuery(int FormId) : IRequest<ErrorOr<SummaryReportResult>>;
+public sealed record GetSummaryReportQuery(int FormId) : IQuery<SummaryReportResponse>;

@@ -1,9 +1,8 @@
-using ErrorOr;
-using MediatR;
-using Questionnaire.Application.Authentication.Common;
+using Questionnaire.Application.Abstractions.Messaging;
+using Questionnaire.Contracts.Authentication;
 
 namespace Questionnaire.Application.Authentication.Queries.Login;
 
-public record LoginQuery(
+public sealed record LoginQuery(
     string Login,
-    string Password) : IRequest<ErrorOr<AuthenticationResult>>;
+    string Password) : IQuery<AuthenticationResponse>;

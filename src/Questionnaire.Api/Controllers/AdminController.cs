@@ -1,6 +1,6 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Questions.Commands.Create;
 using Questionnaire.Contracts.Questions;
 using Questionnaire.Domain.Entities;
@@ -8,9 +8,8 @@ using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Questionnaire.Application.Questions.Queries.GetAll;
 using Questionnaire.Application.Questions.Commands.Delete;
+using Questionnaire.SharedKernel;
 
-using ContractsQuestionType = Questionnaire.Contracts.Questions.QuestionType;
-using DomainQuestionType = Questionnaire.Domain.Entities.QuestionType;
 using Questionnaire.Api.Common;
 
 namespace Questionnaire.Api.Controllers;
@@ -19,11 +18,11 @@ namespace Questionnaire.Api.Controllers;
 [Authorize(Roles = "admin")]
 public class AdminController : ApiController
 {
-    private readonly ISender _mediator;
+    private readonly ISender _sender;
 
-    public AdminController(ISender mediator)
+    public AdminController(ISender sender)
     {
-        _mediator = mediator;
+        _sender = sender;
     }
 
     [HttpGet("data")]
@@ -38,58 +37,44 @@ public class AdminController : ApiController
     [HttpPost("questions")]
     public async Task<IActionResult> CreateQuestion(CreateQuestionRequest request)
     {
-        if (!Enum.IsDefined(typeof(ContractsQuestionType), request.Type))
+        if (!Enum.IsDefined(typeof(Contracts.Questions.QuestionType), request.Type))
         {
             return Problem(
                 statusCode: StatusCodes.Status400BadRequest,
                 title: "Invalid question type.");
         }
 
-        var domainType = ToDomain(request.Type);
-
-        var command = new CreateQuestionCommand(
+        CreateQuestionCommand command = new CreateQuestionCommand(
             request.Text,
-            domainType,
+            request.Type,
             request.Options);
 
-        var createQuestionResult = await _mediator.Send(command);
+        Result<QuestionResponse> createQuestionResult = await _sender.Send(command);
 
         return createQuestionResult.Match(
-            question => Ok(ApiMappers.ToDto(question)),
-            errors => Problem(errors));
+            question => Ok(question),
+            error => Problem(error));
     }
 
     [HttpGet("questions")]
     public async Task<IActionResult> GetAllQuestions()
     {
-        var query = new GetAllQuestionsQuery();
-        var getQuestionsResult = await _mediator.Send(query);
+        GetAllQuestionsQuery query = new GetAllQuestionsQuery();
+        Result<IEnumerable<QuestionResponse>> getQuestionsResult = await _sender.Send(query);
 
         return getQuestionsResult.Match(
-            questions => Ok(questions.Select(ApiMappers.ToDto)),
-            errors => Problem(errors));
+            questions => Ok(questions),
+            error => Problem(error));
     }
     
     [HttpDelete("questions/{id:int}")]
     public async Task<IActionResult> DeleteQuestion(int id)
     {
-        var command = new DeleteQuestionCommand(id);
-        var result = await _mediator.Send(command);
+        DeleteQuestionCommand command = new DeleteQuestionCommand(id);
+        Result result = await _sender.Send(command);
 
         return result.Match(
-            _ => NoContent(),
-            errors => Problem(errors));
-    }
-
-
-    private static DomainQuestionType ToDomain(ContractsQuestionType contractType)
-    {
-        return contractType switch
-        {
-            ContractsQuestionType.Rating => DomainQuestionType.Rating,
-            ContractsQuestionType.Text => DomainQuestionType.Text,
-            ContractsQuestionType.Choice => DomainQuestionType.Choice,
-            _ => throw new InvalidOperationException("Cannot map contract question type to domain."),
-        };
+            () => NoContent(),
+            error => Problem(error));
     }
 }

@@ -2,14 +2,14 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Application.Reports.Queries.GetSummary;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Contracts.Reports;
+using Questionnaire.Contracts.Questions;
 
 namespace Questionnaire.Infrastructure.Services;
 
 public class OpenXmlReportGenerator : IReportGenerator
 {
-    public byte[] GenerateSummaryReport(SummaryReportResult data)
+    public byte[] GenerateSummaryReport(SummaryReportResponse data)
     {
         using var stream = new MemoryStream();
         using (var wordDocument = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document, true))
@@ -30,11 +30,11 @@ public class OpenXmlReportGenerator : IReportGenerator
                 switch (question.QuestionType)
                 {
                     case QuestionType.Rating:
-                        if (question.RatingResponseCount > 0)
+                        if (question.RatingData is not null)
                         {
-                            body.AppendChild(CreateParagraph($"Средняя оценка: {question.AverageMark:F2}"));
-                            body.AppendChild(CreateParagraph($"Средний вес: {question.AverageWeight:F2}"));
-                            body.AppendChild(CreateParagraph($"Количество ответов: {question.RatingResponseCount}"));
+                            body.AppendChild(CreateParagraph($"Средняя оценка: {question.RatingData.AverageMark:F2}"));
+                            body.AppendChild(CreateParagraph($"Средний вес: {question.RatingData.AverageWeight:F2}"));
+                            body.AppendChild(CreateParagraph($"Количество ответов: {question.RatingData.ResponseCount}"));
                         }
                         else
                         {
@@ -43,9 +43,9 @@ public class OpenXmlReportGenerator : IReportGenerator
                         break;
 
                     case QuestionType.Text:
-                        if (question.TextResponses.Any())
+                        if (question.TextData is not null && question.TextData.Any())
                         {
-                            foreach (var response in question.TextResponses)
+                            foreach (string response in question.TextData)
                             {
                                 body.AppendChild(CreateParagraph($"- {response}"));
                             }
@@ -57,12 +57,11 @@ public class OpenXmlReportGenerator : IReportGenerator
                         break;
 
                     case QuestionType.Choice:
-                        if (question.Options.Any())
+                        if (question.ChoiceData is not null && question.ChoiceData.Any())
                         {
-                            foreach (var option in question.Options)
+                            foreach (var choice in question.ChoiceData)
                             {
-                                var count = question.ChoiceCounts.TryGetValue(option.Id, out var val) ? val : 0;
-                                body.AppendChild(CreateParagraph($"{option.Text}: {count} выборов"));
+                                body.AppendChild(CreateParagraph($"{choice.OptionText}: {choice.SelectedCount} выборов"));
                             }
                         }
                         else

@@ -1,3 +1,5 @@
+using Questionnaire.Api.Infrastructure;
+
 namespace Questionnaire.Api;
 
 public static class DependencyInjection
@@ -7,6 +9,8 @@ public static class DependencyInjection
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+        services.AddProblemDetails();
         
         return services;
     }

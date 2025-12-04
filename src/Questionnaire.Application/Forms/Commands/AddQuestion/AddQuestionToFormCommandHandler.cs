@@ -1,12 +1,14 @@
-using ErrorOr;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
+using Questionnaire.Domain.Forms;
+using Questionnaire.Domain.Questions;
 using Questionnaire.Domain.Entities;
+using Questionnaire.SharedKernel;
+using Microsoft.EntityFrameworkCore;
 
 namespace Questionnaire.Application.Forms.Commands.AddQuestion;
 
-public class AddQuestionToFormCommandHandler : IRequestHandler<AddQuestionToFormCommand, ErrorOr<Success>>
+internal sealed class AddQuestionToFormCommandHandler : ICommandHandler<AddQuestionToFormCommand>
 {
     private readonly IApplicationDbContext _context;
 
@@ -15,18 +17,18 @@ public class AddQuestionToFormCommandHandler : IRequestHandler<AddQuestionToForm
         _context = context;
     }
 
-    public async Task<ErrorOr<Success>> Handle(AddQuestionToFormCommand command, CancellationToken cancellationToken)
+    public async Task<Result> Handle(AddQuestionToFormCommand command, CancellationToken cancellationToken)
     {
-        var form = await _context.Forms.FindAsync(command.FormId);
+        var form = await _context.Forms.FindAsync([command.FormId], cancellationToken);
         if (form is null)
         {
-            return Error.NotFound(description: "Form not found.");
+            return Result.Failure(FormErrors.NotFound(command.FormId));
         }
 
-        var question = await _context.Questions.FindAsync(command.QuestionId);
+        var question = await _context.Questions.FindAsync([command.QuestionId], cancellationToken);
         if (question is null)
         {
-            return Error.NotFound(description: "Question not found.");
+            return Result.Failure(QuestionErrors.NotFound(command.QuestionId));
         }
 
         var alreadyExists = await _context.FormQuestions
@@ -34,7 +36,7 @@ public class AddQuestionToFormCommandHandler : IRequestHandler<AddQuestionToForm
 
         if (alreadyExists)
         {
-            return Error.Conflict(description: "This question is already in the form.");
+            return Result.Failure(FormErrors.QuestionAlreadyExists(command.QuestionId));
         }
 
         var formQuestion = new FormQuestion
@@ -47,6 +49,6 @@ public class AddQuestionToFormCommandHandler : IRequestHandler<AddQuestionToForm
         await _context.FormQuestions.AddAsync(formQuestion, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success;
+        return Result.Success();
     }
 }

@@ -1,11 +1,12 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Questionnaire.Api.Common;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Surveys.Commands.Submit;
 using Questionnaire.Application.Surveys.Queries.GetAvailable;
 using Questionnaire.Contracts.Forms;
 using Questionnaire.Contracts.Surveys;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -14,28 +15,28 @@ namespace Questionnaire.Api.Controllers;
 [Authorize]
 public class SurveysController : ApiController
 {
-    private readonly ISender _mediator;
+    private readonly ISender _sender;
 
-    public SurveysController(ISender mediator)
+    public SurveysController(ISender sender)
     {
-        _mediator = mediator;
+        _sender = sender;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAvailableSurveys()
     {
-        var query = new GetAvailableSurveysQuery();
-        var result = await _mediator.Send(query);
+        GetAvailableSurveysQuery query = new GetAvailableSurveysQuery();
+        Result<IEnumerable<FormResponse>> result = await _sender.Send(query);
 
         return result.Match(
-            forms => Ok(forms.Select(form => new FormResponse(form.Id, form.Name, form.IsActive, null))),
-            errors => Problem(errors));
+            forms => Ok(forms),
+            error => Problem(error));
     }
 
     [HttpPost("submit")]
     public async Task<IActionResult> SubmitSurvey(SubmitSurveyRequest request)
     {
-        var command = new SubmitSurveyCommand(
+        SubmitSurveyCommand command = new SubmitSurveyCommand(
             request.FormId,
             request.Details
                 .Select(d => new AnswerDetailItem(
@@ -45,10 +46,10 @@ public class SurveysController : ApiController
                     d.TextResponse))
                 .ToList());
 
-        var result = await _mediator.Send(command);
+        Result result = await _sender.Send(command);
 
         return result.Match(
-            _ => Ok(),
-            errors => Problem(errors));
+            () => Ok(),
+            error => Problem(error));
     }
 }

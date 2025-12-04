@@ -1,11 +1,11 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
 using Questionnaire.Domain.Entities;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Application.Forms.Commands.Create;
 
-public class CreateFormCommandHandler : IRequestHandler<CreateFormCommand, ErrorOr<Form>>
+internal sealed class CreateFormCommandHandler : ICommandHandler<CreateFormCommand, Form>
 {
     private readonly IApplicationDbContext _context;
 
@@ -14,7 +14,7 @@ public class CreateFormCommandHandler : IRequestHandler<CreateFormCommand, Error
         _context = context;
     }
 
-    public async Task<ErrorOr<Form>> Handle(CreateFormCommand command, CancellationToken cancellationToken)
+    public async Task<Result<Form>> Handle(CreateFormCommand command, CancellationToken cancellationToken)
     {
         var form = new Form
         {
@@ -25,6 +25,6 @@ public class CreateFormCommandHandler : IRequestHandler<CreateFormCommand, Error
         await _context.Forms.AddAsync(form, cancellationToken);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return form;
+        return Result.Success(form);
     }
 }

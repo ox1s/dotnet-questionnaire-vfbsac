@@ -1,6 +1,5 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 
 namespace Questionnaire.Application.Forms.Commands.RemoveQuestion;
 
-public record RemoveQuestionFromFormCommand(int FormId, int QuestionId) : IRequest<ErrorOr<Success>>;
+public sealed record RemoveQuestionFromFormCommand(int FormId, int QuestionId) : ICommand;

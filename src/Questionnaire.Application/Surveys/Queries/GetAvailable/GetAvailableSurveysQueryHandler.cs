@@ -1,12 +1,12 @@
-using ErrorOr;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Contracts.Forms;
+using Questionnaire.SharedKernel;
+using Microsoft.EntityFrameworkCore;
 
 namespace Questionnaire.Application.Surveys.Queries.GetAvailable;
 
-public class GetAvailableSurveysQueryHandler : IRequestHandler<GetAvailableSurveysQuery, ErrorOr<IEnumerable<Form>>>
+internal sealed class GetAvailableSurveysQueryHandler : IQueryHandler<GetAvailableSurveysQuery, IEnumerable<FormResponse>>
 {
     private readonly IApplicationDbContext _context;
     private readonly ICurrentUserProvider _currentUserProvider;
@@ -17,7 +17,7 @@ public class GetAvailableSurveysQueryHandler : IRequestHandler<GetAvailableSurve
         _currentUserProvider = currentUserProvider;
     }
 
-    public async Task<ErrorOr<IEnumerable<Form>>> Handle(GetAvailableSurveysQuery request, CancellationToken cancellationToken)
+    public async Task<Result<IEnumerable<FormResponse>>> Handle(GetAvailableSurveysQuery query, CancellationToken cancellationToken)
     {
         var userRoles = _currentUserProvider.Roles;
 
@@ -26,6 +26,12 @@ public class GetAvailableSurveysQueryHandler : IRequestHandler<GetAvailableSurve
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
-        return availableForms;
+        var response = availableForms.Select(f => new FormResponse(
+            f.Id,
+            f.Name,
+            f.IsActive,
+            null));
+
+        return Result.Success(response);
     }
 }

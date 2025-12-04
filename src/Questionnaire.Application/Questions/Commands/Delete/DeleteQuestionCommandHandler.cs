@@ -1,10 +1,11 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
+using Questionnaire.Domain.Questions;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Application.Questions.Commands.Delete;
 
-public class DeleteQuestionCommandHandler : IRequestHandler<DeleteQuestionCommand, ErrorOr<Success>>
+internal sealed class DeleteQuestionCommandHandler : ICommandHandler<DeleteQuestionCommand>
 {
     private readonly IApplicationDbContext _context;
 
@@ -13,17 +14,17 @@ public class DeleteQuestionCommandHandler : IRequestHandler<DeleteQuestionComman
         _context = context;
     }
 
-    public async Task<ErrorOr<Success>> Handle(DeleteQuestionCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(DeleteQuestionCommand command, CancellationToken cancellationToken)
     {
-        var question = await _context.Questions.FindAsync(request.Id);
+        var question = await _context.Questions.FindAsync([command.Id], cancellationToken);
         if (question is null)
         {
-            return Error.NotFound("Question not found.");
+            return Result.Failure(QuestionErrors.NotFound(command.Id));
         }
 
         _context.Questions.Remove(question);
         await _context.SaveChangesAsync(cancellationToken);
 
-        return Result.Success;
+        return Result.Success();
     }
 }

@@ -1,13 +1,14 @@
-using ErrorOr;
-using MediatR;
-using Microsoft.EntityFrameworkCore;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Authentication.Common;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Contracts.Authentication;
+using Questionnaire.Domain.Users;
+using Questionnaire.SharedKernel;
+using Microsoft.EntityFrameworkCore;
 
 namespace Questionnaire.Application.Authentication.Queries.Login;
 
-public class LoginQueryHandler : IRequestHandler<LoginQuery, ErrorOr<AuthenticationResult>>
+internal sealed class LoginQueryHandler : IQueryHandler<LoginQuery, AuthenticationResponse>
 {
     private readonly IApplicationDbContext _context;
     private readonly IPasswordHasher _passwordHasher;
@@ -20,7 +21,7 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, ErrorOr<Authenticat
         _jwtTokenGenerator = jwtTokenGenerator;
     }
 
-    public async Task<ErrorOr<AuthenticationResult>> Handle(LoginQuery query, CancellationToken cancellationToken)
+    public async Task<Result<AuthenticationResponse>> Handle(LoginQuery query, CancellationToken cancellationToken)
     {
         var user = await _context.Users
             .Include(u => u.UserRoles)
@@ -29,11 +30,13 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, ErrorOr<Authenticat
 
         if (user is null || !_passwordHasher.VerifyPassword(query.Password, user.PasswordHash))
         {
-            return AuthenticationErrors.InvalidCredentials; 
+            return Result.Failure<AuthenticationResponse>(AuthenticationErrors.InvalidCredentials);
         }
 
-        var token = _jwtTokenGenerator.GenerateToken(user);
+        string token = _jwtTokenGenerator.GenerateToken(user);
 
-        return new AuthenticationResult(user, token);
+        var response = new AuthenticationResponse(user.Id, user.Login, token);
+
+        return Result.Success(response);
     }
 }

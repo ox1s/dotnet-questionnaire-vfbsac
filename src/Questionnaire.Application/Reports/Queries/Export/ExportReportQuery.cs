@@ -1,6 +1,5 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 
 namespace Questionnaire.Application.Reports.Queries.Export;
 
-public record ExportReportQuery(int FormId) : IRequest<ErrorOr<byte[]>>;
+public sealed record ExportReportQuery(int FormId) : IQuery<byte[]>;

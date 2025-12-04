@@ -9,6 +9,7 @@ using Questionnaire.Application.Common.Interfaces;
 using Questionnaire.Infrastructure.Authentication;
 using Questionnaire.Infrastructure.Persistence;
 using Questionnaire.Infrastructure.Services;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Infrastructure;
 
@@ -25,6 +26,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
         services.AddScoped<IReportGenerator, OpenXmlReportGenerator>();
+        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         return services;
     }
@@ -33,11 +35,18 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        string? connectionString = configuration.GetConnectionString("DefaultConnection");
         services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(connectionString));
+            options
+                .UseNpgsql(connectionString)
+                .UseSnakeCaseNamingConvention());
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
+        services.AddTransient<IDomainEventsDispatcher, DomainEventsDispatcher>();
+        
+        services.AddHealthChecks()
+            .AddNpgsql(connectionString ?? string.Empty, name: "database");
+        
         return services;
     }
 

@@ -1,8 +1,8 @@
-using Questionnaire.Application.Reports.Queries.GetSummary;
+using Questionnaire.Contracts.Reports;
 
 namespace Questionnaire.Application.Common.Interfaces;
 
 public interface IReportGenerator
 {
-    byte[] GenerateSummaryReport(SummaryReportResult data);
+    byte[] GenerateSummaryReport(SummaryReportResponse data);
 }

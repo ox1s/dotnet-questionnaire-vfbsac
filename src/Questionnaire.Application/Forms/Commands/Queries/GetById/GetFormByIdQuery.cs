@@ -1,7 +1,6 @@
-using ErrorOr;
-using MediatR;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Application.Abstractions.Messaging;
+using Questionnaire.Contracts.Forms;
 
 namespace Questionnaire.Application.Forms.Queries.GetById;
 
-public record GetFormByIdQuery(int Id) : IRequest<ErrorOr<Form>>;
+public sealed record GetFormByIdQuery(int Id) : IQuery<FormResponse>;

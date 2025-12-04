@@ -1,6 +1,3 @@
-using ErrorOr;
-using MediatR;
-
 namespace Questionnaire.Application.Surveys.Commands.Submit;
 
 public record AnswerDetailItem(

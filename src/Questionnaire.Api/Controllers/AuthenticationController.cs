@@ -1,9 +1,11 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Authentication.Commands.Register;
 using Questionnaire.Application.Authentication.Queries.Login;
 using Questionnaire.Contracts.Authentication;
+using Questionnaire.SharedKernel;
+using Questionnaire.Api.Common;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -12,38 +14,32 @@ namespace Questionnaire.Api.Controllers;
 [AllowAnonymous]
 public class AuthenticationController : ApiController
 {
-    private readonly ISender _mediator;
+    private readonly ISender _sender;
 
-    public AuthenticationController(ISender mediator)
+    public AuthenticationController(ISender sender)
     {
-        _mediator = mediator;
+        _sender = sender;
     }
 
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
-        var command = new RegisterCommand(request.Login, request.Password, request.Role);
-        var result = await _mediator.Send(command);
+        RegisterCommand command = new RegisterCommand(request.Login, request.Password, request.Role);
+        Result<AuthenticationResponse> result = await _sender.Send(command);
 
         return result.Match(
-       authResult => Ok(new AuthenticationResponse(
-           authResult.User.Id,
-           authResult.User.Login,
-           authResult.Token)),
-       errors => Problem(errors));
+            authResult => Ok(authResult),
+            error => Problem(error));
     }
 
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
-        var query = new LoginQuery(request.Login, request.Password);
-        var result = await _mediator.Send(query);
+        LoginQuery query = new LoginQuery(request.Login, request.Password);
+        Result<AuthenticationResponse> result = await _sender.Send(query);
 
         return result.Match(
-        authResult => Ok(new AuthenticationResponse(
-            authResult.User.Id,
-            authResult.User.Login,
-            authResult.Token)),
-        errors => Problem(errors));
+            authResult => Ok(authResult),
+            error => Problem(error));
     }
 }

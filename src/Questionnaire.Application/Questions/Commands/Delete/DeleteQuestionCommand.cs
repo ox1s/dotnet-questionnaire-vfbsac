@@ -1,6 +1,5 @@
-using ErrorOr;
-using MediatR;
+using Questionnaire.Application.Abstractions.Messaging;
 
 namespace Questionnaire.Application.Questions.Commands.Delete;
 
-public record DeleteQuestionCommand(int Id) : IRequest<ErrorOr<Success>>;
+public sealed record DeleteQuestionCommand(int Id) : ICommand;

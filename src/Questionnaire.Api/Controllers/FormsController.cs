@@ -1,6 +1,6 @@
-using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Forms.Commands.Create;
 using Questionnaire.Contracts.Forms;
 using Questionnaire.Domain.Entities;
@@ -11,6 +11,7 @@ using Questionnaire.Application.Forms.Queries.GetById;
 using Questionnaire.Contracts.Questions;
 using Questionnaire.Application.Forms.Commands.Delete;
 using Questionnaire.Application.Forms.Commands.RemoveQuestion;
+using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -19,35 +20,34 @@ namespace Questionnaire.Api.Controllers;
 [Authorize]
 public class FormsController : ApiController
 {
-    private readonly ISender _mediator;
+    private readonly ISender _sender;
 
-
-    public FormsController(ISender mediator)
+    public FormsController(ISender sender)
     {
-        _mediator = mediator;
+        _sender = sender;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAllForms()
     {
-        var query = new GetAllFormsQuery();
-        var getFormsResult = await _mediator.Send(query);
+        GetAllFormsQuery query = new GetAllFormsQuery();
+        Result<IEnumerable<FormResponse>> getFormsResult = await _sender.Send(query);
 
         return getFormsResult.Match(
-            forms => Ok(forms.Select(MapToFormResponse)),
-            errors => Problem(errors));
+            forms => Ok(forms),
+            error => Problem(error));
     }
 
     [HttpPost]
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> CreateForm(CreateFormRequest request)
     {
-        var command = new CreateFormCommand(request.Name);
-        var createFormResult = await _mediator.Send(command);
+        CreateFormCommand command = new CreateFormCommand(request.Name);
+        Result<Form> createFormResult = await _sender.Send(command);
 
         return createFormResult.Match(
             form => Ok(MapToFormResponse(form)),
-            errors => Problem(errors));
+            error => Problem(error));
     }
     [HttpPost("{formId:int}/questions/{questionId:int}")]
     [Authorize(Roles = "admin")]
@@ -56,46 +56,46 @@ public class FormsController : ApiController
             [FromRoute] int questionId,
             [FromBody] AddQuestionToFormRequest request)
     {
-        var command = new AddQuestionToFormCommand(formId, questionId, request.Order);
-        var result = await _mediator.Send(command);
+        AddQuestionToFormCommand command = new AddQuestionToFormCommand(formId, questionId, request.Order);
+        Result result = await _sender.Send(command);
 
         return result.Match(
-            _ => NoContent(),
-            errors => Problem(errors));
+            () => NoContent(),
+            error => Problem(error));
     }
     [HttpGet("{formId:int}")]
     public async Task<IActionResult> GetFormById(int formId)
     {
-        var query = new GetFormByIdQuery(formId);
-        var getFormResult = await _mediator.Send(query);
+        GetFormByIdQuery query = new GetFormByIdQuery(formId);
+        Result<FormResponse> getFormResult = await _sender.Send(query);
 
         return getFormResult.Match(
-            form => Ok(MapToDetailedFormResponse(form)),
-            errors => Problem(errors));
+            form => Ok(form),
+            error => Problem(error));
     }
 
     [HttpDelete("{id:int}")]
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> DeleteForm(int id)
     {
-        var command = new DeleteFormCommand(id);
-        var result = await _mediator.Send(command);
+        DeleteFormCommand command = new DeleteFormCommand(id);
+        Result result = await _sender.Send(command);
 
         return result.Match(
-            _ => NoContent(),
-            errors => Problem(errors));
+            () => NoContent(),
+            error => Problem(error));
     }
     
     [HttpDelete("{formId:int}/questions/{questionId:int}")]
     [Authorize(Roles = "admin")]
     public async Task<IActionResult> RemoveQuestionFromForm(int formId, int questionId)
     {
-        var command = new RemoveQuestionFromFormCommand(formId, questionId);
-        var result = await _mediator.Send(command);
+        RemoveQuestionFromFormCommand command = new RemoveQuestionFromFormCommand(formId, questionId);
+        Result result = await _sender.Send(command);
 
         return result.Match(
-            _ => NoContent(),
-            errors => Problem(errors));
+            () => NoContent(),
+            error => Problem(error));
     }
 
 

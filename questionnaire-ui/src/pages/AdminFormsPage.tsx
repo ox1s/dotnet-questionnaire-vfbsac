@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, TextField } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, TextField, IconButton } from '@mui/material';
 import type { Survey } from '../types/survey';
 import { getAllForms, createForm } from '../api/adminService';
+import { deleteForm } from '../api/adminService';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const AdminFormsPage: React.FC = () => {
     const [forms, setForms] = useState<Survey[]>([]);
@@ -23,6 +25,15 @@ const AdminFormsPage: React.FC = () => {
         await createForm(newFormName);
         setNewFormName('');
         await fetchForms();
+
+
+    };
+
+    const handleDelete = async (id: number) => {
+        if (window.confirm(`Вы уверены, что хотите удалить анкету с ID ${id}? Это действие необратимо.`)) {
+            await deleteForm(id);
+            await fetchForms();
+        }
     };
 
     return (
@@ -64,6 +75,9 @@ const AdminFormsPage: React.FC = () => {
                                 >
                                     Отчет
                                 </Button>
+                                <IconButton onClick={() => handleDelete(form.id)} color="error">
+                                    <DeleteIcon />
+                                </IconButton>
                             </TableRow>
                         ))}
                     </TableBody>

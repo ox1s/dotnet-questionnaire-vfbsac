@@ -9,8 +9,8 @@ public class AnswerDetail
     public Question Question { get; set; } = null!;
 
     // Для QuestionType.Rating
-    public int? Weight { get; set; } 
-    public int? Mark { get; set; }   
+    public int? Weight { get; set; }
+    public int? Mark { get; set; }
 
     // Для QuestionType.Text
     public string? TextResponse { get; set; }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Container, Typography, CircularProgress, Alert, Box, Button } from '@mui/material';
 import type { Question } from '../types/survey';
-import { getAllQuestions, createQuestion } from '../api/adminService';
+import { getAllQuestions, createQuestion, deleteQuestion } from '../api/adminService';
 import type { CreateQuestionPayload } from '../api/adminService';
 import QuestionForm from '../components/admin/QuestionForm';
 import QuestionsTable from '../components/admin/QuestionsTable';
@@ -39,6 +39,18 @@ const AdminQuestionsPage: React.FC = () => {
         }
     };
 
+    const handleDeleteQuestion = async (id: number) => {
+        // Улучшение UX: запрашиваем подтверждение
+        if (window.confirm(`Вы уверены, что хотите удалить вопрос с ID ${id}?`)) {
+            try {
+                await deleteQuestion(id);
+                await fetchQuestions(); // Обновляем список после удаления
+            } catch (err) {
+                alert('Ошибка при удалении вопроса.');
+            }
+        }
+    };
+
     if (isLoading) return <CircularProgress />;
 
     return (
@@ -53,13 +65,13 @@ const AdminQuestionsPage: React.FC = () => {
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
             {isFormOpen && (
-                <QuestionForm 
+                <QuestionForm
                     onSubmit={handleCreateQuestion}
                     onCancel={() => setIsFormOpen(false)}
                 />
             )}
 
-            <QuestionsTable questions={questions} />
+            <QuestionsTable questions={questions} onDelete={handleDeleteQuestion} />
         </Container>
     );
 };

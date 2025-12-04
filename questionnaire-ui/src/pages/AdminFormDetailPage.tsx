@@ -3,6 +3,10 @@ import { useParams } from 'react-router-dom';
 import { Box, Typography, Paper, List, ListItem, ListItemText, Button, Select, MenuItem, FormControl } from '@mui/material';
 import type { SurveyDetail, Question } from '../types/survey';
 import { getFormById, getAllQuestions, addQuestionToForm } from '../api/adminService';
+import { removeQuestionFromForm } from '../api/adminService';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { IconButton, ListItemSecondaryAction } from '@mui/material';
+
 
 const AdminFormDetailPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -30,6 +34,14 @@ const AdminFormDetailPage: React.FC = () => {
         await fetchFormDetails(); // Обновляем детали анкеты
     };
 
+    const handleRemoveQuestion = async (questionId: number) => {
+        if (!id) return;
+        if (window.confirm('Удалить этот вопрос из анкеты?')) {
+            await removeQuestionFromForm(Number(id), questionId);
+            await fetchFormDetails(); // Обновляем список
+        }
+    };
+
     // Фильтруем вопросы, чтобы в списке для добавления не было уже добавленных
     const availableQuestions = allQuestions.filter(
         q => !form?.questions.some(fq => fq.id === q.id)
@@ -40,7 +52,7 @@ const AdminFormDetailPage: React.FC = () => {
     return (
         <Box>
             <Typography variant="h4" gutterBottom>Редактирование анкеты: {form.name}</Typography>
-            
+
             <Paper sx={{ p: 2, mb: 4 }}>
                 <Typography variant="h6">Добавить вопрос в анкету</Typography>
                 <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
@@ -70,7 +82,11 @@ const AdminFormDetailPage: React.FC = () => {
                     {form.questions.map((question, index) => (
                         <ListItem key={question.id} divider>
                             <ListItemText primary={`${index + 1}. ${question.text}`} />
-                            {/* Здесь можно добавить кнопку "Удалить" */}
+                            <ListItemSecondaryAction>
+                                <IconButton edge="end" onClick={() => handleRemoveQuestion(question.id)} color="error">
+                                    <DeleteIcon />
+                                </IconButton>
+                            </ListItemSecondaryAction>
                         </ListItem>
                     ))}
                 </List>

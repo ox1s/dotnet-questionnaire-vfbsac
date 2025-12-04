@@ -1,18 +1,20 @@
 import React from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import type { Question } from '../../types/survey';
 
 interface QuestionsTableProps {
     questions: Question[];
+    onDelete: (id: number) => void; // Callback для удаления
 }
 
 const numberToQuestionTypeMap: { [key: number]: string } = {
     0: 'Оценка',
     1: 'Текст',
     2: 'Выбор',
-};;
+};
 
-const QuestionsTable: React.FC<QuestionsTableProps> = ({ questions }) => {
+const QuestionsTable: React.FC<QuestionsTableProps> = ({ questions, onDelete }) => {
     return (
         <TableContainer component={Paper}>
             <Table>
@@ -21,7 +23,7 @@ const QuestionsTable: React.FC<QuestionsTableProps> = ({ questions }) => {
                         <TableCell>ID</TableCell>
                         <TableCell>Текст вопроса</TableCell>
                         <TableCell>Тип</TableCell>
-                        <TableCell>Действия</TableCell>
+                        <TableCell align="right">Действия</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>
@@ -36,8 +38,12 @@ const QuestionsTable: React.FC<QuestionsTableProps> = ({ questions }) => {
                             <TableRow key={q.id}>
                                 <TableCell>{q.id}</TableCell>
                                 <TableCell>{q.text}</TableCell>
-                                <TableCell>{numberToQuestionTypeMap[q.type as keyof typeof numberToQuestionTypeMap]}</TableCell>
-                                <TableCell>{/* Кнопки Edit/Delete будут здесь */}</TableCell>
+                                <TableCell>{numberToQuestionTypeMap[q.type]}</TableCell>
+                                <TableCell align="right">
+                                    <IconButton onClick={() => onDelete(q.id)} color="error">
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </TableCell>
                             </TableRow>
                         ))
                     )}

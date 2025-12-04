@@ -2,6 +2,7 @@ using ErrorOr;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Questionnaire.Application.Common.Interfaces;
+using DomainQuestionType = Questionnaire.Domain.Entities.QuestionType;
 
 namespace Questionnaire.Application.Reports.Queries.GetSummary;
 
@@ -51,7 +52,7 @@ public class GetSummaryReportQueryHandler : IRequestHandler<GetSummaryReportQuer
 
             switch (question.Type)
             {
-                case Domain.Entities.QuestionType.Rating:
+                case DomainQuestionType.Rating:
                     var validDetails = detailsForQuestion.Where(d => d.Mark.HasValue && d.Weight.HasValue).ToList();
                     ratingCount = validDetails.Count;
                     if (ratingCount > 0)
@@ -60,23 +61,23 @@ public class GetSummaryReportQueryHandler : IRequestHandler<GetSummaryReportQuer
                         avgWeight = validDetails.Average(d => d.Weight!.Value);
                     }
                     break;
-                case Domain.Entities.QuestionType.Text:
+                case DomainQuestionType.Text:
                     textResponses = detailsForQuestion
                         .Where(d => !string.IsNullOrEmpty(d.TextResponse))
                         .Select(d => d.TextResponse!)
                         .ToList();
                     break;
-                case Domain.Entities.QuestionType.Choice:
+                case DomainQuestionType.Choice:
                     var selectedOptionIds = detailsForQuestion
                         .SelectMany(d => d.SelectedOptions)
                         .Select(so => so.QuestionOptionId);
-                    
+
                     choiceCounts = selectedOptionIds
                         .GroupBy(id => id)
                         .ToDictionary(g => g.Key, g => g.Count());
                     break;
             }
-            
+
             questionSummaries.Add(new QuestionSummaryResult(
                 question.Id,
                 question.Text,

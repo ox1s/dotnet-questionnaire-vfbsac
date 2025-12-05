@@ -6,6 +6,7 @@ using Questionnaire.Contracts.Reports;
 using Questionnaire.Application.Reports.Queries.Export;
 using Questionnaire.SharedKernel;
 using Questionnaire.Api.Common;
+using ApplicationSummaryReportResponse = Questionnaire.Application.Reports.Common.SummaryReportResponse;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -25,10 +26,10 @@ public class ReportsController : ApiController
     public async Task<IActionResult> GetSummaryReport(int formId)
     {
         GetSummaryReportQuery query = new GetSummaryReportQuery(formId);
-        Result<SummaryReportResponse> result = await _sender.Send(query);
+        Result<ApplicationSummaryReportResponse> result = await _sender.Send(query);
 
         return result.Match(
-            report => Ok(report),
+            report => Ok(ApplicationToContractMappers.ToContract(report)),
             error => Problem(error));
     }
 

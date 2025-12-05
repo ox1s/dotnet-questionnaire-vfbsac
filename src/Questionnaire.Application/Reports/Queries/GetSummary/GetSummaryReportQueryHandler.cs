@@ -1,13 +1,10 @@
 using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Contracts.Reports;
-using Questionnaire.Contracts.Questions;
+using Questionnaire.Application.Reports.Common;
 using Questionnaire.Domain.Forms;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Questions;
 using Questionnaire.SharedKernel;
 using Microsoft.EntityFrameworkCore;
-using DomainQuestionType = Questionnaire.Domain.Entities.QuestionType;
-using ContractsQuestionType = Questionnaire.Contracts.Questions.QuestionType;
 
 namespace Questionnaire.Application.Reports.Queries.GetSummary;
 
@@ -55,7 +52,7 @@ internal sealed class GetSummaryReportQueryHandler : IQueryHandler<GetSummaryRep
 
             switch (question.Type)
             {
-                case DomainQuestionType.Rating:
+                case QuestionType.Rating:
                     var validDetails = detailsForQuestion.Where(d => d.Mark.HasValue && d.Weight.HasValue).ToList();
                     int ratingCount = validDetails.Count;
                     if (ratingCount > 0)
@@ -65,7 +62,7 @@ internal sealed class GetSummaryReportQueryHandler : IQueryHandler<GetSummaryRep
                         ratingData = new RatingSummaryData(avgMark, avgWeight, ratingCount);
                     }
                     break;
-                case DomainQuestionType.Text:
+                case QuestionType.Text:
                     var responses = detailsForQuestion
                         .Where(d => !string.IsNullOrEmpty(d.TextResponse))
                         .Select(d => d.TextResponse!)
@@ -75,7 +72,7 @@ internal sealed class GetSummaryReportQueryHandler : IQueryHandler<GetSummaryRep
                         textData = responses;
                     }
                     break;
-                case DomainQuestionType.Choice:
+                case QuestionType.Choice:
                     var selectedOptionIds = detailsForQuestion
                         .SelectMany(d => d.SelectedOptions)
                         .Select(so => so.QuestionOptionId);
@@ -96,11 +93,10 @@ internal sealed class GetSummaryReportQueryHandler : IQueryHandler<GetSummaryRep
                     break;
             }
 
-            var questionType = MapQuestionType(question.Type);
             questionSummaries.Add(new QuestionSummaryResponse(
                 question.Id,
                 question.Text,
-                questionType,
+                question.Type,
                 ratingData,
                 textData,
                 choiceData));
@@ -113,16 +109,5 @@ internal sealed class GetSummaryReportQueryHandler : IQueryHandler<GetSummaryRep
             questionSummaries);
 
         return Result.Success(response);
-    }
-
-    private static ContractsQuestionType MapQuestionType(DomainQuestionType domainType)
-    {
-        return domainType switch
-        {
-            DomainQuestionType.Rating => ContractsQuestionType.Rating,
-            DomainQuestionType.Text => ContractsQuestionType.Text,
-            DomainQuestionType.Choice => ContractsQuestionType.Choice,
-            _ => throw new InvalidOperationException("Cannot map domain question type to contract."),
-        };
     }
 }

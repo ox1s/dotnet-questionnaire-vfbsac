@@ -1,5 +1,5 @@
 using Questionnaire.Application.Abstractions.Messaging;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Forms;
 
 namespace Questionnaire.Application.Forms.Commands.Create;
 

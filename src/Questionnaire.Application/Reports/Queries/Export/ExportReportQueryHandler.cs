@@ -1,7 +1,7 @@
 using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
 using Questionnaire.Application.Reports.Queries.GetSummary;
-using Questionnaire.Contracts.Reports;
+using Questionnaire.Application.Reports.Common;
 using Questionnaire.Domain.Forms;
 using Questionnaire.SharedKernel;
 

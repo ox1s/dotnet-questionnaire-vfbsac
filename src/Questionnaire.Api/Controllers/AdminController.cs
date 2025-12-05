@@ -3,14 +3,13 @@ using Microsoft.AspNetCore.Mvc;
 using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Questions.Commands.Create;
 using Questionnaire.Contracts.Questions;
-using Questionnaire.Domain.Entities;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
 using Questionnaire.Application.Questions.Queries.GetAll;
 using Questionnaire.Application.Questions.Commands.Delete;
 using Questionnaire.SharedKernel;
-
 using Questionnaire.Api.Common;
+using ApplicationQuestionResponse = Questionnaire.Application.Questions.Common.QuestionResponse;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -44,15 +43,16 @@ public class AdminController : ApiController
                 title: "Invalid question type.");
         }
 
+        var domainType = MapToDomainQuestionType(request.Type);
         CreateQuestionCommand command = new CreateQuestionCommand(
             request.Text,
-            request.Type,
+            domainType,
             request.Options);
 
-        Result<QuestionResponse> createQuestionResult = await _sender.Send(command);
+        Result<ApplicationQuestionResponse> createQuestionResult = await _sender.Send(command);
 
         return createQuestionResult.Match(
-            question => Ok(question),
+            question => Ok(ApplicationToContractMappers.ToContract(question)),
             error => Problem(error));
     }
 
@@ -60,10 +60,10 @@ public class AdminController : ApiController
     public async Task<IActionResult> GetAllQuestions()
     {
         GetAllQuestionsQuery query = new GetAllQuestionsQuery();
-        Result<IEnumerable<QuestionResponse>> getQuestionsResult = await _sender.Send(query);
+        Result<IEnumerable<ApplicationQuestionResponse>> getQuestionsResult = await _sender.Send(query);
 
         return getQuestionsResult.Match(
-            questions => Ok(questions),
+            questions => Ok(questions.Select(ApplicationToContractMappers.ToContract)),
             error => Problem(error));
     }
     
@@ -76,5 +76,16 @@ public class AdminController : ApiController
         return result.Match(
             () => NoContent(),
             error => Problem(error));
+    }
+
+    private static Domain.Questions.QuestionType MapToDomainQuestionType(Contracts.Questions.QuestionType contractType)
+    {
+        return contractType switch
+        {
+            Contracts.Questions.QuestionType.Rating => Domain.Questions.QuestionType.Rating,
+            Contracts.Questions.QuestionType.Text => Domain.Questions.QuestionType.Text,
+            Contracts.Questions.QuestionType.Choice => Domain.Questions.QuestionType.Choice,
+            _ => throw new InvalidOperationException("Cannot map contract question type to domain."),
+        };
     }
 }

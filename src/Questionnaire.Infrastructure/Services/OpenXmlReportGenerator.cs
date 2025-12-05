@@ -2,12 +2,12 @@ using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Contracts.Reports;
-using Questionnaire.Contracts.Questions;
+using Questionnaire.Application.Reports.Common;
+using Questionnaire.Domain.Questions;
 
 namespace Questionnaire.Infrastructure.Services;
 
-public class OpenXmlReportGenerator : IReportGenerator
+internal sealed class OpenXmlReportGenerator : IReportGenerator
 {
     public byte[] GenerateSummaryReport(SummaryReportResponse data)
     {

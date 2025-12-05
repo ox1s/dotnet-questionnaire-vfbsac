@@ -1,6 +1,6 @@
 using Questionnaire.SharedKernel;
 
-namespace Questionnaire.Domain.Entities;
+namespace Questionnaire.Domain.Forms;
 
 public class Form : Entity
 {

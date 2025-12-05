@@ -1,4 +1,6 @@
-namespace Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Questions;
+
+namespace Questionnaire.Domain.Answers;
 
 public class AnswerDetail
 {

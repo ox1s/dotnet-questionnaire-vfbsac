@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Forms.Commands.Create;
 using Questionnaire.Contracts.Forms;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Forms;
 using Questionnaire.Application.Forms.Commands.AddQuestion;
 using Questionnaire.Application.Forms.Queries.GetAll;
 using Questionnaire.Api.Common;
@@ -12,6 +12,7 @@ using Questionnaire.Contracts.Questions;
 using Questionnaire.Application.Forms.Commands.Delete;
 using Questionnaire.Application.Forms.Commands.RemoveQuestion;
 using Questionnaire.SharedKernel;
+using ApplicationFormResponse = Questionnaire.Application.Forms.Common.FormResponse;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -31,10 +32,10 @@ public class FormsController : ApiController
     public async Task<IActionResult> GetAllForms()
     {
         GetAllFormsQuery query = new GetAllFormsQuery();
-        Result<IEnumerable<FormResponse>> getFormsResult = await _sender.Send(query);
+        Result<IEnumerable<ApplicationFormResponse>> getFormsResult = await _sender.Send(query);
 
         return getFormsResult.Match(
-            forms => Ok(forms),
+            forms => Ok(forms.Select(ApplicationToContractMappers.ToContract)),
             error => Problem(error));
     }
 
@@ -46,7 +47,7 @@ public class FormsController : ApiController
         Result<Form> createFormResult = await _sender.Send(command);
 
         return createFormResult.Match(
-            form => Ok(MapToFormResponse(form)),
+            form => Ok(ApplicationToContractMappers.ToContract(new ApplicationFormResponse(form.Id, form.Name, form.IsActive, null))),
             error => Problem(error));
     }
     [HttpPost("{formId:int}/questions/{questionId:int}")]
@@ -67,10 +68,10 @@ public class FormsController : ApiController
     public async Task<IActionResult> GetFormById(int formId)
     {
         GetFormByIdQuery query = new GetFormByIdQuery(formId);
-        Result<FormResponse> getFormResult = await _sender.Send(query);
+        Result<ApplicationFormResponse> getFormResult = await _sender.Send(query);
 
         return getFormResult.Match(
-            form => Ok(form),
+            form => Ok(ApplicationToContractMappers.ToContract(form)),
             error => Problem(error));
     }
 
@@ -99,21 +100,6 @@ public class FormsController : ApiController
     }
 
 
-    private static FormResponse MapToFormResponse(Form form)
-    {
-        return new FormResponse(form.Id, form.Name, form.IsActive, null);
-    }
-
-
-    private static FormResponse MapToDetailedFormResponse(Form form)
-    {
-        return new FormResponse(
-            form.Id,
-            form.Name,
-            form.IsActive,
-            form.FormQuestions.Select(fq => ApiMappers.ToDto(fq.Question)).ToList()
-        );
-    }
 
 
 

@@ -1,9 +1,10 @@
 using Questionnaire.Application.Abstractions.Messaging;
-using Questionnaire.Contracts.Questions;
+using Questionnaire.Application.Questions.Common;
+using Questionnaire.Domain.Questions;
 
 namespace Questionnaire.Application.Questions.Commands.Create;
 
 public sealed record CreateQuestionCommand(
     string Text,
-    Contracts.Questions.QuestionType Type,
+    QuestionType Type,
     List<string>? Options) : ICommand<QuestionResponse>;

@@ -1,4 +1,4 @@
-namespace Questionnaire.Domain.Entities;
+namespace Questionnaire.Domain.Users;
 
 public class UserRole
 {

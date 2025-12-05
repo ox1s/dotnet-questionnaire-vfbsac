@@ -4,7 +4,7 @@ using Questionnaire.Application.Common.Interfaces;
 
 namespace Questionnaire.Infrastructure.Services;
 
-public class CurrentUserProvider : ICurrentUserProvider
+internal sealed class CurrentUserProvider : ICurrentUserProvider
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
 

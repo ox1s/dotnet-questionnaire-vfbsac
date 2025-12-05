@@ -1,8 +1,8 @@
-using Questionnaire.Domain.Entities;
+using Questionnaire.Application.Common;
 
 namespace Questionnaire.Application.Common.Interfaces;
 
 public interface IJwtTokenGenerator
 {
-    string GenerateToken(User user);
+    string GenerateToken(UserTokenData user);
 }

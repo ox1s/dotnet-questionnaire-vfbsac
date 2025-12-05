@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
@@ -7,13 +7,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Questionnaire.Api", "src\Questionnaire.Api\Questionnaire.Api.csproj", "{4E9BC854-F875-4D59-A61C-266AB60847B3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Questionnaire.Application", "src\Questionnaire.Application\Questionnaire.Application.csproj", "{A33BDC39-6223-4420-86BF-BB31A9BCBB84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Questionnaire.Application", "src\Questionnaire.Application\Questionnaire.Application.csproj", "{A33BDC39-6223-4420-86BF-BB31A9BCBB84}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Questionnaire.Domain", "src\Questionnaire.Domain\Questionnaire.Domain.csproj", "{72F26400-FD30-4317-9002-49BAC22B9781}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Questionnaire.Domain", "src\Questionnaire.Domain\Questionnaire.Domain.csproj", "{72F26400-FD30-4317-9002-49BAC22B9781}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Questionnaire.Infrastructure", "src\Questionnaire.Infrastructure\Questionnaire.Infrastructure.csproj", "{DE88F972-9D4F-4C8C-A19C-3B16DE568F58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Questionnaire.Infrastructure", "src\Questionnaire.Infrastructure\Questionnaire.Infrastructure.csproj", "{DE88F972-9D4F-4C8C-A19C-3B16DE568F58}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Questionnaire.Contracts", "src\Questionnaire.Contracts\Questionnaire.Contracts.csproj", "{F0EDB137-F029-42B8-89AE-9020AC08F396}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Questionnaire.Contracts", "src\Questionnaire.Contracts\Questionnaire.Contracts.csproj", "{F0EDB137-F029-42B8-89AE-9020AC08F396}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

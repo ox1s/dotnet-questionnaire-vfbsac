@@ -1,8 +1,7 @@
 using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Authentication.Common;
+using Questionnaire.Application.Common;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Contracts.Authentication;
-using Questionnaire.Domain.Entities;
 using Questionnaire.Domain.Users;
 using Questionnaire.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -49,8 +48,11 @@ internal sealed class RegisterCommandHandler : ICommandHandler<RegisterCommand, 
         _context.Users.Add(user);
         await _context.SaveChangesAsync(cancellationToken);
 
-        user.UserRoles = new List<UserRole> { new() { Role = role } };
-        string token = _jwtTokenGenerator.GenerateToken(user);
+        var userTokenData = new UserTokenData(
+            user.Id,
+            user.Login,
+            new[] { role.Name });
+        string token = _jwtTokenGenerator.GenerateToken(userTokenData);
 
         var response = new AuthenticationResponse(user.Id, user.Login, token);
 

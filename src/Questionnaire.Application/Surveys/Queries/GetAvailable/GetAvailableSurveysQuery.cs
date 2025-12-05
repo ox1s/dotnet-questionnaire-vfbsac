@@ -1,5 +1,5 @@
 using Questionnaire.Application.Abstractions.Messaging;
-using Questionnaire.Contracts.Forms;
+using Questionnaire.Application.Forms.Common;
 
 namespace Questionnaire.Application.Surveys.Queries.GetAvailable;
 

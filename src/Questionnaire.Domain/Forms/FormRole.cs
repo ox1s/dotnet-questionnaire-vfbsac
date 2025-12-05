@@ -1,4 +1,6 @@
-namespace Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Users;
+
+namespace Questionnaire.Domain.Forms;
 
 public class FormRole
 {

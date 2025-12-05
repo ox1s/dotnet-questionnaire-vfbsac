@@ -1,7 +1,7 @@
 using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Authentication.Common;
+using Questionnaire.Application.Common;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Contracts.Authentication;
 using Questionnaire.Domain.Users;
 using Questionnaire.SharedKernel;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +33,11 @@ internal sealed class LoginQueryHandler : IQueryHandler<LoginQuery, Authenticati
             return Result.Failure<AuthenticationResponse>(AuthenticationErrors.InvalidCredentials);
         }
 
-        string token = _jwtTokenGenerator.GenerateToken(user);
+        var userTokenData = new UserTokenData(
+            user.Id,
+            user.Login,
+            user.UserRoles.Select(ur => ur.Role.Name));
+        string token = _jwtTokenGenerator.GenerateToken(userTokenData);
 
         var response = new AuthenticationResponse(user.Id, user.Login, token);
 

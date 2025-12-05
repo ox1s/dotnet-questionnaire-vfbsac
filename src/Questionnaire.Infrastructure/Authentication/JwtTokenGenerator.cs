@@ -3,13 +3,13 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Questionnaire.Application.Common;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Domain.Entities;
 using Questionnaire.SharedKernel;
 
 namespace Questionnaire.Infrastructure.Authentication;
 
-public class JwtTokenGenerator : IJwtTokenGenerator
+internal sealed class JwtTokenGenerator : IJwtTokenGenerator
 {
     private readonly JwtSettings _jwtSettings;
     private readonly IDateTimeProvider _dateTimeProvider;
@@ -20,7 +20,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         _dateTimeProvider = dateTimeProvider;
     }
 
-    public string GenerateToken(User user)
+    public string GenerateToken(UserTokenData user)
     {
         var claims = new List<Claim>
         {
@@ -29,9 +29,9 @@ public class JwtTokenGenerator : IJwtTokenGenerator
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
-        foreach (var userRole in user.UserRoles)
+        foreach (string role in user.Roles)
         {
-            claims.Add(new Claim(ClaimTypes.Role, userRole.Role.Name));
+            claims.Add(new Claim(ClaimTypes.Role, role));
         }
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

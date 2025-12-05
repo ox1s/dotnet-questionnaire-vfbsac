@@ -7,6 +7,7 @@ using Questionnaire.Application.Surveys.Queries.GetAvailable;
 using Questionnaire.Contracts.Forms;
 using Questionnaire.Contracts.Surveys;
 using Questionnaire.SharedKernel;
+using ApplicationFormResponse = Questionnaire.Application.Forms.Common.FormResponse;
 
 namespace Questionnaire.Api.Controllers;
 
@@ -26,10 +27,10 @@ public class SurveysController : ApiController
     public async Task<IActionResult> GetAvailableSurveys()
     {
         GetAvailableSurveysQuery query = new GetAvailableSurveysQuery();
-        Result<IEnumerable<FormResponse>> result = await _sender.Send(query);
+        Result<IEnumerable<ApplicationFormResponse>> result = await _sender.Send(query);
 
         return result.Match(
-            forms => Ok(forms),
+            forms => Ok(forms.Select(ApplicationToContractMappers.ToContract)),
             error => Problem(error));
     }
 

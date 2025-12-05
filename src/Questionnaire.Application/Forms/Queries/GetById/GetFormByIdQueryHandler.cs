@@ -1,9 +1,9 @@
 using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Contracts.Forms;
-using Questionnaire.Contracts.Questions;
+using Questionnaire.Application.Forms.Common;
+using Questionnaire.Application.Questions.Common;
 using Questionnaire.Domain.Forms;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Questions;
 using Questionnaire.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,23 +47,11 @@ internal sealed class GetFormByIdQueryHandler : IQueryHandler<GetFormByIdQuery, 
     private static QuestionResponse MapToQuestionResponse(Question question)
     {
         var options = question.Options.Select(o => new OptionResponse(o.Id, o.Text)).ToList();
-        var questionType = MapQuestionType(question.Type);
         
         return new QuestionResponse(
             question.Id,
             question.Text,
-            questionType,
+            question.Type,
             options);
-    }
-
-    private static Contracts.Questions.QuestionType MapQuestionType(Domain.Entities.QuestionType domainType)
-    {
-        return domainType switch
-        {
-            Domain.Entities.QuestionType.Rating => Contracts.Questions.QuestionType.Rating,
-            Domain.Entities.QuestionType.Text => Contracts.Questions.QuestionType.Text,
-            Domain.Entities.QuestionType.Choice => Contracts.Questions.QuestionType.Choice,
-            _ => throw new InvalidOperationException("Cannot map domain question type to contract."),
-        };
     }
 }

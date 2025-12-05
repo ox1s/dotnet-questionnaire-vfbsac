@@ -1,5 +1,5 @@
 using Questionnaire.Application.Abstractions.Messaging;
-using Questionnaire.Contracts.Questions;
+using Questionnaire.Application.Questions.Common;
 
 namespace Questionnaire.Application.Questions.Queries.GetAll;
 

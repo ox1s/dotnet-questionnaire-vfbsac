@@ -1,6 +1,6 @@
 namespace Questionnaire.Infrastructure.Authentication;
 
-public class JwtSettings
+internal sealed class JwtSettings
 {
     public const string SectionName = "JwtSettings";
     public string Secret { get; init; } = null!;

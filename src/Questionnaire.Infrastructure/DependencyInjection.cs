@@ -26,7 +26,7 @@ public static class DependencyInjection
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUserProvider, CurrentUserProvider>();
         services.AddScoped<IReportGenerator, OpenXmlReportGenerator>();
-        services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+        services.AddTransient<IDateTimeProvider, DateTimeProvider>();
 
         return services;
     }
@@ -43,10 +43,10 @@ public static class DependencyInjection
         services.AddScoped<IApplicationDbContext>(provider =>
             provider.GetRequiredService<ApplicationDbContext>());
         services.AddTransient<IDomainEventsDispatcher, DomainEventsDispatcher>();
-        
+
         services.AddHealthChecks()
             .AddNpgsql(connectionString ?? string.Empty, name: "database");
-        
+
         return services;
     }
 

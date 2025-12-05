@@ -1,4 +1,4 @@
-using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Users;
 
 namespace Questionnaire.Application.Authentication.Common;
 

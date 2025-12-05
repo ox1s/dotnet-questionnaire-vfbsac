@@ -1,7 +1,7 @@
 using Questionnaire.Application.Abstractions.Messaging;
 using Questionnaire.Application.Common.Interfaces;
-using Questionnaire.Contracts.Forms;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Application.Forms.Common;
+using Questionnaire.Domain.Forms;
 using Questionnaire.SharedKernel;
 using Microsoft.EntityFrameworkCore;
 

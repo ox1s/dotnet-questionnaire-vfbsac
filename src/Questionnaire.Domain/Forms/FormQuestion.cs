@@ -1,4 +1,6 @@
-namespace Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Questions;
+
+namespace Questionnaire.Domain.Forms;
 
 public class FormQuestion
 {

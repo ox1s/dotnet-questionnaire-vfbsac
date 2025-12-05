@@ -1,6 +1,6 @@
 using Questionnaire.SharedKernel;
 
-namespace Questionnaire.Domain.Entities;
+namespace Questionnaire.Domain.Users;
 
 public class User : Entity
 {

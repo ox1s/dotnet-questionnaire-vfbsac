@@ -1,5 +1,5 @@
 using Questionnaire.Application.Abstractions.Messaging;
-using Questionnaire.Contracts.Authentication;
+using Questionnaire.Application.Authentication.Common;
 
 namespace Questionnaire.Application.Authentication.Commands.Register;
 

@@ -2,7 +2,7 @@ using Questionnaire.Application.Common.Interfaces;
 
 namespace Questionnaire.Infrastructure.Authentication;
 
-public class PasswordHasher : IPasswordHasher
+internal sealed class PasswordHasher : IPasswordHasher
 {
     public string HashPassword(string password)
     {

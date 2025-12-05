@@ -1,4 +1,4 @@
-using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Questions;
 
 namespace Questionnaire.Application.Reports.Queries.GetSummary;
 

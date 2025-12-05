@@ -1,4 +1,4 @@
-using Questionnaire.Contracts.Reports;
+using Questionnaire.Application.Reports.Common;
 
 namespace Questionnaire.Application.Common.Interfaces;
 

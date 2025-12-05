@@ -1,6 +1,8 @@
+using Questionnaire.Domain.Forms;
+using Questionnaire.Domain.Users;
 using Questionnaire.SharedKernel;
 
-namespace Questionnaire.Domain.Entities;
+namespace Questionnaire.Domain.Answers;
 
 public class Answer : Entity
 {

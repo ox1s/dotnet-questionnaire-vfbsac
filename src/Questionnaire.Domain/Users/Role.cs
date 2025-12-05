@@ -1,6 +1,7 @@
+using Questionnaire.Domain.Forms;
 using Questionnaire.SharedKernel;
 
-namespace Questionnaire.Domain.Entities;
+namespace Questionnaire.Domain.Users;
 
 public class Role : Entity
 {

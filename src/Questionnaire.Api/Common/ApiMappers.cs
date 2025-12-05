@@ -1,7 +1,7 @@
 using Questionnaire.Contracts.Questions;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Questions;
 using ContractsQuestionType = Questionnaire.Contracts.Questions.QuestionType;
-using DomainQuestionType = Questionnaire.Domain.Entities.QuestionType;
+using DomainQuestionType = Questionnaire.Domain.Questions.QuestionType;
 
 namespace Questionnaire.Api.Common;
 

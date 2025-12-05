@@ -1,4 +1,6 @@
-namespace Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Answers;
+
+namespace Questionnaire.Domain.Questions;
 
 public class QuestionOption
 {

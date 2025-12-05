@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using Questionnaire.Domain.Entities;
+using Questionnaire.Domain.Answers;
+using Questionnaire.Domain.Forms;
+using Questionnaire.Domain.Questions;
+using Questionnaire.Domain.Users;
 
 namespace Questionnaire.Application.Common.Interfaces;
 

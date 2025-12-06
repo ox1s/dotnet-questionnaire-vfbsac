@@ -1,6 +1,12 @@
-﻿using Application.Abstractions.Data;
-using Domain.Todos;
-using Domain.Users;
+using Application.Abstractions.Data;
+using Domain.College.DepartmentAggregate;
+using Domain.College.DisciplineAggregate;
+using Domain.College.SpecialityAggregate;
+using Domain.College.SpecializationAggregate;
+using Domain.College.TeacherAggregate;
+using Domain.Questionnaires.FormAggregate;
+using Domain.Questionnaires.SubmissionAggregate;
+using Domain.UserAggregate;
 using Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
@@ -14,7 +20,21 @@ public sealed class ApplicationDbContext(
 {
     public DbSet<User> Users { get; set; }
 
-    public DbSet<TodoItem> TodoItems { get; set; }
+    public DbSet<Form> Forms { get; set; }
+
+    public DbSet<Submission> Submissions { get; set; }
+
+    public DbSet<Department> Departments { get; set; }
+
+    public DbSet<Discipline> Disciplines { get; set; }
+
+    public DbSet<Teacher> Teachers { get; set; }
+
+    public DbSet<Speciality> Specialities { get; set; }
+
+    public DbSet<Specialization> Specializations { get; set; }
+
+    public DbSet<OutboxMessage> OutboxMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -25,38 +45,35 @@ public sealed class ApplicationDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // When should you publish domain events?
-        //
-        // 1. BEFORE calling SaveChangesAsync
-        //     - domain events are part of the same transaction
-        //     - immediate consistency
-        // 2. AFTER calling SaveChangesAsync
-        //     - domain events are a separate transaction
-        //     - eventual consistency
-        //     - handlers can fail
+        // Save domain events to Outbox before saving changes
+        await SaveDomainEventsToOutboxAsync();
 
         int result = await base.SaveChangesAsync(cancellationToken);
-
-        await PublishDomainEventsAsync();
 
         return result;
     }
 
-    private async Task PublishDomainEventsAsync()
+    private async Task SaveDomainEventsToOutboxAsync()
     {
         var domainEvents = ChangeTracker
-            .Entries<Entity>()
+            .Entries<AggregateRoot>()
             .Select(entry => entry.Entity)
-            .SelectMany(entity =>
+            .SelectMany(aggregateRoot =>
             {
-                List<IDomainEvent> domainEvents = entity.DomainEvents;
+                List<IDomainEvent> domainEvents = aggregateRoot.DomainEvents;
 
-                entity.ClearDomainEvents();
+                aggregateRoot.ClearDomainEvents();
 
                 return domainEvents;
             })
             .ToList();
 
-        await domainEventsDispatcher.DispatchAsync(domainEvents);
+        foreach (IDomainEvent domainEvent in domainEvents)
+        {
+            OutboxMessage outboxMessage = OutboxMessage.Create(domainEvent);
+            OutboxMessages.Add(outboxMessage);
+        }
+
+        await Task.CompletedTask;
     }
 }

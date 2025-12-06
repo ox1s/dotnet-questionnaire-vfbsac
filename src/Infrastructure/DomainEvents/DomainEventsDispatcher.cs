@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel;
 
@@ -36,6 +36,13 @@ internal sealed class DomainEventsDispatcher(IServiceProvider serviceProvider) :
                 await handlerWrapper.Handle(domainEvent, cancellationToken);
             }
         }
+    }
+
+    public Task ProcessOutboxMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        // This implementation doesn't process outbox messages
+        // Use OutboxDomainEventsDispatcher for outbox processing
+        return Task.CompletedTask;
     }
 
     private abstract class HandlerWrapper

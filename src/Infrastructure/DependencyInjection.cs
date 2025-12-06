@@ -1,10 +1,15 @@
-﻿using System.Text;
+using System.Text;
 using Application.Abstractions.Authentication;
+using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
+using Application.Abstractions.Email;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
+using Infrastructure.BackgroundJobs;
+using Infrastructure.Caching;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
+using Infrastructure.Email;
 using Infrastructure.Time;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -12,7 +17,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Quartz;
+using StackExchange.Redis;
 using SharedKernel;
 
 namespace Infrastructure;
@@ -23,17 +31,22 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration) =>
         services
-            .AddServices()
+            .AddServices(configuration)
             .AddDatabase(configuration)
+            .AddCaching(configuration)
+            .AddBackgroundJobs()
             .AddHealthChecks(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal();
 
-    private static IServiceCollection AddServices(this IServiceCollection services)
+    private static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
-        services.AddTransient<IDomainEventsDispatcher, DomainEventsDispatcher>();
+        services.AddTransient<IDomainEventsDispatcher, OutboxDomainEventsDispatcher>();
+
+        services.AddScoped<IEmailService>(sp => 
+            new EmailService(configuration, sp.GetRequiredService<ILogger<EmailService>>()));
 
         return services;
     }
@@ -49,6 +62,51 @@ public static class DependencyInjection
                 .UseSnakeCaseNamingConvention());
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
+
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+
+        return services;
+    }
+
+    private static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
+    {
+        string? redisConnectionString = configuration.GetConnectionString("Redis");
+
+        if (!string.IsNullOrWhiteSpace(redisConnectionString))
+        {
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                ILogger<IConnectionMultiplexer>? logger = sp.GetService<ILogger<IConnectionMultiplexer>>();
+                return ConnectionMultiplexer.Connect(redisConnectionString);
+            });
+
+            services.AddScoped<ICacheService, RedisCacheService>();
+        }
+
+        return services;
+    }
+
+    private static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
+    {
+        services.AddQuartz(configure =>
+        {
+            JobKey jobKey = new("ProcessOutboxMessages");
+
+            configure
+                .AddJob<ProcessOutboxMessagesJob>(jobKey)
+                .AddTrigger(trigger =>
+                    trigger
+                        .ForJob(jobKey)
+                        .WithSimpleSchedule(schedule =>
+                            schedule
+                                .WithIntervalInSeconds(10)
+                                .RepeatForever()));
+        });
+
+        services.AddQuartzHostedService(options =>
+        {
+            options.WaitForJobsToComplete = true;
+        });
 
         return services;
     }

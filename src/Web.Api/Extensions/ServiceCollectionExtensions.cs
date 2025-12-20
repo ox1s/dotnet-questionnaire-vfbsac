@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi; // Основной namespace для v2
 
 namespace Web.Api.Extensions;
 
@@ -11,9 +12,10 @@ internal static class ServiceCollectionExtensions
         {
             o.CustomSchemaIds(id => id.FullName!.Replace('+', '-'));
 
+            // 1. Definition остается почти таким же
             var securityScheme = new OpenApiSecurityScheme
             {
-                Name = "JWT Authentication",
+                Name = "Authorization",
                 Description = "Enter your JWT token in this field",
                 In = ParameterLocation.Header,
                 Type = SecuritySchemeType.Http,
@@ -21,24 +23,19 @@ internal static class ServiceCollectionExtensions
                 BearerFormat = "JWT"
             };
 
-            o.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, securityScheme);
+            o.AddSecurityDefinition("Bearer", securityScheme); // Используем имя "Bearer"
 
-            var securityRequirement = new OpenApiSecurityRequirement
+            // 2. Requirement теперь требует функцию (doc => ...) и OpenApiSecuritySchemeReference
+            o.AddSecurityRequirement(document =>
             {
+                var requirement = new OpenApiSecurityRequirement
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = JwtBearerDefaults.AuthenticationScheme
-                        }
-                    },
-                    []
-                }
-            };
+                    // В v2 используем OpenApiSecuritySchemeReference для связи с Definition
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
+                };
 
-            o.AddSecurityRequirement(securityRequirement);
+                return requirement;
+            });
         });
 
         return services;

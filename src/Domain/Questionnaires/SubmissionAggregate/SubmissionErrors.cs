@@ -1,0 +1,14 @@
+using SharedKernel;
+
+namespace Domain.Questionnaires.SubmissionAggregate;
+
+public static class SubmissionErrors
+{
+    public static Error NotFound(Guid submissionId) => Error.NotFound(
+        "Submissions.NotFound",
+        $"The submission with the Id = '{submissionId}' was not found");
+
+    public static Error AnswerNotFound(Guid answerId) => Error.NotFound(
+        "Submissions.AnswerNotFound",
+        $"The answer with the Id = '{answerId}' was not found");
+}

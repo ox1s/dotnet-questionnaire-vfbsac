@@ -17,9 +17,7 @@ public sealed class User : AggregateRoot
     public int? GroupId { get; private set; }   // Если Role == StudentGroup
     public int? TeacherId { get; private set; } // Если Role == Teacher
     public string? OrganizationName { get; private set; } // Если Role == Employer
-    
-    public string? PasswordResetToken { get; private set; }
-    public DateTime? PasswordResetTokenExpiration { get; private set; }
+
     
     private User() { }
 
@@ -76,43 +74,14 @@ public sealed class User : AggregateRoot
         };
     }
 
+    public void SetPasswordByAdmin(string newPasswordHash)
+    {
+        PasswordHash = newPasswordHash;
+    }
 
 
     public void ChangePassword(string newPasswordHash)
     {
         PasswordHash = newPasswordHash;
-    }
-
-    public void RequestPasswordReset(IDateTimeProvider dateTimeProvider)
-    {
-        byte[] tokenBytes = new byte[32];
-        using RandomNumberGenerator rng = RandomNumberGenerator.Create();
-        rng.GetBytes(tokenBytes);
-        PasswordResetToken = Convert.ToBase64String(tokenBytes)
-            .Replace('+', '-')
-            .Replace('/', '_')
-            .TrimEnd('=');
-        PasswordResetTokenExpiration = dateTimeProvider.UtcNow.AddHours(1);
-
-        RaiseDomainEvent(new PasswordResetRequestedDomainEvent(Id, Login.Value, PasswordResetToken));
-    }
-
-    public Result ResetPassword(string token, string newPasswordHash, IDateTimeProvider dateTimeProvider)
-    {
-        if (PasswordResetToken != token)
-        {
-            return Result.Failure(UserErrors.InvalidResetToken);
-        }
-
-        if (dateTimeProvider.UtcNow > PasswordResetTokenExpiration)
-        {
-            return Result.Failure(UserErrors.ExpiredResetToken);
-        }
-
-        PasswordHash = newPasswordHash;
-        PasswordResetToken = null;
-        PasswordResetTokenExpiration = null;
-
-        return Result.Success();
     }
 }

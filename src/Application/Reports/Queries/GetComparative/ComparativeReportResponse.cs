@@ -1,5 +1,8 @@
 ﻿namespace Application.Reports.Queries.GetComparative;
 
-internal record ComparativeReportResponse
-{
-}
+public sealed record ComparativeReportResponse(
+    string QuestionText,
+    double PeriodA_Average,
+    double PeriodB_Average,
+    double Delta
+);

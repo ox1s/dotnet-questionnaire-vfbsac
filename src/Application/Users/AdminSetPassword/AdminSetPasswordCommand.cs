@@ -1,6 +1,5 @@
-﻿namespace Application.Users.AdminSetPassword;
+﻿using Application.Abstractions.Messaging;
 
-public class AdminSetPasswordCommand
-{
-    
-}
+namespace Application.Users.AdminSetPassword;
+
+public sealed record AdminSetPasswordCommand(Guid UserId, string NewPassword) : ICommand;

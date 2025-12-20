@@ -1,6 +1,6 @@
-﻿using SharedKernel;
+using SharedKernel;
 
-namespace Domain.Users;
+namespace Domain.UserAggregate;
 
 public static class UserErrors
 {
@@ -8,15 +8,22 @@ public static class UserErrors
         "Users.NotFound",
         $"The user with the Id = '{userId}' was not found");
 
+    public static Error NotFoundByLogin(string login) => Error.NotFound(
+        "Users.NotFoundByLogin",
+        $"The user with the Login = '{login}' was not found");
+
     public static Error Unauthorized() => Error.Failure(
         "Users.Unauthorized",
         "You are not authorized to perform this action.");
 
-    public static readonly Error NotFoundByEmail = Error.NotFound(
-        "Users.NotFoundByEmail",
-        "The user with the specified email was not found");
+    public static Error InvalidResetToken() => Error.Validation(
+        "Users.InvalidResetToken",
+        "Invalid or expired password reset token.");
 
-    public static readonly Error EmailNotUnique = Error.Conflict(
-        "Users.EmailNotUnique",
-        "The provided email is not unique");
+    public static Error ExpiredResetToken() => Error.Validation(
+        "Users.ExpiredResetToken",
+        "The password reset token has expired.");
+
+    public static Error Conflict(string code, string description) =>
+        Error.Conflict(code, description);
 }

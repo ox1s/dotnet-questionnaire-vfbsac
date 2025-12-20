@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.Users;
+using Domain.UserAggregate;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -12,26 +12,28 @@ internal sealed class RegisterUserCommandHandler(IApplicationDbContext context, 
 {
     public async Task<Result<Guid>> Handle(RegisterUserCommand command, CancellationToken cancellationToken)
     {
-        if (await context.Users.AnyAsync(u => u.Email == command.Email, cancellationToken))
+        Result<Domain.UserAggregate.Login> loginResult = Domain.UserAggregate.Login.Create(command.Login);
+        if (loginResult.IsFailure)
         {
-            return Result.Failure<Guid>(UserErrors.EmailNotUnique);
+            return Result.Failure<Guid>(loginResult.Error);
         }
 
-        var user = new User
+        // Проверка на уникальность логина
+        if (await context.Users.AnyAsync(u => u.Login.Value == loginResult.Value.Value, cancellationToken))
         {
-            Id = Guid.NewGuid(),
-            Email = command.Email,
-            FirstName = command.FirstName,
-            LastName = command.LastName,
-            PasswordHash = passwordHasher.Hash(command.Password)
-        };
+            return Result.Failure<Guid>(UserErrors.Conflict("Users.LoginExists", "Такой логин уже занят"));
+        }
 
-        user.Raise(new UserRegisteredDomainEvent(user.Id));
+        Result<User> userResult = User.CreateAdmin(loginResult.Value, passwordHasher.Hash(command.Password));
 
-        context.Users.Add(user);
+        if (userResult.IsFailure)
+        {
+            return Result.Failure<Guid>(userResult.Error);
+        }
 
+        context.Users.Add(userResult.Value);
         await context.SaveChangesAsync(cancellationToken);
 
-        return user.Id;
+        return userResult.Value.Id;
     }
 }

@@ -1,52 +1,49 @@
-using System.Text;
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
-using Application.Abstractions.Email;
 using Infrastructure.Authentication;
 using Infrastructure.Authorization;
 using Infrastructure.BackgroundJobs;
 using Infrastructure.Caching;
 using Infrastructure.Database;
 using Infrastructure.DomainEvents;
-using Infrastructure.Email;
 using Infrastructure.Time;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Quartz;
 using StackExchange.Redis;
 using SharedKernel;
+using System.Text;
+using Infrastructure.Reports;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(
-        this IServiceCollection services,
-        IConfiguration configuration) =>
-        services
-            .AddServices(configuration)
+    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    {
+        return services
+            .AddServices()
             .AddDatabase(configuration)
             .AddCaching(configuration)
             .AddBackgroundJobs()
-            .AddHealthChecks(configuration)
+            .AddHealthChecksInternal(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal();
+    }
 
-    private static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
-
         services.AddTransient<IDomainEventsDispatcher, OutboxDomainEventsDispatcher>();
 
-        services.AddScoped<IEmailService>(sp => 
-            new EmailService(configuration, sp.GetRequiredService<ILogger<EmailService>>()));
+        services.AddScoped<WordReportGenerator>();
+
 
         return services;
     }
@@ -55,14 +52,12 @@ public static class DependencyInjection
     {
         string? connectionString = configuration.GetConnectionString("Database");
 
-        services.AddDbContext<ApplicationDbContext>(
-            options => options
-                .UseNpgsql(connectionString, npgsqlOptions =>
-                    npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default))
-                .UseSnakeCaseNamingConvention());
+        services.AddDbContext<ApplicationDbContext>(options => options
+            .UseNpgsql(connectionString, npgsqlOptions =>
+                npgsqlOptions.MigrationsHistoryTable(HistoryRepository.DefaultTableName, Schemas.Default))
+            .UseSnakeCaseNamingConvention());
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
-
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
         return services;
@@ -75,10 +70,7 @@ public static class DependencyInjection
         if (!string.IsNullOrWhiteSpace(redisConnectionString))
         {
             services.AddSingleton<IConnectionMultiplexer>(sp =>
-            {
-                ILogger<IConnectionMultiplexer>? logger = sp.GetService<ILogger<IConnectionMultiplexer>>();
-                return ConnectionMultiplexer.Connect(redisConnectionString);
-            });
+                ConnectionMultiplexer.Connect(redisConnectionString));
 
             services.AddScoped<ICacheService, RedisCacheService>();
         }
@@ -111,7 +103,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddHealthChecks(this IServiceCollection services, IConfiguration configuration)
+    private static IServiceCollection AddHealthChecksInternal(this IServiceCollection services, IConfiguration configuration)
     {
         services
             .AddHealthChecks()
@@ -120,9 +112,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddAuthenticationInternal(
-        this IServiceCollection services,
-        IConfiguration configuration)
+    private static IServiceCollection AddAuthenticationInternal(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(o =>
@@ -148,11 +138,8 @@ public static class DependencyInjection
     private static IServiceCollection AddAuthorizationInternal(this IServiceCollection services)
     {
         services.AddAuthorization();
-
         services.AddScoped<PermissionProvider>();
-
         services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
-
         services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 
         return services;

@@ -7,15 +7,13 @@ using Domain.College.TeacherAggregate;
 using Domain.Questionnaires.FormAggregate;
 using Domain.Questionnaires.SubmissionAggregate;
 using Domain.UserAggregate;
-using Infrastructure.DomainEvents;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
 namespace Infrastructure.Database;
 
 public sealed class ApplicationDbContext(
-    DbContextOptions<ApplicationDbContext> options,
-    IDomainEventsDispatcher domainEventsDispatcher)
+    DbContextOptions<ApplicationDbContext> options)
     : DbContext(options), IApplicationDbContext
 {
     public DbSet<User> Users { get; set; }
@@ -45,7 +43,6 @@ public sealed class ApplicationDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Save domain events to Outbox before saving changes
         await SaveDomainEventsToOutboxAsync();
 
         int result = await base.SaveChangesAsync(cancellationToken);
@@ -70,7 +67,7 @@ public sealed class ApplicationDbContext(
 
         foreach (IDomainEvent domainEvent in domainEvents)
         {
-            OutboxMessage outboxMessage = OutboxMessage.Create(domainEvent);
+            var outboxMessage = OutboxMessage.Create(domainEvent);
             OutboxMessages.Add(outboxMessage);
         }
 

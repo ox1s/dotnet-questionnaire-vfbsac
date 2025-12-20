@@ -1,16 +1,13 @@
-﻿using SharedKernel;
+using SharedKernel;
 
-namespace Domain.Users;
+namespace Domain.UserAggregate;
 
-public sealed record Login(string Value);
+public sealed record Login(string Value)
 {
-    public static Result<Login> Create(string? value)
+    public static Result<Login> Create(string value)
     {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            return Result.Failure<Login>(Error.NullValue);
-        }
-
-        return new Login(value.Trim().ToLowerInvariant());
+        return string.IsNullOrWhiteSpace(value)
+            ? Result.Failure<Login>(Error.NullValue)
+            : Result.Success(new Login(value.Trim().ToUpperInvariant()));
     }
 }

@@ -1,4 +1,5 @@
-﻿using Application.Abstractions.Messaging;
+using Application.Abstractions.Authentication;
+using Application.Abstractions.Messaging;
 using Application.Users.GetById;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -6,22 +7,24 @@ using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Users;
 
-internal sealed class GetById : IEndpoint
+internal sealed class GetMe : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
-        app.MapGet("users/{userId:guid}", async (
-            Guid userId,
+        app.MapGet("users/me", async (
+            IUserContext userContext,
             IQueryHandler<GetUserByIdQuery, UserResponse> handler,
             CancellationToken cancellationToken) =>
         {
-            var query = new GetUserByIdQuery(userId);
+            Guid currentUserId = userContext.UserId;
+
+            var query = new GetUserByIdQuery(currentUserId);
 
             Result<UserResponse> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
-        .HasPermission(Permissions.UsersAccess)
-        .WithTags(Tags.Users);
+        .WithTags("Users")
+        .RequireAuthorization();
     }
 }

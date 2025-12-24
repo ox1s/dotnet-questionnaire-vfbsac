@@ -66,26 +66,11 @@ app.MapControllers();
 using (IServiceScope scope = app.Services.CreateScope())
 {
     ApplicationDbContext context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    IPasswordHasher passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
     await context.Database.MigrateAsync();
 
-    if (!await context.Users.AnyAsync(u => u.Login.Value == "ADMIN"))
-    {
-        Result<Login> adminLoginResult = Login.Create("ADMIN");
-        if (adminLoginResult.IsSuccess)
-        {
-            string adminHash = passwordHasher.Hash("admin123");
-            Result<User> adminUserResult = User.CreateAdmin(adminLoginResult.Value, adminHash);
-
-            if (adminUserResult.IsSuccess)
-            {
-                context.Users.Add(adminUserResult.Value);
-                // Исправлено: await SaveChangesAsync
-                await context.SaveChangesAsync();
-            }
-        }
-    }
+    DbInitializer dbInitializer = scope.ServiceProvider.GetRequiredService<DbInitializer>();
+    await dbInitializer.InitializeAsync();
 }
 
 await app.RunAsync();

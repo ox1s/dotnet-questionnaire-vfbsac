@@ -6,12 +6,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations;
 
 /// <inheritdoc />
-public partial class InitialCreate : Migration
+public partial class AddSubmissionContextFields : Migration
 {
-    private static readonly string[] columns = new[] { "submission_id", "question_id" };
-    private static readonly string[] columnsArray = new[] { "form_id", "order" };
-    private static readonly string[] columnsArray0 = new[] { "form_id", "user_id" };
-
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
@@ -53,7 +49,7 @@ public partial class InitialCreate : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 title = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                 is_active = table.Column<bool>(type: "boolean", nullable: false),
-                required_filters = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
+                required_filters = table.Column<string>(type: "text", nullable: true)
             },
             constraints: table =>
             {
@@ -118,7 +114,10 @@ public partial class InitialCreate : Migration
                 context_department_id = table.Column<Guid>(type: "uuid", nullable: true),
                 context_speciality_id = table.Column<Guid>(type: "uuid", nullable: true),
                 context_specialization_id = table.Column<Guid>(type: "uuid", nullable: true),
-                context_organization_name = table.Column<string>(type: "text", nullable: true)
+                context_organization_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                context_education_form = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                context_employee_category = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                context_position = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
             },
             constraints: table =>
             {
@@ -210,7 +209,7 @@ public partial class InitialCreate : Migration
             name: "ix_answer_submission_id_question_id",
             schema: "public",
             table: "answer",
-            columns: columns,
+            columns: ["submission_id", "question_id"],
             unique: true);
 
         migrationBuilder.CreateIndex(
@@ -231,14 +230,14 @@ public partial class InitialCreate : Migration
             name: "ix_question_form_id_order",
             schema: "public",
             table: "question",
-            columns: columnsArray,
+            columns: ["form_id", "order"],
             unique: true);
 
         migrationBuilder.CreateIndex(
             name: "ix_submissions_form_id_user_id",
             schema: "public",
             table: "submissions",
-            columns: columnsArray0);
+            columns: ["form_id", "user_id"]);
     }
 
     /// <inheritdoc />

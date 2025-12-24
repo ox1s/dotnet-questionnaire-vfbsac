@@ -11,4 +11,7 @@ public static class SubmissionErrors
     public static Error AnswerNotFound(Guid answerId) => Error.NotFound(
         "Submissions.AnswerNotFound",
         $"The answer with the Id = '{answerId}' was not found");
+    public static Error InvalidWeight(Guid questionId) => Error.Validation(
+    "Submissions.InvalidWeight",
+    $"The value cannot be greater than the weight for question '{questionId}'.");
 }

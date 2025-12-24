@@ -1,4 +1,6 @@
-﻿using Web.Api.Infrastructure;
+﻿using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Json;
+using Web.Api.Infrastructure;
 
 namespace Web.Api;
 
@@ -11,6 +13,11 @@ public static class DependencyInjection
 
         // REMARK: If you want to use Controllers, you'll need this.
         services.AddControllers();
+
+        services.Configure<JsonOptions>(options =>
+                {
+                    options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddProblemDetails();

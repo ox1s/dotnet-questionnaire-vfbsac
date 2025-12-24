@@ -1,0 +1,19 @@
+@host = http://localhost:5000
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkZXZlbG9wZXJzIiwiaXNzIjoicXVlc3Rpb25uYWlyZS12ZmJzYWMiLCJleHAiOjE3NjY1OTIzMzUsInN1YiI6ImEwYWRmYmEyLWQ3OWItNGU4Ny05MWEwLTdhMTI4ZmFkYWZlMCIsImlhdCI6MTc2NjU4ODczNSwibmJmIjoxNzY2NTg4NzM1fQ.02BwdACT52u39jj8tVbuXMZbsSUN3WQOfKdO4mPyjho
+@formId = fad60f17-2cd8-490e-b4f8-3bd589ff0c60
+
+# ==========================================
+# 1. Получить JSON статистику (для графиков на фронте)
+# ==========================================
+GET {{host}}/submissions/statistics?formId={{formId}}
+Authorization: Bearer {{adminToken}}
+
+###
+
+# ==========================================
+# 2. Скачать Word отчет (.docx)
+# ==========================================
+# В VS Code REST Client кнопка "Send Request" просто покажет бинарные данные.
+# В браузере этот URL начнет скачивание файла.
+GET {{host}}/reports/word/{{formId}}
+Authorization: Bearer {{adminToken}}

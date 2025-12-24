@@ -1,0 +1,68 @@
+@host = http://localhost:5000
+@contentType = application/json
+# Вставьте сюда токен, полученный из Auth.http
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkZXZlbG9wZXJzIiwiaXNzIjoicXVlc3Rpb25uYWlyZS12ZmJzYWMiLCJleHAiOjE3NjY1OTIzMzUsInN1YiI6ImEwYWRmYmEyLWQ3OWItNGU4Ny05MWEwLTdhMTI4ZmFkYWZlMCIsImlhdCI6MTc2NjU4ODczNSwibmJmIjoxNzY2NTg4NzM1fQ.02BwdACT52u39jj8tVbuXMZbsSUN3WQOfKdO4mPyjho
+# ==========================================
+# 1. Получить список всех анкет
+# ==========================================
+GET {{host}}/forms
+Authorization: Bearer {{token}}
+
+###
+
+# ==========================================
+# 2. Создать новую анкету (с весами)
+# ==========================================
+# @name createForm
+POST {{host}}/forms
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "title": "Оценка качества Wi-Fi в общежитии",
+  "requiredFilters": [
+    "Speciality"
+  ],
+  "questions": [
+    {
+      "text": "Скорость соединения",
+      "type": 6, 
+      "order": 1
+    },
+    {
+      "text": "Стабильность сигнала",
+      "type": 6,
+      "order": 2
+    },
+    {
+      "text": "Ваши комментарии",
+      "type": 1,
+      "order": 3
+    }
+  ]
+}
+
+# TODO: Возвращать польностью, а не только ID
+
+# Примечание по типам вопросов:
+# 1 - Text
+# 2 - Number
+# 6 - WeightedRating (Оценка с весом)
+
+###
+@formId = fad60f17-2cd8-490e-b4f8-3bd589ff0c60
+# @formId = {{createForm.response.body}}
+
+# ==========================================
+# 3. Получить анкету по ID
+# ==========================================
+GET {{host}}/forms/{{formId}}
+Authorization: Bearer {{token}}
+
+###
+
+# ==========================================
+# 4. Удалить анкету
+# ==========================================
+DELETE {{host}}/forms/{{formId}}
+Authorization: Bearer {{token}}

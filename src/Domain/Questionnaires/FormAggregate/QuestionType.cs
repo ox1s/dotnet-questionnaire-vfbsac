@@ -6,5 +6,6 @@ public enum QuestionType
     Number = 2,
     MultipleChoice = 3,
     SingleChoice = 4,
-    Rating = 5
+    Rating = 5,
+    WeightedRating = 6
 }

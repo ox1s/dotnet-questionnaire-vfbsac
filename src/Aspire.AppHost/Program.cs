@@ -4,7 +4,7 @@ IResourceBuilder<PostgresDatabaseResource> database = builder
     .AddPostgres("database")
     .WithImage("postgres:17")
     .WithBindMount("../../.containers/db", "/var/lib/postgresql/data")
-    .AddDatabase("clean-architecture");
+    .AddDatabase("questionnaire-vfbsac");
 
 builder.AddProject<Projects.Web_Api>("web-api")
     .WithEnvironment("ConnectionStrings__Database", database)

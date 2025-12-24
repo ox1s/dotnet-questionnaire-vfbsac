@@ -6,4 +6,7 @@ public record SubmissionContext(
     Guid? DepartmentId = null,
     Guid? SpecialityId = null,
     Guid? SpecializationId = null,
-    string? OrganizationName = null);
+    string? OrganizationName = null,
+    string? EducationForm = null,
+    string? EmployeeCategory = null,
+    string? Position = null);

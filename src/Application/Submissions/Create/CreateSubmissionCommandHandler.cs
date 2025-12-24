@@ -42,6 +42,15 @@ internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext conte
 
         Submission submission = submissionResult.Value;
 
+        SubmissionContext newContext = submission.Context with
+        {
+            EducationForm = command.EducationForm,
+            EmployeeCategory = command.EmployeeCategory,
+            Position = command.Position
+        };
+
+        submission.UpdateContext(newContext);
+
         foreach (AnswerRequest answerRequest in command.Answers)
         {
             Result<Answer> answerResult = submission.AddAnswer(

@@ -102,18 +102,39 @@ internal sealed class GetSubmissionStatisticsQueryHandler(IApplicationDbContext 
             averageScores.Add(average);
 
             decimal result = 0;
-            if (question.Type == QuestionType.Number)
+
+            // Логика для нового типа WeightedRating
+            if (question.Type == QuestionType.WeightedRating)
             {
-                decimal weightedSum = questionAnswers
-                    .Where(a => a.Weight.HasValue && a.Weight.Value > 0)
-                    .Sum(a => a.NumericValue!.Value / a.Weight!.Value);
-                int count = questionAnswers.Count(a => a.Weight.HasValue && a.Weight.Value > 0);
-                result = count > 0 ? weightedSum / count * 100 : 0;
+                // Берем ответы, где есть и оценка, и вес
+                var validAnswers = questionAnswers
+                    .Where(a => a.NumericValue.HasValue && a.Weight.HasValue && a.Weight.Value > 0)
+                    .ToList();
+
+                if (validAnswers.Count > 0)
+                {
+                    // Вариант расчета: Средний процент удовлетворенности
+                    // (Оценка / Вес) * 10. 
+                    // Пример: Оценка 8, Вес 10 -> 8 баллов.
+                    // Пример: Оценка 4, Вес 5 -> (4/5)*10 = 8 баллов.
+
+                    decimal sumOfNormalizedScores = validAnswers
+                        .Sum(a => a.NumericValue!.Value / a.Weight!.Value * 10);
+
+                    result = sumOfNormalizedScores / validAnswers.Count;
+                }
+            }
+            else if (question.Type == QuestionType.Number)
+            {
+                // Старая логика для простых чисел (если там использовался вес как коэффициент значимости вопроса)
+                // Если веса нет, просто среднее
+                result = average;
             }
             else
             {
                 result = average;
             }
+
             resultScores.Add(result);
 
             decimal variance = questionAnswers

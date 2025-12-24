@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251219195504_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251224145731_AddSubmissionContextFields")]
+    partial class AddSubmissionContextFields
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -152,8 +152,7 @@ namespace Infrastructure.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<string>("RequiredFilters")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("text")
                         .HasColumnName("required_filters");
 
                     b.Property<string>("Title")
@@ -392,9 +391,25 @@ namespace Infrastructure.Migrations
                                 .HasColumnType("uuid")
                                 .HasColumnName("discipline_id");
 
+                            b1.Property<string>("EducationForm")
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)")
+                                .HasColumnName("context_education_form");
+
+                            b1.Property<string>("EmployeeCategory")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("context_employee_category");
+
                             b1.Property<string>("OrganizationName")
-                                .HasColumnType("text")
+                                .HasMaxLength(255)
+                                .HasColumnType("character varying(255)")
                                 .HasColumnName("context_organization_name");
+
+                            b1.Property<string>("Position")
+                                .HasMaxLength(255)
+                                .HasColumnType("character varying(255)")
+                                .HasColumnName("context_position");
 
                             b1.Property<Guid?>("SpecialityId")
                                 .HasColumnType("uuid")

@@ -30,6 +30,19 @@ public sealed class Answer : Entity
                 "Either Value or NumericValue must be provided"));
         }
 
+        if (weight.HasValue && numericValue.HasValue)
+        {
+            if (numericValue.Value > weight.Value)
+            {
+                return Result.Failure<Answer>(SubmissionErrors.InvalidWeight(questionId));
+            }
+
+            if (numericValue.Value < 0 || weight.Value < 0)
+            {
+                return Result.Failure<Answer>(Error.Validation("Answers.NegativeValue", "Values cannot be negative"));
+            }
+        }
+
         return new Answer(Guid.NewGuid(), submissionId, questionId, value?.Trim(), numericValue, weight);
     }
 
@@ -38,9 +51,17 @@ public sealed class Answer : Entity
         Value = value?.Trim();
     }
 
-    public void UpdateNumericValue(decimal? numericValue)
+    public Result UpdateNumericStats(decimal? numericValue, decimal? weight)
     {
+        if (weight.HasValue && numericValue.HasValue && numericValue.Value > weight.Value)
+        {
+            return Result.Failure(SubmissionErrors.InvalidWeight(QuestionId));
+        }
+
         NumericValue = numericValue;
+        Weight = weight;
+
+        return Result.Success();
     }
 
     public void UpdateWeight(decimal? weight)

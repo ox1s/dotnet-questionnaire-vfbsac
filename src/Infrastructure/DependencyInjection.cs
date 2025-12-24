@@ -44,7 +44,8 @@ public static class DependencyInjection
 
         services.AddScoped<WordReportGenerator>();
 
-
+        services.AddScoped<DbInitializer>();
+        
         return services;
     }
 

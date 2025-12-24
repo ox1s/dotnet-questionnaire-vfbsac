@@ -6,8 +6,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations;
 
 /// <inheritdoc />
-public partial class AddSubmissionContextFields : Migration
+public partial class InitialCreate : Migration
 {
+    private static readonly string[] columns = new[] { "submission_id", "question_id" };
+
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
@@ -25,20 +27,6 @@ public partial class AddSubmissionContextFields : Migration
             constraints: table =>
             {
                 table.PrimaryKey("pk_departments", x => x.id);
-            });
-
-        migrationBuilder.CreateTable(
-            name: "disciplines",
-            schema: "public",
-            columns: table => new
-            {
-                id = table.Column<Guid>(type: "uuid", nullable: false),
-                name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                department_id = table.Column<Guid>(type: "uuid", nullable: true)
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("pk_disciplines", x => x.id);
             });
 
         migrationBuilder.CreateTable(
@@ -159,6 +147,27 @@ public partial class AddSubmissionContextFields : Migration
             });
 
         migrationBuilder.CreateTable(
+            name: "disciplines",
+            schema: "public",
+            columns: table => new
+            {
+                id = table.Column<Guid>(type: "uuid", nullable: false),
+                name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                department_id = table.Column<Guid>(type: "uuid", nullable: false)
+            },
+            constraints: table =>
+            {
+                table.PrimaryKey("pk_disciplines", x => x.id);
+                table.ForeignKey(
+                    name: "fk_disciplines_departments_department_id",
+                    column: x => x.department_id,
+                    principalSchema: "public",
+                    principalTable: "departments",
+                    principalColumn: "id",
+                    onDelete: ReferentialAction.Restrict);
+            });
+
+        migrationBuilder.CreateTable(
             name: "question",
             schema: "public",
             columns: table => new
@@ -209,7 +218,7 @@ public partial class AddSubmissionContextFields : Migration
             name: "ix_answer_submission_id_question_id",
             schema: "public",
             table: "answer",
-            columns: ["submission_id", "question_id"],
+            columns: columns,
             unique: true);
 
         migrationBuilder.CreateIndex(
@@ -218,6 +227,12 @@ public partial class AddSubmissionContextFields : Migration
             table: "departments",
             column: "name",
             unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "ix_disciplines_department_id",
+            schema: "public",
+            table: "disciplines",
+            column: "department_id");
 
         migrationBuilder.CreateIndex(
             name: "ix_disciplines_name",
@@ -245,10 +260,6 @@ public partial class AddSubmissionContextFields : Migration
     {
         migrationBuilder.DropTable(
             name: "answer",
-            schema: "public");
-
-        migrationBuilder.DropTable(
-            name: "departments",
             schema: "public");
 
         migrationBuilder.DropTable(
@@ -281,6 +292,10 @@ public partial class AddSubmissionContextFields : Migration
 
         migrationBuilder.DropTable(
             name: "submissions",
+            schema: "public");
+
+        migrationBuilder.DropTable(
+            name: "departments",
             schema: "public");
 
         migrationBuilder.DropTable(

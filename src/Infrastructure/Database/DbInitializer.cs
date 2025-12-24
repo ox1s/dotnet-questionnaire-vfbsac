@@ -94,10 +94,15 @@ public class DbInitializer(
         ];
         foreach ((int Id, string Name, int DeptId) item in discData)
         {
-            // CA1854: Prefer TryGetValue
-            Guid? deptId = depts.TryGetValue(item.DeptId, out Department? dept) ? dept.Id : null;
+            if (!depts.TryGetValue(item.DeptId, out Department? dept))
+            {
 
-            Discipline d = Discipline.Create(item.Name, deptId).Value;
+                continue;
+            }
+
+            // Передаем dept.Id (он точно Guid, не null)
+            Discipline d = Discipline.Create(item.Name, dept.Id).Value;
+
             context.Disciplines.Add(d);
             disciplines.Add(item.Id, d);
         }
@@ -158,99 +163,99 @@ public class DbInitializer(
 
         // ================= 4. SUBMISSIONS (DATA) =================
 
-        User studentUser = groupUsers[0]; // Use first group for seeding
+        // User studentUser = groupUsers[0]; // Use first group for seeding
 
-        // --- Seeding Form 1 (Discipline Satisfaction) ---
-        // Data: `1-3` (23-12-16): Marks[High] Weights[10s] | Disc:33 (Тех.комм), Edu:ДФПО
-        Discipline disc33 = disciplines[33];
+        // // --- Seeding Form 1 (Discipline Satisfaction) ---
+        // // Data: `1-3` (23-12-16): Marks[High] Weights[10s] | Disc:33 (Тех.комм), Edu:ДФПО
+        // Discipline disc33 = disciplines[33];
 
-        for (int i = 0; i < 3; i++)
-        {
-            CreateSubmission(context, f1, studentUser.Id, new DateTime(2023, 12, 16, 0, 0, 0, DateTimeKind.Utc),
-                ctx => new SubmissionContext(DisciplineId: disc33.Id, EducationForm: "ДФПО"),
-                (q) => q.Type == QuestionType.WeightedRating ? (10, 10) : (null, null));
-        }
+        // for (int i = 0; i < 3; i++)
+        // {
+        //     CreateSubmission(context, f1, studentUser.Id, new DateTime(2023, 12, 16, 0, 0, 0, DateTimeKind.Utc),
+        //         ctx => new SubmissionContext(DisciplineId: disc33.Id, EducationForm: "ДФПО"),
+        //         (q) => q.Type == QuestionType.WeightedRating ? (10, 10) : (null, null));
+        // }
 
-        // Data: `36` (23-12-18): Mixed marks, Angry Rec
-        Submission sub36 = CreateSubmission(context, f1, studentUser.Id, new DateTime(2023, 12, 18, 0, 0, 0, DateTimeKind.Utc),
-             ctx => new SubmissionContext(DisciplineId: disc33.Id, EducationForm: "ДФПО"),
-             (q) => q.Order == 1 ? (10, 10) : (8, 10));
+        // // Data: `36` (23-12-18): Mixed marks, Angry Rec
+        // Submission sub36 = CreateSubmission(context, f1, studentUser.Id, new DateTime(2023, 12, 18, 0, 0, 0, DateTimeKind.Utc),
+        //      ctx => new SubmissionContext(DisciplineId: disc33.Id, EducationForm: "ДФПО"),
+        //      (q) => q.Order == 1 ? (10, 10) : (8, 10));
 
-        Question qText = f1.Questions.First(q => q.Type == QuestionType.Text);
-        sub36.AddAnswer(qText.Id, value: "Пусть умники из министерства сами отсидят 30 часов... напишут ОКР...");
+        // Question qText = f1.Questions.First(q => q.Type == QuestionType.Text);
+        // sub36.AddAnswer(qText.Id, value: "Пусть умники из министерства сами отсидят 30 часов... напишут ОКР...");
 
-        // Data: `75` (23-12-26): Disc:7 (ИТ), Rec: "Фотошоп глюкает"
-        Discipline disc7 = disciplines[7];
-        Submission sub75 = CreateSubmission(context, f1, studentUser.Id, new DateTime(2023, 12, 26, 0, 0, 0, DateTimeKind.Utc),
-            ctx => new SubmissionContext(DisciplineId: disc7.Id, EducationForm: "ДФПО"),
-            (q) => (8, 10));
-        sub75.AddAnswer(qText.Id, value: "Фотошоп глюкает, надо обновить видеокарту...");
+        // // Data: `75` (23-12-26): Disc:7 (ИТ), Rec: "Фотошоп глюкает"
+        // Discipline disc7 = disciplines[7];
+        // Submission sub75 = CreateSubmission(context, f1, studentUser.Id, new DateTime(2023, 12, 26, 0, 0, 0, DateTimeKind.Utc),
+        //     ctx => new SubmissionContext(DisciplineId: disc7.Id, EducationForm: "ДФПО"),
+        //     (q) => (8, 10));
+        // sub75.AddAnswer(qText.Id, value: "Фотошоп глюкает, надо обновить видеокарту...");
 
-        // Data: `128`, `138`, `144` (25-06-24): Disc:8 (ООП), Bad Internet
-        Discipline disc8 = disciplines[8];
-        Submission badInternetSub = CreateSubmission(context, f1, studentUser.Id, new DateTime(2024, 06, 25, 0, 0, 0, DateTimeKind.Utc),
-            ctx => new SubmissionContext(DisciplineId: disc8.Id, EducationForm: "ДФПО"),
-            (q) => (1, 10));
-        badInternetSub.AddAnswer(qText.Id, value: "ИНТЕРНЕТ СДЕЛАТЬ ЛУЧШЕ");
+        // // Data: `128`, `138`, `144` (25-06-24): Disc:8 (ООП), Bad Internet
+        // Discipline disc8 = disciplines[8];
+        // Submission badInternetSub = CreateSubmission(context, f1, studentUser.Id, new DateTime(2024, 06, 25, 0, 0, 0, DateTimeKind.Utc),
+        //     ctx => new SubmissionContext(DisciplineId: disc8.Id, EducationForm: "ДФПО"),
+        //     (q) => (1, 10));
+        // badInternetSub.AddAnswer(qText.Id, value: "ИНТЕРНЕТ СДЕЛАТЬ ЛУЧШЕ");
 
 
-        // --- Seeding Form 7 (Hirer Feedback) ---
-        // Data: `99` (25-01-28): M[6-9] | Login: "Мядельский УЭС"
-        var f7Qs = f7.Questions.Where(q => q.Type == QuestionType.Number).ToList();
-        Submission sub99 = Submission.Create(f7.Id, admin.Id,
-            organizationName: "Мядельский УЭС").Value;
+        // // --- Seeding Form 7 (Hirer Feedback) ---
+        // // Data: `99` (25-01-28): M[6-9] | Login: "Мядельский УЭС"
+        // var f7Qs = f7.Questions.Where(q => q.Type == QuestionType.Number).ToList();
+        // Submission sub99 = Submission.Create(f7.Id, admin.Id,
+        //     organizationName: "Мядельский УЭС").Value;
 
-        typeof(Submission).GetProperty(nameof(Submission.SubmittedAt))?
-            .SetValue(sub99, new DateTime(2025, 01, 28, 0, 0, 0, DateTimeKind.Utc));
+        // typeof(Submission).GetProperty(nameof(Submission.SubmittedAt))?
+        //     .SetValue(sub99, new DateTime(2025, 01, 28, 0, 0, 0, DateTimeKind.Utc));
 
-        foreach (Question q in f7Qs)
-        {
-            sub99.AddAnswer(q.Id, numericValue: RandomNumberGenerator.GetInt32(6, 10));
-        }
-        context.Submissions.Add(sub99);
+        // foreach (Question q in f7Qs)
+        // {
+        //     sub99.AddAnswer(q.Id, numericValue: RandomNumberGenerator.GetInt32(6, 10));
+        // }
+        // context.Submissions.Add(sub99);
 
-        await context.SaveChangesAsync();
+        // await context.SaveChangesAsync();
         logger.LogInformation("Seeding completed.");
     }
 
-    private Submission CreateSubmission(
-        ApplicationDbContext context,
-        Form form,
-        Guid userId,
-        DateTime date,
-        Func<SubmissionContext, SubmissionContext> contextBuilder,
-        Func<Question, (decimal? Val, decimal? Weight)> valueProvider)
-    {
-        SubmissionContext subCtx = contextBuilder(new SubmissionContext());
+    // private Submission CreateSubmission(
+    //     ApplicationDbContext context,
+    //     Form form,
+    //     Guid userId,
+    //     DateTime date,
+    //     Func<SubmissionContext, SubmissionContext> contextBuilder,
+    //     Func<Question, (decimal? Val, decimal? Weight)> valueProvider)
+    // {
+    //     SubmissionContext subCtx = contextBuilder(new SubmissionContext());
 
-        Submission submission = Submission.Create(
-            form.Id, userId,
-            subCtx.DisciplineId, subCtx.TeacherId, subCtx.DepartmentId,
-            subCtx.SpecialityId, subCtx.SpecializationId, subCtx.OrganizationName).Value;
+    //     Submission submission = Submission.Create(
+    //         form.Id, userId,
+    //         subCtx.DisciplineId, subCtx.TeacherId, subCtx.DepartmentId,
+    //         subCtx.SpecialityId, subCtx.SpecializationId, subCtx.OrganizationName).Value;
 
-        typeof(Submission).GetProperty(nameof(Submission.SubmittedAt))?
-            .SetValue(submission, date);
+    //     typeof(Submission).GetProperty(nameof(Submission.SubmittedAt))?
+    //         .SetValue(submission, date);
 
-        if (subCtx.EducationForm != null)
-        {
-            // Logic to update context if needed
-        }
+    //     if (subCtx.EducationForm != null)
+    //     {
+    //         // Logic to update context if needed
+    //     }
 
-        foreach (Question q in form.Questions)
-        {
-            if (q.Type == QuestionType.Text)
-            {
-                continue;
-            }
+    //     foreach (Question q in form.Questions)
+    //     {
+    //         if (q.Type == QuestionType.Text)
+    //         {
+    //             continue;
+    //         }
 
-            (decimal? val, decimal? weight) = valueProvider(q);
-            if (val.HasValue)
-            {
-                submission.AddAnswer(q.Id, numericValue: val, weight: weight);
-            }
-        }
+    //         (decimal? val, decimal? weight) = valueProvider(q);
+    //         if (val.HasValue)
+    //         {
+    //             submission.AddAnswer(q.Id, numericValue: val, weight: weight);
+    //         }
+    //     }
 
-        context.Submissions.Add(submission);
-        return submission;
-    }
+    //     context.Submissions.Add(submission);
+    //     return submission;
+    // }
 }

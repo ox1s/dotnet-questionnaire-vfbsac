@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251224145731_AddSubmissionContextFields")]
-    partial class AddSubmissionContextFields
+    [Migration("20251224160721_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -56,7 +56,7 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid?>("DepartmentId")
+                    b.Property<Guid>("DepartmentId")
                         .HasColumnType("uuid")
                         .HasColumnName("department_id");
 
@@ -68,6 +68,9 @@ namespace Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_disciplines");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_disciplines_department_id");
 
                     b.HasIndex("Name")
                         .IsUnique()
@@ -353,6 +356,16 @@ namespace Infrastructure.Migrations
                         .HasName("pk_outbox_messages");
 
                     b.ToTable("OutboxMessages", "public");
+                });
+
+            modelBuilder.Entity("Domain.College.DisciplineAggregate.Discipline", b =>
+                {
+                    b.HasOne("Domain.College.DepartmentAggregate.Department", null)
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_disciplines_departments_department_id");
                 });
 
             modelBuilder.Entity("Domain.Questionnaires.FormAggregate.Question", b =>

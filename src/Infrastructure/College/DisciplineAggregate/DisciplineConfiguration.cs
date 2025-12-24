@@ -1,3 +1,4 @@
+using Domain.College.DepartmentAggregate;
 using Domain.College.DisciplineAggregate;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,9 +15,15 @@ internal sealed class DisciplineConfiguration : IEntityTypeConfiguration<Discipl
             .IsRequired()
             .HasMaxLength(255);
 
-        builder.Property(d => d.DepartmentId);
+        builder.Property(d => d.DepartmentId)
+        .IsRequired();
 
         builder.HasIndex(d => d.Name)
             .IsUnique();
+
+        builder.HasOne<Department>()
+        .WithMany()
+        .HasForeignKey(d => d.DepartmentId)
+        .OnDelete(DeleteBehavior.Restrict);
     }
 }

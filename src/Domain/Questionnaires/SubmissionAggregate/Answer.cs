@@ -30,22 +30,28 @@ public sealed class Answer : Entity
                 "Either Value or NumericValue must be provided"));
         }
 
-        if (weight.HasValue && numericValue.HasValue)
-        {
-            if (numericValue.Value > weight.Value)
-            {
-                return Result.Failure<Answer>(SubmissionErrors.InvalidWeight(questionId));
-            }
+        const int MinValue = 1;
+        const int MaxValue = 10;
 
-            if (numericValue.Value < 0 || weight.Value < 0)
-            {
-                return Result.Failure<Answer>(Error.Validation("Answers.NegativeValue", "Values cannot be negative"));
-            }
+        if (numericValue.HasValue && (numericValue.Value < MinValue || numericValue.Value > MaxValue))
+        {
+            return Result.Failure<Answer>(Error.Validation("Answers.InvalidScore", $"Score must be between {MinValue} and {MaxValue}"));
+        }
+
+        if (weight.HasValue && (weight.Value < MinValue || weight.Value > MaxValue))
+        {
+            return Result.Failure<Answer>(Error.Validation("Answers.InvalidWeight", $"Weight must be between {MinValue} and {MaxValue}"));
+        }
+        // ---------------------------------------
+
+        if (weight.HasValue && numericValue.HasValue && numericValue.Value > weight.Value)
+        {
+            return Result.Failure<Answer>(SubmissionErrors.InvalidWeight(questionId));
         }
 
         return new Answer(Guid.NewGuid(), submissionId, questionId, value?.Trim(), numericValue, weight);
-    }
 
+    }
     public void UpdateValue(string? value)
     {
         Value = value?.Trim();

@@ -75,7 +75,9 @@ internal sealed class GetSubmissionStatisticsQueryHandler(IApplicationDbContext 
         }
 
         var numericQuestions = form.Questions
-            .Where(q => q.Type == QuestionType.Number || q.Type == QuestionType.Rating)
+            .Where(q => q.Type == QuestionType.Number ||
+                        q.Type == QuestionType.Rating ||
+                        q.Type == QuestionType.WeightedRating) 
             .OrderBy(q => q.Order)
             .ToList();
 

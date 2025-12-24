@@ -5,17 +5,17 @@ namespace Domain.College.DisciplineAggregate;
 public sealed class Discipline : AggregateRoot
 {
     public string Name { get; private set; }
-    public Guid? DepartmentId { get; private set; }
+    public Guid DepartmentId { get; private set; }
 
     private Discipline() { }
 
-    private Discipline(Guid id, string name, Guid? departmentId) : base(id)
+    private Discipline(Guid id, string name, Guid departmentId) : base(id)
     {
         Name = name;
         DepartmentId = departmentId;
     }
 
-    public static Result<Discipline> Create(string name, Guid? departmentId = null)
+    public static Result<Discipline> Create(string name, Guid departmentId)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -35,13 +35,11 @@ public sealed class Discipline : AggregateRoot
         Name = name.Trim();
     }
 
-    public void AssignToDepartment(Guid departmentId)
+    public void ChangeDepartment(Guid departmentId)
     {
-        DepartmentId = departmentId;
-    }
-
-    public void RemoveFromDepartment()
-    {
-        DepartmentId = null;
+        if (departmentId != Guid.Empty)
+        {
+            DepartmentId = departmentId;
+        }
     }
 }

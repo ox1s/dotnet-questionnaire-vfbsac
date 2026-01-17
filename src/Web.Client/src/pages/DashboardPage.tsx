@@ -22,14 +22,36 @@ export const DashboardPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold text-blue-900">Личный кабинет</h1>
+
           <Link
             to="/admin/create-form"
-            className="text-sm bg-blue-100 text-blue-700 px-3 py-1.5 rounded-md font-medium hover:bg-blue-200 transition"
+            className="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-100"
           >
-            + Создать анкету
+            + Анкеты
           </Link>
+
+          <div className="flex gap-2">
+            <Link
+              to="/admin/departments"
+              className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
+            >
+              Кафедры
+            </Link>
+            <Link
+              to="/admin/teachers"
+              className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
+            >
+              Преподаватели
+            </Link>
+            <Link
+              to="/admin/disciplines"
+              className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
+            >
+              Дисциплины
+            </Link>
+          </div>
         </div>
 
         <button

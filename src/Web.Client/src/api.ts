@@ -27,6 +27,12 @@ export const dictionariesApi = {
   getDepartments: () => api.get<DictionaryItem[]>("/dictionaries/departments"),
   getTeachers: () => api.get<TeacherItem[]>("/dictionaries/teachers"),
   getDisciplines: () => api.get<DictionaryItem[]>("/dictionaries/disciplines"),
+  createTeacher: (fullName: string, departmentId: string) =>
+    api.post<string>("/teachers", { fullName, departmentId }),
+  createDiscipline: (name: string, departmentId: string) =>
+    api.post<string>("/disciplines", { name, departmentId }),
+  createDepartment: (name: string) =>
+    api.post<string>("/departments", { name }),
 };
 
 export default api;

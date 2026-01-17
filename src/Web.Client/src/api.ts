@@ -14,7 +14,8 @@ api.interceptors.request.use((config) => {
 
 export interface DictionaryItem {
   id: string;
-  name: string; // Для Department, Discipline, Speciality
+  name: string;
+  departmentId?: string;
 }
 
 export interface TeacherItem {
@@ -33,6 +34,19 @@ export const dictionariesApi = {
     api.post<string>("/disciplines", { name, departmentId }),
   createDepartment: (name: string) =>
     api.post<string>("/departments", { name }),
+  deleteDepartment: (id: string) => api.delete(`/departments/${id}`),
+  deleteTeacher: (id: string) => api.delete(`/teachers/${id}`),
+  deleteDiscipline: (id: string) => api.delete(`/disciplines/${id}`),
+
+  updateDepartment: (id: string, name: string) =>
+    api.put(`/departments/${id}`, { departmentId: id, name }),
+
+  updateTeacher: (id: string, fullName: string, departmentId: string) =>
+    api.put(`/teachers/${id}`, { fullName, departmentId }),
+
+  updateDiscipline: (id: string, name: string, departmentId: string) =>
+    api.put(`/disciplines/${id}`, { name, departmentId }),
+
 };
 
 export default api;

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { dictionariesApi, type DictionaryItem } from "../api";
-import { ArrowLeft, Plus, Building2 } from "lucide-react";
+// 1. Добавляем иконки Pencil и X
+import { ArrowLeft, Plus, Building2, Trash2, Pencil, X } from "lucide-react";
 
 export const AdminDepartmentsPage = () => {
   const navigate = useNavigate();
@@ -10,6 +11,9 @@ export const AdminDepartmentsPage = () => {
 
   // Поле ввода
   const [newName, setNewName] = useState("");
+
+  // 2. Состояние редактирования
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
@@ -26,16 +30,53 @@ export const AdminDepartmentsPage = () => {
     loadData();
   }, []);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  // --- Хендлеры ---
+
+  const startEdit = (d: DictionaryItem) => {
+    setEditingId(d.id);
+    setNewName(d.name);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setNewName("");
+  };
+
+  // Единый метод (Create + Update)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
 
     try {
-      await dictionariesApi.createDepartment(newName);
-      setNewName("");
+      if (editingId) {
+        // UPDATE
+        await dictionariesApi.updateDepartment(editingId, newName);
+      } else {
+        // CREATE
+        await dictionariesApi.createDepartment(newName);
+      }
+
+      cancelEdit();
       loadData();
     } catch (e) {
       alert("Ошибка. Возможно, такая кафедра уже есть.");
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Вы уверены, что хотите удалить кафедру "${name}"?`)) {
+      return;
+    }
+
+    try {
+      await dictionariesApi.deleteDepartment(id);
+      loadData();
+    } catch (e) {
+      console.error(e);
+      alert(
+        "Не удалось удалить кафедру. Возможно, к ней привязаны преподаватели или дисциплины.",
+      );
     }
   };
 
@@ -58,13 +99,36 @@ export const AdminDepartmentsPage = () => {
       </header>
 
       <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Форма добавления */}
-        <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-md font-semibold mb-4 text-blue-900">
-            Создать кафедру
-          </h2>
+        {/* Форма (Create / Update) */}
+        <section
+          className={`p-6 rounded-lg shadow-sm border transition-colors ${editingId ? "bg-blue-50 border-blue-200" : "bg-white border-gray-200"}`}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-md font-semibold text-blue-900 flex items-center gap-2">
+              {editingId ? (
+                <>
+                  {" "}
+                  <Pencil size={18} /> Редактирование кафедры{" "}
+                </>
+              ) : (
+                <>
+                  {" "}
+                  <Plus size={18} /> Создать кафедру{" "}
+                </>
+              )}
+            </h2>
+            {editingId && (
+              <button
+                onClick={cancelEdit}
+                className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+              >
+                <X size={16} /> Отмена
+              </button>
+            )}
+          </div>
+
           <form
-            onSubmit={handleCreate}
+            onSubmit={handleSubmit}
             className="flex flex-col md:flex-row gap-4 items-end"
           >
             <div className="w-full">
@@ -74,16 +138,16 @@ export const AdminDepartmentsPage = () => {
               <input
                 type="text"
                 className="input-field"
-                placeholder="Например: ИКТ или Кафедра информационных сетей"
+                placeholder="Например: ИКТ"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
               />
             </div>
             <button
               type="submit"
-              className="btn-primary w-full md:w-auto flex-shrink-0"
+              className={`btn-primary w-full md:w-auto flex-shrink-0 ${editingId ? "bg-amber-600 hover:bg-amber-700" : ""}`}
             >
-              <Plus size={18} className="mr-1" /> Добавить
+              {editingId ? "Сохранить" : "Добавить"}
             </button>
           </form>
         </section>
@@ -99,11 +163,17 @@ export const AdminDepartmentsPage = () => {
                 <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase w-20">
                   ID
                 </th>
+                <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase w-32 text-right">
+                  Действия
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {departments.map((d) => (
-                <tr key={d.id} className="hover:bg-gray-50">
+                <tr
+                  key={d.id}
+                  className={`hover:bg-gray-50 group ${editingId === d.id ? "bg-blue-50" : ""}`}
+                >
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">
                     {d.name}
                   </td>
@@ -112,6 +182,25 @@ export const AdminDepartmentsPage = () => {
                     title={d.id}
                   >
                     {d.id.substring(0, 8)}...
+                  </td>
+                  <td className="px-6 py-4 text-sm text-right space-x-2">
+                    {/* Редактировать */}
+                    <button
+                      onClick={() => startEdit(d)}
+                      className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                      title="Редактировать"
+                    >
+                      <Pencil size={18} />
+                    </button>
+
+                    {/* Удалить */}
+                    <button
+                      onClick={() => handleDelete(d.id, d.name)}
+                      className="text-gray-400 hover:text-red-600 transition-colors p-1"
+                      title="Удалить"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </td>
                 </tr>
               ))}

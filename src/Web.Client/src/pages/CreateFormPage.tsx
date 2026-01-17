@@ -3,17 +3,14 @@ import { useNavigate } from "react-router-dom";
 import api from "../api";
 import { ArrowLeft, Plus, Trash2, Save, CheckSquare, Square } from "lucide-react";
 
-// Типы, соответствующие бэкенду (C# Enum QuestionType)
-enum QuestionType {
-  Text = 1,
-  Number = 2,
-  // MultipleChoice = 3, // Пока не реализовано в UI
-  // SingleChoice = 4,   // Пока не реализовано в UI
-  // Rating = 5,
-  WeightedRating = 6,
-}
+const QuestionType = {
+  Text: 1,
+  Number: 2,
+  WeightedRating: 6,
+} as const;
 
-// Типы, соответствующие бэкенду (C# Enum FilterField)
+type QuestionType = typeof QuestionType[keyof typeof QuestionType];
+
 type FilterField = "Department" | "Discipline" | "Teacher" | "Speciality";
 
 interface QuestionDraft {

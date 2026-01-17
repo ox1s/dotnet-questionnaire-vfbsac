@@ -7,6 +7,7 @@ import { CreateFormPage } from "./pages/CreateFormPage";
 import { AdminTeachersPage } from "./pages/AdminTeachersPage";
 import { AdminDisciplinesPage } from "./pages/AdminDisciplinesPage";
 import { AdminDepartmentsPage } from "./pages/AdminDepartmentsPage";
+import { AdminGroupsPage } from "./pages/AdminGroupsPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/admin/disciplines" element={<AdminDisciplinesPage />} />
         <Route path="/admin/departments" element={<AdminDepartmentsPage />} />
+        <Route path="/admin/groups" element={<AdminGroupsPage />} />
       </Routes>
     </BrowserRouter>
   );

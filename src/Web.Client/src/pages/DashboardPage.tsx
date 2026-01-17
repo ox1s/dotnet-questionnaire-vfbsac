@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { type Form } from "../api";
-import { LogOut, FileText } from "lucide-react";
+import { LogOut, FileText, Users } from "lucide-react";
 
 export const DashboardPage = () => {
   const [forms, setForms] = useState<Form[]>([]);
@@ -50,6 +50,17 @@ export const DashboardPage = () => {
               className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
             >
               Дисциплины
+            </Link>
+            <div className="h-6 w-px bg-gray-300 mx-2"></div>{" "}
+            {/* Разделитель */}
+            {/* Управление пользователями */}
+            <Link
+              to="/admin/groups"
+              className="text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded hover:bg-indigo-100 font-medium"
+            >
+              <div className="flex items-center gap-1">
+                <Users size={16} /> Группы
+              </div>
             </Link>
           </div>
         </div>

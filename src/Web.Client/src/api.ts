@@ -24,6 +24,23 @@ export interface TeacherItem {
   departmentId: string;
 }
 
+export interface GroupUser {
+  id: string;
+  login: string;
+  displayName: string;
+}
+
+export const usersApi = {
+  createGroup: (groupName: string, password: string) =>
+    api.post<string>("/users/groups", { groupName, password }),
+
+  getGroups: () => api.get<GroupUser[]>("/users/groups"),
+
+  // Метод удаления юзера (админ может удалить группу)
+  // Мы еще не реализовали DeleteUserCommand, но предположим, что она будет
+  // deleteUser: (id: string) => api.delete(`/users/${id}`),
+};
+
 export const dictionariesApi = {
   getDepartments: () => api.get<DictionaryItem[]>("/dictionaries/departments"),
   getTeachers: () => api.get<TeacherItem[]>("/dictionaries/teachers"),
@@ -46,7 +63,6 @@ export const dictionariesApi = {
 
   updateDiscipline: (id: string, name: string, departmentId: string) =>
     api.put(`/disciplines/${id}`, { name, departmentId }),
-
 };
 
 export default api;

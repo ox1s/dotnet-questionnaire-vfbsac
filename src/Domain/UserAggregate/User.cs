@@ -18,7 +18,7 @@ public sealed class User : AggregateRoot
     public int? TeacherId { get; private set; } // Если Role == Teacher
     public string? OrganizationName { get; private set; } // Если Role == Employer
 
-    
+
     private User() { }
 
     public static Result<User> CreateGroupUser(GroupName groupName, int groupId, string passwordHash)
@@ -79,6 +79,11 @@ public sealed class User : AggregateRoot
         PasswordHash = newPasswordHash;
     }
 
+    public void UpdateDetails(Login login, string displayName)
+    {
+        Login = login;
+        DisplayName = displayName;
+    }
 
     public void ChangePassword(string newPasswordHash)
     {

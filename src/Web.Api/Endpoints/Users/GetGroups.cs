@@ -20,7 +20,7 @@ internal sealed class GetGroups : IEndpoint
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
-        .WithTags("Users")
+    .WithTags("Users")
         .HasPermission(Permissions.Admin); 
     }
 }

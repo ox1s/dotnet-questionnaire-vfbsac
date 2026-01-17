@@ -36,9 +36,13 @@ export const usersApi = {
 
   getGroups: () => api.get<GroupUser[]>("/users/groups"),
 
-  // Метод удаления юзера (админ может удалить группу)
-  // Мы еще не реализовали DeleteUserCommand, но предположим, что она будет
-  // deleteUser: (id: string) => api.delete(`/users/${id}`),
+  deleteUser: (id: string) => api.delete(`/users/${id}`),
+
+  updateUser: (id: string, login: string, displayName: string) =>
+    api.put(`/users/${id}`, { login, displayName }),
+
+  setPassword: (id: string, newPassword: string) =>
+    api.post(`/users/${id}/set-password`, { userId: id, newPassword }),
 };
 
 export const dictionariesApi = {

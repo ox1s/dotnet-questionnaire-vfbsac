@@ -3,6 +3,18 @@ import { useParams } from "react-router-dom";
 import api, { type FormDetail, type Statistics, reportsApi } from "../api";
 import { Download, Users, TrendingUp, Activity } from "lucide-react";
 import { AdminLayout } from "../layouts/AdminLayout";
+// 1. Импорты графиков
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  Cell,
+} from "recharts";
 
 export const AdminStatsPage = () => {
   const { id } = useParams();
@@ -20,7 +32,11 @@ export const AdminStatsPage = () => {
         ]);
         setForm(formRes.data);
         setStats(statsRes.data);
-      } catch (e) { console.error(e); } finally { setLoading(false); }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, [id]);
@@ -36,22 +52,54 @@ export const AdminStatsPage = () => {
       document.body.appendChild(link);
       link.click();
       link.remove();
-    } catch (e) { alert("Ошибка загрузки файла"); }
+    } catch (e) {
+      alert("Ошибка загрузки файла");
+    }
   };
 
-  if (loading) return <div className="p-10 text-center text-slate-500">Загрузка данных...</div>;
-  if (!form || !stats) return <div className="p-10 text-center text-red-500">Ошибка загрузки</div>;
+  if (loading)
+    return (
+      <div className="p-10 text-center text-slate-500">Загрузка данных...</div>
+    );
+  if (!form || !stats)
+    return <div className="p-10 text-center text-red-500">Ошибка загрузки</div>;
 
   const numericQuestions = form.questions
     .filter((q) => q.type === "Number" || q.type === "WeightedRating")
     .sort((a, b) => a.order - b.order);
+
+  // 2. Подготовка данных для графика
+  const chartData = numericQuestions.map((q, idx) => ({
+    name: `В${idx + 1}`, // Короткое имя для оси X (Вопрос 1)
+    fullName: q.text, // Полный текст для тултипа
+    score: stats.resultScores[idx] || 0,
+    average: stats.averageScores[idx] || 0,
+  }));
+
+  // Кастомный тултип для графика
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-slate-800 text-white p-3 rounded-lg shadow-xl text-xs max-w-[250px]">
+          <p className="font-bold mb-1">{payload[0].payload.fullName}</p>
+          <p className="text-slate-300">
+            Балл:{" "}
+            <span className="text-white font-bold text-lg">
+              {payload[0].value.toFixed(2)}
+            </span>
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <AdminLayout
       title="Аналитика"
       subtitle={`Отчет по форме: ${form.title}`}
       actions={
-        <button 
+        <button
           onClick={handleDownload}
           className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 font-bold shadow-sm text-sm transition-all"
         >
@@ -62,52 +110,151 @@ export const AdminStatsPage = () => {
       {/* KPI Карточки */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-32">
-           <div className="flex items-center gap-3 text-slate-500">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><Users size={20}/></div>
-              <span className="text-sm font-bold uppercase tracking-wider">Всего анкет</span>
-           </div>
-           <p className="text-4xl font-bold text-slate-900">{stats.totalSubmissions}</p>
+          <div className="flex items-center gap-3 text-slate-500">
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+              <Users size={20} />
+            </div>
+            <span className="text-sm font-bold uppercase tracking-wider">
+              Всего анкет
+            </span>
+          </div>
+          <p className="text-4xl font-bold text-slate-900">
+            {stats.totalSubmissions}
+          </p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-32">
-           <div className="flex items-center gap-3 text-slate-500">
-              <div className="p-2 bg-green-50 text-green-600 rounded-lg"><TrendingUp size={20}/></div>
-              <span className="text-sm font-bold uppercase tracking-wider">Средний балл</span>
-           </div>
-           <p className="text-4xl font-bold text-slate-900">{stats.overallAverage.toFixed(2)}</p>
+          <div className="flex items-center gap-3 text-slate-500">
+            <div className="p-2 bg-green-50 text-green-600 rounded-lg">
+              <TrendingUp size={20} />
+            </div>
+            <span className="text-sm font-bold uppercase tracking-wider">
+              Средний балл
+            </span>
+          </div>
+          <p className="text-4xl font-bold text-slate-900">
+            {stats.overallAverage.toFixed(2)}
+          </p>
         </div>
 
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between h-32">
-           <div className="flex items-center gap-3 text-slate-500">
-              <div className="p-2 bg-purple-50 text-purple-600 rounded-lg"><Activity size={20}/></div>
-              <span className="text-sm font-bold uppercase tracking-wider">Отклонение</span>
-           </div>
-           <p className="text-4xl font-bold text-slate-900">{stats.overallStandardDeviation.toFixed(2)}</p>
+          <div className="flex items-center gap-3 text-slate-500">
+            <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+              <Activity size={20} />
+            </div>
+            <span className="text-sm font-bold uppercase tracking-wider">
+              Отклонение
+            </span>
+          </div>
+          <p className="text-4xl font-bold text-slate-900">
+            {stats.overallStandardDeviation.toFixed(2)}
+          </p>
         </div>
+      </div>
+
+      {/* 3. Блок Графика */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
+        <h3 className="text-lg font-bold text-slate-900 mb-6">
+          Распределение оценок по вопросам
+        </h3>
+        <div className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="#e2e8f0"
+              />
+              <XAxis
+                dataKey="name"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#64748b", fontSize: 12 }}
+                dy={10}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "#64748b", fontSize: 12 }}
+                domain={[0, 10]}
+                ticks={[0, 2, 4, 6, 8, 10]}
+              />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: "#f1f5f9" }}
+              />
+
+              {/* Линия среднего балла (для ориентира) */}
+              <ReferenceLine
+                y={stats.overallAverage}
+                stroke="#10b981"
+                strokeDasharray="3 3"
+              />
+
+              <Bar dataKey="score" radius={[6, 6, 0, 0]} barSize={40}>
+                {chartData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={
+                      entry.score >= 8
+                        ? "#1a4456"
+                        : entry.score >= 5
+                          ? "#5b7c8b"
+                          : "#ef4444"
+                    }
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="text-xs text-center text-slate-400 mt-4">
+          Цвета столбцов:{" "}
+          <span className="text-primary font-bold">● &gt;8 (Отлично)</span>,{" "}
+          <span className="text-secondary font-bold">● 5-8 (Средне)</span>,{" "}
+          <span className="text-red-500 font-bold">● &lt;5 (Плохо)</span>
+        </p>
       </div>
 
       {/* Таблица Деталей */}
       <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100">
-           <h3 className="text-lg font-bold text-slate-900">Детализация по вопросам</h3>
+          <h3 className="text-lg font-bold text-slate-900">Детализация</h3>
         </div>
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/50">
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase w-16 text-center">№</th>
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase">Вопрос</th>
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">Среднее</th>
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">Итог</th>
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">Sigma</th>
+              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase w-16 text-center">
+                №
+              </th>
+              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase">
+                Вопрос
+              </th>
+              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">
+                Среднее
+              </th>
+              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">
+                Итог
+              </th>
+              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">
+                Sigma
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {numericQuestions.map((q, idx) => (
               <tr key={q.id} className="hover:bg-slate-50 transition-colors">
                 <td className="py-4 px-6 text-center">
-                   <span className="inline-block w-6 h-6 rounded bg-slate-100 text-slate-600 text-xs font-bold leading-6">{idx + 1}</span>
+                  <span className="inline-block w-6 h-6 rounded bg-slate-100 text-slate-600 text-xs font-bold leading-6">
+                    {idx + 1}
+                  </span>
                 </td>
-                <td className="py-4 px-6 text-sm font-medium text-slate-900">{q.text}</td>
+                <td className="py-4 px-6 text-sm font-medium text-slate-900">
+                  {q.text}
+                </td>
                 <td className="py-4 px-6 text-sm text-slate-500 text-right font-mono">
                   {stats.averageScores[idx]?.toFixed(2) ?? "-"}
                 </td>
@@ -120,7 +267,11 @@ export const AdminStatsPage = () => {
               </tr>
             ))}
             {numericQuestions.length === 0 && (
-               <tr><td colSpan={5} className="p-8 text-center text-slate-400">Нет числовых данных</td></tr>
+              <tr>
+                <td colSpan={5} className="p-8 text-center text-slate-400">
+                  Нет числовых данных
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

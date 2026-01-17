@@ -2,10 +2,14 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { type Form } from "../api";
 import { LogOut, FileText, Users } from "lucide-react";
+import { isAdmin } from "../utils/auth";
 
 export const DashboardPage = () => {
   const [forms, setForms] = useState<Form[]>([]);
   const navigate = useNavigate();
+
+  // 2. Проверяем роль
+  const userIsAdmin = isAdmin();
 
   useEffect(() => {
     api
@@ -25,44 +29,49 @@ export const DashboardPage = () => {
         <div className="flex items-center gap-4">
           <h1 className="text-xl font-bold text-blue-900">Личный кабинет</h1>
 
-          <Link
-            to="/admin/create-form"
-            className="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-100"
-          >
-            + Анкеты
-          </Link>
+          {/* 3. Скрываем кнопки администрирования, если не админ */}
+          {userIsAdmin && (
+            <>
+              <div className="h-6 w-px bg-gray-300 mx-2"></div>
 
-          <div className="flex gap-2">
-            <Link
-              to="/admin/departments"
-              className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
-            >
-              Кафедры
-            </Link>
-            <Link
-              to="/admin/teachers"
-              className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
-            >
-              Преподаватели
-            </Link>
-            <Link
-              to="/admin/disciplines"
-              className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
-            >
-              Дисциплины
-            </Link>
-            <div className="h-6 w-px bg-gray-300 mx-2"></div>{" "}
-            {/* Разделитель */}
-            {/* Управление пользователями */}
-            <Link
-              to="/admin/groups"
-              className="text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded hover:bg-indigo-100 font-medium"
-            >
-              <div className="flex items-center gap-1">
-                <Users size={16} /> Группы
+              <Link
+                to="/admin/create-form"
+                className="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-100 font-medium"
+              >
+                + Анкеты
+              </Link>
+
+              <div className="flex gap-2">
+                <Link
+                  to="/admin/departments"
+                  className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
+                >
+                  Кафедры
+                </Link>
+                <Link
+                  to="/admin/teachers"
+                  className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
+                >
+                  Преподаватели
+                </Link>
+                <Link
+                  to="/admin/disciplines"
+                  className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
+                >
+                  Дисциплины
+                </Link>
               </div>
-            </Link>
-          </div>
+
+              <div className="h-6 w-px bg-gray-300 mx-2"></div>
+
+              <Link
+                to="/admin/groups"
+                className="text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded hover:bg-indigo-100 font-medium flex items-center gap-1"
+              >
+                <Users size={16} /> Группы
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -102,12 +111,15 @@ export const DashboardPage = () => {
                     Пройти анкету
                   </Link>
 
-                  <Link
-                    to={`/admin/stats/${form.id}`}
-                    className="text-sm text-gray-500 hover:text-gray-900 hover:underline ml-auto"
-                  >
-                    Статистика (Admin)
-                  </Link>
+                  {/* 4. Скрываем ссылку на Статистику */}
+                  {userIsAdmin && (
+                    <Link
+                      to={`/admin/stats/${form.id}`}
+                      className="text-sm text-gray-500 hover:text-gray-900 hover:underline ml-auto"
+                    >
+                      Статистика (Admin)
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>

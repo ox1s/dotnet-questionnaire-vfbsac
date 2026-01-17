@@ -1,6 +1,7 @@
 using Application.Abstractions.Messaging;
 using Application.Departments.Delete;
 using SharedKernel;
+using Web.Api.Endpoints.Users;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 
@@ -22,6 +23,6 @@ internal sealed class Delete : IEndpoint
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
         .WithTags("Dictionaries")
-        .RequireAuthorization();
+        .HasPermission(Permissions.Admin);
     }
 }

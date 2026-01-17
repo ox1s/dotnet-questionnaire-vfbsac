@@ -1,6 +1,8 @@
+using Application.Abstractions.Authentication; // Добавить
 using Application.Abstractions.Messaging;
 using Application.Submissions.Create;
 using SharedKernel;
+using Web.Api.Endpoints.Users;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 
@@ -12,17 +14,17 @@ internal sealed class Create : IEndpoint
     {
         app.MapPost("submissions", async (
             CreateSubmissionCommand command,
+            IUserContext userContext,
             ICommandHandler<CreateSubmissionCommand, Guid> handler,
             CancellationToken cancellationToken) =>
         {
-            // Важно: UserId должен браться из токена, но пока берем из команды для простоты тестирования
-            // В будущем здесь нужно переопределять command.UserId = userContext.UserId
+            CreateSubmissionCommand secureCommand = command with { UserId = userContext.UserId };
 
-            Result<Guid> result = await handler.Handle(command, cancellationToken);
+            Result<Guid> result = await handler.Handle(secureCommand, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
         .WithTags("Submissions")
-        .RequireAuthorization();
+        .HasPermission(Permissions.SubmitForms);
     }
 }

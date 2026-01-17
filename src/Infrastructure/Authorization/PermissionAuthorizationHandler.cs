@@ -11,23 +11,22 @@ internal sealed class PermissionAuthorizationHandler(IServiceScopeFactory servic
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
-        // TODO: You definitely want to reject unauthenticated users here.
-        if (context.User is { Identity.IsAuthenticated: true })
+        // 1. Проверяем, что пользователь аутентифицирован (есть токен)
+        if (context.User.Identity?.IsAuthenticated is not true)
         {
-            // TODO: Remove this call when you implement the PermissionProvider.GetForUserIdAsync
-            context.Succeed(requirement);
-
             return;
         }
 
-        using IServiceScope scope = serviceScopeFactory.CreateScope();
-
-        PermissionProvider permissionProvider = scope.ServiceProvider.GetRequiredService<PermissionProvider>();
-
+        // 2. Получаем ID пользователя из токена
         Guid userId = context.User.GetUserId();
+
+        // 3. Получаем права через Provider (который лезет в БД)
+        using IServiceScope scope = serviceScopeFactory.CreateScope();
+        PermissionProvider permissionProvider = scope.ServiceProvider.GetRequiredService<PermissionProvider>();
 
         HashSet<string> permissions = await permissionProvider.GetForUserIdAsync(userId);
 
+        // 4. Сверяем
         if (permissions.Contains(requirement.Permission))
         {
             context.Succeed(requirement);

@@ -66,8 +66,6 @@ export const SurveyPage = () => {
       // Отправка на сервер
       await api.post("/submissions", {
         formId: form.id,
-        userId: "3fa85f64-5717-4562-b3fc-2c963f66afa6", // TODO: Бэкенд должен брать из токена
-
         educationForm: context.educationForm,
         teacherId: context.teacherId || null,
         disciplineId: context.disciplineId || null,

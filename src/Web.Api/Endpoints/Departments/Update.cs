@@ -1,6 +1,7 @@
 using Application.Abstractions.Messaging;
 using Application.Departments.Update;
 using SharedKernel;
+using Web.Api.Endpoints.Users;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 
@@ -25,6 +26,6 @@ internal sealed class Update : IEndpoint
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
         .WithTags("Dictionaries")
-        .RequireAuthorization();
+        .HasPermission(Permissions.Admin);
     }
 }

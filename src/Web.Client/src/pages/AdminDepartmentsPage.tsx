@@ -157,11 +157,9 @@ export const AdminDepartmentsPage = () => {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
+                {/* Убрали столбец ID */}
                 <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">
                   Название
-                </th>
-                <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase w-20">
-                  ID
                 </th>
                 <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase w-32 text-right">
                   Действия
@@ -177,14 +175,10 @@ export const AdminDepartmentsPage = () => {
                   <td className="px-6 py-4 text-sm font-medium text-gray-900">
                     {d.name}
                   </td>
-                  <td
-                    className="px-6 py-4 text-sm text-gray-400 font-mono text-xs truncate max-w-[100px]"
-                    title={d.id}
-                  >
-                    {d.id.substring(0, 8)}...
-                  </td>
+
+                  {/* Убрали ячейку с d.id */}
+
                   <td className="px-6 py-4 text-sm text-right space-x-2">
-                    {/* Редактировать */}
                     <button
                       onClick={() => startEdit(d)}
                       className="text-gray-400 hover:text-blue-600 transition-colors p-1"
@@ -193,7 +187,6 @@ export const AdminDepartmentsPage = () => {
                       <Pencil size={18} />
                     </button>
 
-                    {/* Удалить */}
                     <button
                       onClick={() => handleDelete(d.id, d.name)}
                       className="text-gray-400 hover:text-red-600 transition-colors p-1"
@@ -204,6 +197,16 @@ export const AdminDepartmentsPage = () => {
                   </td>
                 </tr>
               ))}
+              {departments.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={2}
+                    className="px-6 py-8 text-center text-gray-400"
+                  >
+                    Список пуст
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </section>

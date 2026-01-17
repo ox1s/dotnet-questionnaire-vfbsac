@@ -1,6 +1,7 @@
 using Application.Abstractions.Messaging;
 using Application.Teachers.Create;
 using SharedKernel;
+using Web.Api.Endpoints.Users;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 
@@ -25,6 +26,6 @@ internal sealed class Create : IEndpoint
             return Results.Ok(result.Value);
         })
         .WithTags("Teachers") // Группировка в Swagger
-        .RequireAuthorization(); // Желательно добавить политику админа, например .RequireAuthorization("AdminPolicy")
+        .HasPermission(Permissions.Admin);
     }
 }

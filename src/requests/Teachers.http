@@ -1,0 +1,11 @@
+@host = http://localhost:5000
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJkZXZlbG9wZXJzIiwiaXNzIjoicXVlc3Rpb25uYWlyZS12ZmJzYWMiLCJleHAiOjE3Njg2ODM4NzEsInN1YiI6IjcxY2E3YzJmLWFmZGQtNDhjOC04ZjAxLTI2Y2EyN2NjNTRiZCIsImlhdCI6MTc2ODY4MDI3MSwibmJmIjoxNzY4NjgwMjcxfQ.ZZ0dhoVYbd557jTQhOqgu9MzV7hJvGTN7CoSr7ebBCU
+
+POST {{host}}/teachers
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "fullName": "Иванов Иван Иванович",
+  "departmentId": "0b37f220-beb0-48a8-bb66-134d425583c3"
+}

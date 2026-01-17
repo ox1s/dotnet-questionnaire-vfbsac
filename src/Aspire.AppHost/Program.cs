@@ -1,9 +1,13 @@
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
-IResourceBuilder<PostgresDatabaseResource> database = builder
-    .AddPostgres("database")
-    .WithImage("postgres:17")
-    .WithBindMount("../../.containers/db", "/var/lib/postgresql/data")
+IResourceBuilder<PostgresServerResource> postgres = builder
+    .AddPostgres("postgres")
+    .WithHostPort(5435)
+    .WithPgAdmin()
+    .WithDataVolume()
+    .WithLifetime(ContainerLifetime.Persistent);
+
+IResourceBuilder<PostgresDatabaseResource> database = postgres
     .AddDatabase("questionnaire-vfbsac");
 
 builder.AddProject<Projects.Web_Api>("web-api")

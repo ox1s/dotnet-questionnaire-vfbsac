@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { dictionariesApi, type TeacherItem, type DictionaryItem } from "../api";
-import { ArrowLeft, UserPlus, Users, Trash2, Pencil, X } from "lucide-react";
+import { AdminLayout } from "../layouts/AdminLayout";
+import { Plus, Search, Edit2, Trash2 } from "lucide-react";
 
 export const AdminTeachersPage = () => {
-  const navigate = useNavigate();
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Состояние формы
+  // Состояния для UI
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Состояния формы
   const [newName, setNewName] = useState("");
   const [selectedDept, setSelectedDept] = useState("");
-
-  // Состояние редактирования (если null - значит режим создания)
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadData = async () => {
@@ -26,8 +26,6 @@ export const AdminTeachersPage = () => {
       setDepartments(deptsRes.data);
     } catch (e) {
       console.error(e);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -35,50 +33,30 @@ export const AdminTeachersPage = () => {
     loadData();
   }, []);
 
-  // Нажатие на кнопку "Редактировать" в строке
-  const startEdit = (t: TeacherItem) => {
-    setEditingId(t.id);
-    setNewName(t.fullName);
-    setSelectedDept(t.departmentId);
-    // Скролл наверх к форме
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  const filteredTeachers = teachers.filter((t) =>
+    t.fullName.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
-  // Отмена редактирования
-  const cancelEdit = () => {
+  const getDeptName = (id: string) =>
+    departments.find((d) => d.id === id)?.name || "-";
+
+  const openCreateModal = () => {
     setEditingId(null);
     setNewName("");
     setSelectedDept("");
+    setIsFormOpen(true);
   };
 
-  // Единый обработчик отправки формы
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newName || !selectedDept) {
-      alert("Заполните все поля");
+  const openEditModal = (t: TeacherItem) => {
+    setEditingId(t.id);
+    setNewName(t.fullName);
+    setSelectedDept(t.departmentId);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Вы уверены, что хотите удалить этого преподавателя?"))
       return;
-    }
-
-    try {
-      if (editingId) {
-        // Режим UPDATE
-        await dictionariesApi.updateTeacher(editingId, newName, selectedDept);
-      } else {
-        // Режим CREATE
-        await dictionariesApi.createTeacher(newName, selectedDept);
-      }
-
-      // Сброс и обновление
-      cancelEdit();
-      loadData();
-    } catch (e) {
-      alert("Ошибка при сохранении.");
-    }
-  };
-
-  // Удаление (из прошлого шага)
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Удалить "${name}"?`)) return;
     try {
       await dictionariesApi.deleteTeacher(id);
       loadData();
@@ -87,149 +65,168 @@ export const AdminTeachersPage = () => {
     }
   };
 
-  const getDeptName = (id: string) =>
-    departments.find((d) => d.id === id)?.name || "-";
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      if (editingId)
+        await dictionariesApi.updateTeacher(editingId, newName, selectedDept);
+      else await dictionariesApi.createTeacher(newName, selectedDept);
 
-  if (loading) return <div>Загрузка...</div>;
+      setIsFormOpen(false);
+      loadData();
+    } catch (e) {
+      alert("Ошибка сохранения");
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-white shadow-sm px-6 py-4 sticky top-0 z-10 border-b border-gray-200">
-        <div className="max-w-4xl mx-auto flex items-center gap-4">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="text-gray-500 hover:text-gray-800"
-          >
-            <ArrowLeft />
-          </button>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Users size={20} /> Управление преподавателями
-          </h1>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Форма (Универсальная: Create / Update) */}
-        <section
-          className={`p-6 rounded-lg shadow-sm border transition-colors ${editingId ? "bg-blue-50 border-blue-200" : "bg-white border-gray-200"}`}
+    <AdminLayout
+      title="Преподаватели"
+      subtitle="Управление списком преподавателей и их привязкой к кафедрам."
+      actions={
+        <button
+          onClick={openCreateModal}
+          className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-all text-sm font-bold shadow-lg shadow-slate-800/20 active:scale-95"
         >
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-md font-semibold text-blue-900 flex items-center gap-2">
-              {editingId ? (
-                <>
-                  {" "}
-                  <Pencil size={18} /> Редактирование преподавателя{" "}
-                </>
-              ) : (
-                <>
-                  {" "}
-                  <UserPlus size={18} /> Добавить нового преподавателя{" "}
-                </>
-              )}
-            </h2>
-            {editingId && (
-              <button
-                onClick={cancelEdit}
-                className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
-              >
-                <X size={16} /> Отмена
-              </button>
-            )}
-          </div>
+          <Plus size={18} />
+          Добавить
+        </button>
+      }
+    >
+      {/* Поиск */}
+      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
+        <div className="relative w-full md:max-w-md">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            size={18}
+          />
+          <input
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all placeholder:text-slate-400"
+            placeholder="Поиск по ФИО..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
 
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col md:flex-row gap-4 items-end"
-          >
-            <div className="w-full md:w-1/2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+      {/* Таблица */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="bg-slate-50/50 border-b border-slate-200">
+              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">
                 ФИО Преподавателя
-              </label>
-              <input
-                type="text"
-                className="input-field"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-              />
-            </div>
-            <div className="w-full md:w-1/3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              </th>
+              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Кафедра
-              </label>
-              <select
-                className="input-field"
-                value={selectedDept}
-                onChange={(e) => setSelectedDept(e.target.value)}
+              </th>
+              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                Действия
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {filteredTeachers.map((t) => (
+              <tr
+                key={t.id}
+                className="group hover:bg-slate-50 transition-colors"
               >
-                <option value="">-- Выберите --</option>
-                {departments.map((d) => (
-                  <option key={d.id} value={d.id}>
-                    {d.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <button
-              type="submit"
-              className={`btn-primary w-full md:w-auto ${editingId ? "bg-amber-600 hover:bg-amber-700" : ""}`}
-            >
-              {editingId ? "Сохранить" : "Добавить"}
-            </button>
-          </form>
-        </section>
-
-        {/* Список */}
-        <section className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                  ФИО
-                </th>
-                <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                  Кафедра
-                </th>
-                <th className="px-6 py-3 text-xs font-medium text-gray-500 uppercase text-right">
-                  Действия
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {teachers.map((t) => (
-                <tr
-                  key={t.id}
-                  className={`hover:bg-gray-50 group ${editingId === t.id ? "bg-blue-50" : ""}`}
-                >
-                  <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                    {t.fullName}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-500">
+                <td className="py-4 px-6">
+                  <div className="flex items-center gap-3">
+                    <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                      {t.fullName.substring(0, 1)}
+                    </div>
+                    <span className="text-sm font-bold text-slate-900">
+                      {t.fullName}
+                    </span>
+                  </div>
+                </td>
+                <td className="py-4 px-6">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
                     {getDeptName(t.departmentId)}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-right space-x-2">
-                    {/* Кнопка Редактировать */}
+                  </span>
+                </td>
+                <td className="py-4 px-6 text-right">
+                  <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => startEdit(t)}
-                      className="text-gray-400 hover:text-blue-600 transition p-1"
-                      title="Редактировать"
+                      onClick={() => openEditModal(t)}
+                      className="p-1.5 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
                     >
-                      <Pencil size={18} />
+                      <Edit2 size={18} />
                     </button>
-                    {/* Кнопка Удалить */}
                     <button
-                      onClick={() => handleDelete(t.id, t.fullName)}
-                      className="text-gray-400 hover:text-red-600 transition p-1"
-                      title="Удалить"
+                      onClick={() => handleDelete(t.id)}
+                      className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
                     >
                       <Trash2 size={18} />
                     </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </section>
-      </main>
-    </div>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Модальное окно */}
+      {isFormOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            onClick={() => setIsFormOpen(false)}
+          ></div>
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-lg font-bold text-slate-900 mb-4">
+              {editingId ? "Редактирование" : "Новый преподаватель"}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                  ФИО
+                </label>
+                <input
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Например: Иванов И.И."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                  Кафедра
+                </label>
+                <select
+                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
+                  value={selectedDept}
+                  onChange={(e) => setSelectedDept(e.target.value)}
+                >
+                  <option value="">Выберите кафедру...</option>
+                  {departments.map((d) => (
+                    <option key={d.id} value={d.id}>
+                      {d.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                  className="flex-1 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50"
+                >
+                  Отмена
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 rounded-lg bg-slate-800 text-white font-bold text-sm hover:bg-primary-hover shadow-lg shadow-primary/20"
+                >
+                  Сохранить
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </AdminLayout>
   );
 };

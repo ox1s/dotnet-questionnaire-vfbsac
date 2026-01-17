@@ -11,104 +11,119 @@ public class WordReportGenerator
 {
     public byte[] GenerateFormReport(string formTitle, SubmissionStatisticsResponse stats)
     {
-        using var stream = new MemoryStream();
+        using MemoryStream stream = new();
 
-        // Исправлено IDE0007: Использование var
-        using var wordDocument = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document);
-
-        MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
-        mainPart.Document = new A.Document();
-        Body body = mainPart.Document.AppendChild(new Body());
-
-        // 1. Заголовок
-        // Исправлено S3220: Использование AppendChild вместо конструкторов с params
-        var titleRun = new Run();
-        titleRun.AppendChild(new A.Text($"Отчет по форме: {formTitle}"));
-
-        var titleProps = new RunProperties();
-        titleProps.AppendChild(new Bold());
-        titleProps.AppendChild(new FontSize { Val = "32" }); // 16pt
-
-        titleRun.PrependChild(titleProps);
-
-        var titlePara = new Paragraph();
-        titlePara.AppendChild(titleRun);
-        body.AppendChild(titlePara);
-
-        // Статистика (параграфы)
-        var pTotal = new Paragraph();
-        var runTotal = new Run();
-        runTotal.AppendChild(new A.Text($"Всего анкет: {stats.TotalSubmissions}"));
-        pTotal.AppendChild(runTotal);
-        body.AppendChild(pTotal);
-
-        var pAvg = new Paragraph();
-        var runAvg = new Run();
-        runAvg.AppendChild(new A.Text($"Средний балл по всем вопросам: {stats.OverallAverage.ToString("F2", CultureInfo.InvariantCulture)}"));
-        pAvg.AppendChild(runAvg);
-        body.AppendChild(pAvg);
-
-        // 2. Таблица
-        var table = new A.Table();
-
-        // Стили таблицы
-        var tblProps = new TableProperties();
-        var borders = new TableBorders();
-
-        borders.AppendChild(new TopBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 6 });
-        borders.AppendChild(new BottomBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 6 });
-        borders.AppendChild(new LeftBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 6 });
-        borders.AppendChild(new RightBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 6 });
-        borders.AppendChild(new InsideHorizontalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 6 });
-        borders.AppendChild(new InsideVerticalBorder { Val = new EnumValue<BorderValues>(BorderValues.Single), Size = 6 });
-
-        tblProps.AppendChild(borders);
-        table.AppendChild(tblProps);
-
-        // Шапка
-        var trHeader = new TableRow();
-        trHeader.AppendChild(CreateCell("№", true));
-        trHeader.AppendChild(CreateCell("Средний балл", true));
-        trHeader.AppendChild(CreateCell("Отклонение", true));
-        table.AppendChild(trHeader);
-
-        // Данные
-        for (int i = 0; i < stats.ResultScores.Count; i++)
+        using (var wordDocument = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document))
         {
-            var tr = new TableRow();
-            tr.AppendChild(CreateCell((i + 1).ToString(CultureInfo.InvariantCulture)));
-            tr.AppendChild(CreateCell(stats.ResultScores[i].ToString("F2", CultureInfo.InvariantCulture)));
+            MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
+            mainPart.Document = new A.Document();
+            Body body = mainPart.Document.AppendChild(new Body());
 
-            string dev = i < stats.StandardDeviations.Count
-                ? stats.StandardDeviations[i].ToString("F2", CultureInfo.InvariantCulture)
-                : "-";
+            // 1. Заголовок
+            Run titleRun = new();
+            titleRun.AppendChild(new A.Text($"Отчет по форме: {formTitle}"));
 
-            tr.AppendChild(CreateCell(dev));
-            table.AppendChild(tr);
+            RunProperties titleProps = new();
+            titleProps.AppendChild(new Bold());
+            titleProps.AppendChild(new FontSize { Val = "32" });
+
+            titleRun.PrependChild(titleProps);
+
+            Paragraph titlePara = new();
+            titlePara.AppendChild(titleRun);
+            body.AppendChild(titlePara);
+
+            // 2. Общая статистика
+            AddParagraph(body, $"Всего анкет: {stats.TotalSubmissions}");
+            AddParagraph(body, $"Средний балл (общий): {stats.OverallAverage.ToString("F2", CultureInfo.InvariantCulture)}");
+            AddParagraph(body, $"Отклонение (Sigma): {stats.OverallStandardDeviation.ToString("F2", CultureInfo.InvariantCulture)}");
+
+            body.AppendChild(new Paragraph());
+
+            // 3. Таблица
+            A.Table table = new();
+
+            // Стили таблицы
+            TableProperties tblProps = new();
+            TableBorders borders = new();
+
+            EnumValue<BorderValues> borderType = new(BorderValues.Single);
+            UInt32Value borderSize = 4;
+
+            borders.AppendChild(new TopBorder { Val = borderType, Size = borderSize });
+            borders.AppendChild(new BottomBorder { Val = borderType, Size = borderSize });
+            borders.AppendChild(new LeftBorder { Val = borderType, Size = borderSize });
+            borders.AppendChild(new RightBorder { Val = borderType, Size = borderSize });
+            borders.AppendChild(new InsideHorizontalBorder { Val = borderType, Size = borderSize });
+            borders.AppendChild(new InsideVerticalBorder { Val = borderType, Size = borderSize });
+
+            tblProps.AppendChild(borders);
+            tblProps.AppendChild(new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct });
+
+            table.AppendChild(tblProps);
+
+            // Шапка таблицы
+            TableRow trHeader = new();
+            trHeader.AppendChild(CreateCell("№", true));
+            trHeader.AppendChild(CreateCell("Вопрос", true));
+            trHeader.AppendChild(CreateCell("Оценка", true));
+            trHeader.AppendChild(CreateCell("Откл.", true));
+            table.AppendChild(trHeader);
+
+            // Данные
+            for (int i = 0; i < stats.ResultScores.Count; i++)
+            {
+                TableRow tr = new();
+
+                tr.AppendChild(CreateCell((i + 1).ToString(CultureInfo.InvariantCulture)));
+                tr.AppendChild(CreateCell($"Вопрос {i + 1}"));
+                tr.AppendChild(CreateCell(stats.ResultScores[i].ToString("F2", CultureInfo.InvariantCulture)));
+
+                string dev = i < stats.StandardDeviations.Count
+                    ? stats.StandardDeviations[i].ToString("F2", CultureInfo.InvariantCulture)
+                    : "-";
+
+                tr.AppendChild(CreateCell(dev));
+                table.AppendChild(tr);
+            }
+
+            body.AppendChild(table);
+            mainPart.Document.Save();
         }
-
-        body.AppendChild(table);
-        mainPart.Document.Save();
 
         return stream.ToArray();
     }
 
+    private static void AddParagraph(Body body, string text)
+    {
+        Paragraph p = new();
+        Run r = new();
+        r.AppendChild(new A.Text(text));
+        p.AppendChild(r);
+        body.AppendChild(p);
+    }
+
     private static TableCell CreateCell(string text, bool bold = false)
     {
-        var run = new Run();
+        Run run = new();
         run.AppendChild(new A.Text(text));
 
         if (bold)
         {
-            var props = new RunProperties();
+            RunProperties props = new();
             props.AppendChild(new Bold());
             run.PrependChild(props);
         }
 
-        var p = new Paragraph();
+        Paragraph p = new();
         p.AppendChild(run);
 
-        var cell = new TableCell();
+        TableCell cell = new();
+
+        TableCellProperties cellProps = new();
+        cellProps.AppendChild(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "2400" });
+        cell.AppendChild(cellProps);
+
         cell.AppendChild(p);
 
         return cell;

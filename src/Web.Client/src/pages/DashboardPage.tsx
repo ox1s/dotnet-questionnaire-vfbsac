@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { type Form } from "../api";
-import { LogOut, FileText, Users } from "lucide-react";
+import { LogOut, FileText, BarChart3, User, ArrowRight } from "lucide-react";
 import { isAdmin } from "../utils/auth";
+import { AdminLayout } from "../layouts/AdminLayout";
 
 export const DashboardPage = () => {
   const [forms, setForms] = useState<Form[]>([]);
   const navigate = useNavigate();
-
-  // 2. Проверяем роль
   const userIsAdmin = isAdmin();
 
   useEffect(() => {
@@ -23,108 +22,110 @@ export const DashboardPage = () => {
     navigate("/login");
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm px-6 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-blue-900">Личный кабинет</h1>
-
-          {/* 3. Скрываем кнопки администрирования, если не админ */}
-          {userIsAdmin && (
-            <>
-              <div className="h-6 w-px bg-gray-300 mx-2"></div>
-
-              <Link
-                to="/admin/create-form"
-                className="text-sm bg-blue-50 text-blue-700 px-3 py-1.5 rounded hover:bg-blue-100 font-medium"
-              >
-                + Анкеты
-              </Link>
-
-              <div className="flex gap-2">
-                <Link
-                  to="/admin/departments"
-                  className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
-                >
-                  Кафедры
-                </Link>
-                <Link
-                  to="/admin/teachers"
-                  className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
-                >
-                  Преподаватели
-                </Link>
-                <Link
-                  to="/admin/disciplines"
-                  className="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded hover:bg-gray-200"
-                >
-                  Дисциплины
-                </Link>
-              </div>
-
-              <div className="h-6 w-px bg-gray-300 mx-2"></div>
-
-              <Link
-                to="/admin/groups"
-                className="text-sm bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded hover:bg-indigo-100 font-medium flex items-center gap-1"
-              >
-                <Users size={16} /> Группы
-              </Link>
-            </>
-          )}
-        </div>
-
-        <button
-          onClick={logout}
-          className="text-gray-500 hover:text-red-600 flex gap-2 items-center"
+  // --- Контент для карточек ---
+  const Content = () => (
+    <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      {forms.map((form) => (
+        <div
+          key={form.id}
+          className="group flex flex-col bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all duration-200"
         >
-          <LogOut size={18} /> Выход
-        </button>
+          <div className="flex items-start justify-between mb-4">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+              <FileText size={24} />
+            </div>
+            {userIsAdmin && (
+              <Link
+                to={`/admin/stats/${form.id}`}
+                className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                title="Смотреть статистику"
+              >
+                <BarChart3 size={20} />
+              </Link>
+            )}
+          </div>
+
+          <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 leading-tight">
+            {form.title}
+          </h3>
+
+          <div className="mt-auto pt-4 border-t border-slate-100">
+            {form.requiredFilters && form.requiredFilters.length > 0 ? (
+              <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-3">
+                Требует: {form.requiredFilters.join(", ")}
+              </p>
+            ) : (
+              <p className="text-xs text-slate-400 mb-3">Без фильтров</p>
+            )}
+
+            <Link
+              to={`/form/${form.id}`}
+              className="flex items-center justify-center w-full gap-2 py-2.5 rounded-lg bg-slate-50 text-slate-700 font-bold text-sm group-hover:bg-slate-900 group-hover:text-white transition-all"
+            >
+              Пройти опрос <ArrowRight size={16} />
+            </Link>
+          </div>
+        </div>
+      ))}
+
+      {forms.length === 0 && (
+        <div className="col-span-full p-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+          <p className="text-slate-400 font-medium">Нет доступных анкет</p>
+        </div>
+      )}
+    </div>
+  );
+
+  // --- Рендер для АДМИНА (с сайдбаром) ---
+  if (userIsAdmin) {
+    return (
+      <AdminLayout
+        title="Дашборд"
+        subtitle="Обзор всех активных опросов и анкет."
+      >
+        <Content />
+      </AdminLayout>
+    );
+  }
+
+  // --- Рендер для СТУДЕНТА (без сайдбара) ---
+  return (
+    <div className="min-h-screen bg-slate-50 font-display text-slate-900">
+      <nav className="bg-white border-b border-slate-200 px-6 py-4">
+        <div className="max-w-5xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+              <FileText size={18} />
+            </div>
+            <h1 className="text-lg font-bold text-slate-900">
+              Опросы Студентов
+            </h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-xs font-bold text-slate-600">
+              <User size={14} /> Студент
+            </div>
+            <button
+              onClick={logout}
+              className="text-slate-500 hover:text-red-600 font-medium text-sm flex items-center gap-2"
+            >
+              <LogOut size={18} />{" "}
+              <span className="hidden sm:inline">Выйти</span>
+            </button>
+          </div>
+        </div>
       </nav>
 
-      <main className="max-w-4xl mx-auto mt-8 px-4">
-        <h2 className="text-2xl font-semibold mb-6">Доступные анкеты</h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {forms.map((form) => (
-            <div key={form.id} className="block group">
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:border-blue-500 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div className="flex gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                      <FileText size={24} />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-lg">{form.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Требует:{" "}
-                        {form.requiredFilters?.join(", ") || "Нет фильтров"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex gap-2 border-t pt-4 border-gray-100">
-                  <Link
-                    to={`/form/${form.id}`}
-                    className="text-sm text-blue-600 hover:underline font-medium"
-                  >
-                    Пройти анкету
-                  </Link>
-
-                  {/* 4. Скрываем ссылку на Статистику */}
-                  {userIsAdmin && (
-                    <Link
-                      to={`/admin/stats/${form.id}`}
-                      className="text-sm text-gray-500 hover:text-gray-900 hover:underline ml-auto"
-                    >
-                      Статистика (Admin)
-                    </Link>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
+      <main className="max-w-5xl mx-auto px-6 py-10">
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-slate-900">
+            Доступные анкеты
+          </h2>
+          <p className="text-slate-500">
+            Выберите анкету из списка ниже, чтобы начать.
+          </p>
         </div>
+        <Content />
       </main>
     </div>
   );

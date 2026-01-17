@@ -1,7 +1,15 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
-import { ArrowLeft, Plus, Trash2, Save, CheckSquare, Square } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Trash2,
+  Save,
+  GripVertical,
+  CheckCircle2,
+} from "lucide-react";
+import { AdminLayout } from "../layouts/AdminLayout";
 
 const QuestionType = {
   Text: 1,
@@ -9,7 +17,7 @@ const QuestionType = {
   WeightedRating: 6,
 } as const;
 
-type QuestionType = typeof QuestionType[keyof typeof QuestionType];
+type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
 
 type FilterField = "Department" | "Discipline" | "Teacher" | "Speciality";
 
@@ -27,30 +35,27 @@ const FILTER_OPTIONS: { key: FilterField; label: string }[] = [
 ];
 
 const QUESTION_TYPES = [
-  { value: QuestionType.WeightedRating, label: "Оценка с весом (Важность + Оценка)" },
-  { value: QuestionType.Number, label: "Простая оценка (1-10)" },
-  { value: QuestionType.Text, label: "Текстовый ответ" },
+  { value: QuestionType.WeightedRating, label: "Рейтинг (Оценка + Важность)" },
+  { value: QuestionType.Number, label: "Числовая оценка (1-10)" },
+  { value: QuestionType.Text, label: "Текстовый комментарий" },
 ];
 
 export const CreateFormPage = () => {
   const navigate = useNavigate();
-
-  // Состояние формы
   const [title, setTitle] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<FilterField[]>([]);
   const [questions, setQuestions] = useState<QuestionDraft[]>([]);
 
-  // Состояние для нового вопроса (инпут)
   const [newQText, setNewQText] = useState("");
-  const [newQType, setNewQType] = useState<QuestionType>(QuestionType.WeightedRating);
-
-  // --- Хендлеры ---
+  const [newQType, setNewQType] = useState<QuestionType>(
+    QuestionType.WeightedRating,
+  );
 
   const toggleFilter = (filter: FilterField) => {
     setSelectedFilters((prev) =>
       prev.includes(filter)
         ? prev.filter((f) => f !== filter)
-        : [...prev, filter]
+        : [...prev, filter],
     );
   };
 
@@ -59,180 +64,126 @@ export const CreateFormPage = () => {
       alert("Введите текст вопроса");
       return;
     }
-
-    const newQuestion: QuestionDraft = {
-      text: newQText,
-      type: newQType,
-      order: questions.length + 1,
-    };
-
-    setQuestions([...questions, newQuestion]);
-    setNewQText(""); // Очистить инпут
-    // Тип не сбрасываем, часто удобно добавлять однотипные вопросы подряд
+    setQuestions([
+      ...questions,
+      { text: newQText, type: newQType, order: questions.length + 1 },
+    ]);
+    setNewQText("");
   };
 
   const removeQuestion = (index: number) => {
-    const updated = questions.filter((_, i) => i !== index);
-    // Пересчитываем порядок (order), чтобы не было дырок
-    const reordered = updated.map((q, i) => ({ ...q, order: i + 1 }));
-    setQuestions(reordered);
+    const updated = questions
+      .filter((_, i) => i !== index)
+      .map((q, i) => ({ ...q, order: i + 1 }));
+    setQuestions(updated);
   };
 
   const handleSave = async () => {
-    if (!title.trim()) {
-      alert("Укажите название анкеты");
+    if (!title.trim() || questions.length === 0) {
+      alert("Заполните название и добавьте вопросы");
       return;
     }
-    if (questions.length === 0) {
-      alert("Добавьте хотя бы один вопрос");
-      return;
-    }
-
-    const payload = {
-      title,
-      requiredFilters: selectedFilters,
-      questions: questions,
-    };
-
     try {
-      await api.post("/forms", payload);
-      alert("Анкета успешно создана!");
+      await api.post("/forms", {
+        title,
+        requiredFilters: selectedFilters,
+        questions,
+      });
       navigate("/dashboard");
     } catch (e) {
-      console.error(e);
-      alert("Ошибка при сохранении. Проверьте консоль.");
+      alert("Ошибка сохранения");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
-      <header className="bg-white shadow-sm px-6 py-4 sticky top-0 z-10 border-b border-gray-200">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="text-gray-500 hover:text-gray-800 transition"
-            >
-              <ArrowLeft />
-            </button>
-            <h1 className="text-xl font-bold text-gray-900">Конструктор анкет</h1>
-          </div>
-          <button
-            onClick={handleSave}
-            className="btn-primary flex items-center gap-2"
-          >
-            <Save size={18} /> Сохранить
-          </button>
-        </div>
-      </header>
+    <AdminLayout
+      title="Конструктор анкет"
+      subtitle="Создание новой формы опроса."
+      actions={
+        <button
+          onClick={handleSave}
+          className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-all text-sm"
+        >
+          <Save size={18} /> Сохранить анкету
+        </button>
+      }
+    >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Левая колонка: Настройки */}
+        <div className="lg:col-span-1 space-y-6">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
+              Настройки
+            </h3>
 
-      <main className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        
-        {/* 1. Настройки анкеты */}
-        <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold mb-4 text-blue-900">1. Основная информация</h2>
-          
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Название анкеты
-            </label>
-            <input
-              type="text"
-              className="input-field text-lg"
-              placeholder="Например: Оценка качества преподавания"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Обязательный контекст (о ком/чем опрос?)
-            </label>
-            <div className="flex flex-wrap gap-3">
-              {FILTER_OPTIONS.map((opt) => {
-                const isSelected = selectedFilters.includes(opt.key);
-                return (
-                  <button
-                    key={opt.key}
-                    onClick={() => toggleFilter(opt.key)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-md border transition-all ${
-                      isSelected
-                        ? "bg-blue-50 border-blue-500 text-blue-700 font-medium"
-                        : "bg-white border-gray-300 text-gray-600 hover:border-gray-400"
-                    }`}
-                  >
-                    {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
-                    {opt.label}
-                  </button>
-                );
-              })}
+            <div className="mb-6">
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                Название анкеты
+              </label>
+              <textarea
+                rows={3}
+                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none resize-none"
+                placeholder="Например: Удовлетворенность качеством преподавания..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
             </div>
-            <p className="text-xs text-gray-400 mt-2">
-              Пользователь должен будет выбрать эти данные перед началом опроса.
-            </p>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-3">
+                Контекст (Фильтры)
+                <span className="block text-xs font-normal text-slate-400 mt-1">
+                  Что выбирает студент перед началом?
+                </span>
+              </label>
+              <div className="space-y-2">
+                {FILTER_OPTIONS.map((opt) => {
+                  const active = selectedFilters.includes(opt.key);
+                  return (
+                    <button
+                      key={opt.key}
+                      onClick={() => toggleFilter(opt.key)}
+                      className={`flex w-full items-center justify-between px-4 py-3 rounded-xl border transition-all text-sm font-medium ${
+                        active
+                          ? "bg-slate-800 border-slate-800 text-white shadow-md"
+                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                      }`}
+                    >
+                      {opt.label}
+                      {active && (
+                        <CheckCircle2 size={16} className="text-green-400" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </section>
+        </div>
 
-        {/* 2. Конструктор вопросов */}
-        <section className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-semibold mb-4 text-blue-900">2. Вопросы</h2>
-
-          {/* Список добавленных */}
-          <div className="space-y-3 mb-6">
-            {questions.length === 0 && (
-              <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-200 rounded-lg">
-                Вопросов пока нет. Добавьте первый вопрос ниже.
-              </div>
-            )}
-
-            {questions.map((q, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg group"
-              >
-                <div className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
-                    {q.order}
-                  </span>
-                  <div>
-                    <p className="font-medium text-gray-900">{q.text}</p>
-                    <span className="text-xs text-gray-500 bg-gray-200 px-2 py-0.5 rounded">
-                      {QUESTION_TYPES.find((t) => t.value === q.type)?.label}
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => removeQuestion(idx)}
-                  className="text-gray-400 hover:text-red-600 p-2 transition-colors"
-                  title="Удалить вопрос"
-                >
-                  <Trash2 size={18} />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Форма добавления */}
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-            <h3 className="text-sm font-medium text-blue-900 mb-3">Новый вопрос</h3>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="md:col-span-3">
-                <input
-                  type="text"
-                  className="input-field"
-                  placeholder="Текст вопроса..."
-                  value={newQText}
-                  onChange={(e) => setNewQText(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addQuestion()}
-                />
-              </div>
-              <div>
+        {/* Правая колонка: Вопросы */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Добавление вопроса */}
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
+              Новый вопрос
+            </h3>
+            <div className="flex flex-col gap-4">
+              <input
+                type="text"
+                className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-slate-900/10 outline-none"
+                placeholder="Введите текст вопроса..."
+                value={newQText}
+                onChange={(e) => setNewQText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addQuestion()}
+              />
+              <div className="flex gap-3">
                 <select
-                  className="input-field"
+                  className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-slate-900/10 outline-none"
                   value={newQType}
-                  onChange={(e) => setNewQType(Number(e.target.value) as QuestionType)}
+                  onChange={(e) =>
+                    setNewQType(Number(e.target.value) as QuestionType)
+                  }
                 >
                   {QUESTION_TYPES.map((t) => (
                     <option key={t.value} value={t.value}>
@@ -240,17 +191,54 @@ export const CreateFormPage = () => {
                     </option>
                   ))}
                 </select>
+
+                {/* КНОПКА ДОБАВИТЬ: Явно черный фон */}
+                <button
+                  onClick={addQuestion}
+                  className="px-6 py-3 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 hover:shadow-lg transition-all flex items-center gap-2 whitespace-nowrap"
+                >
+                  <Plus size={18} /> Добавить
+                </button>
               </div>
             </div>
-            <button
-              onClick={addQuestion}
-              className="mt-3 w-full flex items-center justify-center gap-2 bg-white border border-blue-200 text-blue-700 hover:bg-blue-100 py-2 rounded-md transition font-medium text-sm"
-            >
-              <Plus size={16} /> Добавить в список
-            </button>
           </div>
-        </section>
-      </main>
-    </div>
+
+          {/* Список вопросов */}
+          <div className="space-y-3">
+            {questions.map((q, idx) => (
+              <div
+                key={idx}
+                className="group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 hover:shadow-md transition-all"
+              >
+                <div className="cursor-move text-slate-300 hover:text-slate-500">
+                  <GripVertical size={20} />
+                </div>
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+                  {q.order}
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-slate-800">{q.text}</p>
+                  <span className="inline-block mt-1 text-[10px] uppercase font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                    {QUESTION_TYPES.find((t) => t.value === q.type)?.label}
+                  </span>
+                </div>
+                <button
+                  onClick={() => removeQuestion(idx)}
+                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  <Trash2 size={18} />
+                </button>
+              </div>
+            ))}
+
+            {questions.length === 0 && (
+              <div className="p-10 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400">
+                Список вопросов пуст
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </AdminLayout>
   );
 };

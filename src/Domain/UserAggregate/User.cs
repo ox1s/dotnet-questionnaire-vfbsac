@@ -14,14 +14,14 @@ public sealed class User : AggregateRoot
     public string DisplayName { get; private set; }
 
 
-    public int? GroupId { get; private set; }   // Если Role == StudentGroup
-    public int? TeacherId { get; private set; } // Если Role == Teacher
+    public Guid? GroupId { get; private set; }   // Если Role == StudentGroup
+    public Guid? TeacherId { get; private set; } // Если Role == Teacher
     public string? OrganizationName { get; private set; } // Если Role == Employer
 
 
     private User() { }
 
-    public static Result<User> CreateGroupUser(GroupName groupName, int groupId, string passwordHash)
+    public static Result<User> CreateGroupUser(GroupName groupName, Guid groupId, string passwordHash)
     {
         return new User
         {
@@ -39,7 +39,7 @@ public sealed class User : AggregateRoot
     public static Result<User> CreateStaff(
         Login login,
         string fullName,
-        int teacherId,
+        Guid teacherId,
         string passwordHash)
     {
         if (string.IsNullOrWhiteSpace(fullName))

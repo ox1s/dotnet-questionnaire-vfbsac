@@ -29,6 +29,22 @@ export interface GroupUser {
   login: string;
   displayName: string;
 }
+export interface SubmissionListItem {
+  id: string;
+  formId: string;
+  submittedAt: string;
+  context: {
+    disciplineId?: string;
+    teacherId?: string;
+    departmenId?: string;
+    specialityId?: string;
+    specializationId?: string;
+    organizationName?: string;
+    educationForm?: string;
+    employeeCategory?: string;
+    position?: string;
+  };
+}
 
 export const usersApi = {
   createGroup: (groupName: string, password: string) =>
@@ -67,6 +83,14 @@ export const dictionariesApi = {
 
   updateDiscipline: (id: string, name: string, departmentId: string) =>
     api.put(`/disciplines/${id}`, { name, departmentId }),
+};
+
+export const submissionsApi = {
+  getMyList: () => {
+    const user = JSON.parse(atob(localStorage.getItem("token")!.split(".")[1]));
+    const userId = user.sub;
+    return api.get<SubmissionListItem[]>(`/submissions?userId=${userId}`);
+  },
 };
 
 export default api;

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251224160721_InitialCreate")]
+    [Migration("20260128204439_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -286,8 +286,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("display_name");
 
-                    b.Property<int?>("GroupId")
-                        .HasColumnType("integer")
+                    b.Property<Guid?>("GroupId")
+                        .HasColumnType("uuid")
                         .HasColumnName("group_id");
 
                     b.Property<bool>("IsActive")
@@ -311,8 +311,8 @@ namespace Infrastructure.Migrations
                         .HasColumnType("character varying(50)")
                         .HasColumnName("role");
 
-                    b.Property<int?>("TeacherId")
-                        .HasColumnType("integer")
+                    b.Property<Guid?>("TeacherId")
+                        .HasColumnType("uuid")
                         .HasColumnName("teacher_id");
 
                     b.HasKey("Id")

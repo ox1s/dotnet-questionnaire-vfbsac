@@ -25,6 +25,26 @@ internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext conte
             return Result.Failure<Guid>(FormErrors.FormInactive(command.FormId));
         }
 
+        IQueryable<Submission> query = context.Submissions
+            .Where(s => s.FormId == command.FormId && s.UserId == command.UserId);
+
+        if (command.TeacherId.HasValue)
+        {
+            query = query.Where(s => s.Context.TeacherId == command.TeacherId);
+        }
+
+        if (command.DisciplineId.HasValue)
+        {
+            query = query.Where(s => s.Context.DisciplineId == command.DisciplineId);
+        }
+
+        bool alreadyExists = await query.AnyAsync(cancellationToken);
+
+        if (alreadyExists)
+        {
+            return Result.Failure<Guid>(SubmissionErrors.AlreadySubmitted());
+        }
+
         Result<Submission> submissionResult = Submission.Create(
             command.FormId,
             command.UserId,
@@ -48,7 +68,6 @@ internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext conte
             EmployeeCategory = command.EmployeeCategory,
             Position = command.Position
         };
-
         submission.UpdateContext(newContext);
 
         foreach (AnswerRequest answerRequest in command.Answers)

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api, { type FormDetail, type Statistics, reportsApi } from "../api";
 import { Download, Users, TrendingUp, Activity } from "lucide-react";
@@ -77,7 +77,7 @@ export const AdminStatsPage = () => {
   }));
 
   // Кастомный тултип для графика
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-slate-800 text-white p-3 rounded-lg shadow-xl text-xs max-w-[250px]">

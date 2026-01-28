@@ -34,13 +34,7 @@ internal sealed class CreateGroupUserCommandHandler(
         // 3. Хеширование пароля
         string passwordHash = passwordHasher.Hash(command.Password);
 
-        // 4. Создание пользователя (используем фабричный метод из User.cs)
-        // Примечание: User.CreateGroupUser требует int groupId, но в текущей реализации User.cs
-        // кажется, groupId используется как числовой ID из старой базы. 
-        // Давайте пока передадим 0 или заглушку, либо доработаем User.cs, если это поле не обязательно.
-        // В рамках MVP будем считать GroupId = 0 (так как у нас нет отдельной таблицы Groups, группа - это просто Юзер).
-
-        Result<User> userResult = User.CreateGroupUser(groupNameResult.Value, 0, passwordHash);
+        Result<User> userResult = User.CreateGroupUser(groupNameResult.Value, Guid.NewGuid(), passwordHash);
 
         if (userResult.IsFailure)
         {

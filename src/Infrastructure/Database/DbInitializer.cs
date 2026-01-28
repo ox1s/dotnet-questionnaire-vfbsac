@@ -122,7 +122,7 @@ public class DbInitializer(
 
         foreach (string gName in groups)
         {
-            User u = User.CreateGroupUser(GroupName.Create(gName).Value, 1, defaultPass).Value;
+            User u = User.CreateGroupUser(GroupName.Create(gName).Value, Guid.NewGuid(), defaultPass).Value;
             context.Users.Add(u);
             groupUsers.Add(u);
         }

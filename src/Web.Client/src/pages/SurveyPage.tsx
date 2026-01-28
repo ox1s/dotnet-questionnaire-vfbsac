@@ -7,6 +7,7 @@ import {
   type SubmissionContext,
 } from "../components/ContextSelector"; // Импорт
 import { ArrowLeft, CheckCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 export const SurveyPage = () => {
   const { id } = useParams();
@@ -72,11 +73,15 @@ export const SurveyPage = () => {
 
         answers: answersPayload,
       });
-      alert("Анкета успешно отправлена!");
+      toast.success("Анкета успешно отправлена!");
       navigate("/dashboard");
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      alert("Ошибка при отправке. Проверьте, что оценка не выше веса.");
+      if (e.response && e.response.status === 409) {
+        toast.error("Вы уже голосовали за этого преподавателя/дисциплину!");
+      } else {
+        toast.error("Ошибка при отправке. Проверьте данные.");
+      }
     }
   };
 

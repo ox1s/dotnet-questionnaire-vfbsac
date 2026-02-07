@@ -31,8 +31,8 @@ internal sealed class AdminSetPassword : IEndpoint
 
                 return result.Match(Results.NoContent, CustomResults.Problem);
             })
-            .WithTags("Users")
-            .RequireAuthorization("AdminPolicy");
+            .WithTags(Tags.Users)
+            .HasPermission(Permissions.Admin);
     }
 
 }

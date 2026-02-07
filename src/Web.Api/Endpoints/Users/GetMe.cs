@@ -24,7 +24,7 @@ internal sealed class GetMe : IEndpoint
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
-        .WithTags("Users")
+        .WithTags(Tags.Users)
         .RequireAuthorization();
     }
 }

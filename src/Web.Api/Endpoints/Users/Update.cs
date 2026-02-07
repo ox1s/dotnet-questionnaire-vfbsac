@@ -22,7 +22,7 @@ internal sealed class Update : IEndpoint
             Result result = await handler.Handle(command, cancellationToken);
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
-        .WithTags("Users")
+        .WithTags(Tags.Users)
         .HasPermission(Permissions.Admin);
     }
 }

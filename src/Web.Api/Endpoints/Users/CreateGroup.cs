@@ -22,7 +22,7 @@ internal sealed class CreateGroup : IEndpoint
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
-        .WithTags("Users")
-        .RequireAuthorization(); // Только админ
+        .WithTags(Tags.Users)
+        .HasPermission(Permissions.Admin);
     }
 }

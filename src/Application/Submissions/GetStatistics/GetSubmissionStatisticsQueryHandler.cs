@@ -1,19 +1,32 @@
+using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Domain.Questionnaires.FormAggregate;
 using Domain.Questionnaires.SubmissionAggregate;
+using Domain.UserAggregate;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
 namespace Application.Submissions.GetStatistics;
 
-internal sealed class GetSubmissionStatisticsQueryHandler(IApplicationDbContext context)
+internal sealed class GetSubmissionStatisticsQueryHandler(
+    IApplicationDbContext context,
+    IUserContext userContext)
     : IQueryHandler<GetSubmissionStatisticsQuery, SubmissionStatisticsResponse>
 {
     public async Task<Result<SubmissionStatisticsResponse>> Handle(
         GetSubmissionStatisticsQuery query,
         CancellationToken cancellationToken)
     {
+        User? currentUser = await context.Users
+            .AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Id == userContext.UserId, cancellationToken);
+
+        if (currentUser is null)
+        {
+            return Result.Failure<SubmissionStatisticsResponse>(UserErrors.NotFound(userContext.UserId));
+        }
+
         Form? form = await context.Forms
             .Include(f => f.Questions)
             .FirstOrDefaultAsync(f => f.Id == query.FormId, cancellationToken);
@@ -27,6 +40,10 @@ internal sealed class GetSubmissionStatisticsQueryHandler(IApplicationDbContext 
             .Include(s => s.Answers)
             .Where(s => s.FormId == query.FormId);
 
+        if (currentUser.Role == UserRole.DeputyHead && currentUser.DepartmentId.HasValue)
+        {
+            submissionsQuery = submissionsQuery.Where(s => s.Context.DepartmentId == currentUser.DepartmentId.Value);
+        }
         if (query.DisciplineId.HasValue)
         {
             submissionsQuery = submissionsQuery.Where(s => s.Context.DisciplineId == query.DisciplineId);
@@ -77,7 +94,7 @@ internal sealed class GetSubmissionStatisticsQueryHandler(IApplicationDbContext 
         var numericQuestions = form.Questions
             .Where(q => q.Type == QuestionType.Number ||
                         q.Type == QuestionType.Rating ||
-                        q.Type == QuestionType.WeightedRating) 
+                        q.Type == QuestionType.WeightedRating)
             .OrderBy(q => q.Order)
             .ToList();
 

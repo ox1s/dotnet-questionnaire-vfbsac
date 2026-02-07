@@ -8,8 +8,6 @@ namespace Infrastructure.Migrations;
 /// <inheritdoc />
 public partial class InitialCreate : Migration
 {
-    private static readonly string[] columns = new[] { "submission_id", "question_id" };
-
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
     {
@@ -137,8 +135,9 @@ public partial class InitialCreate : Migration
                 role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                 is_active = table.Column<bool>(type: "boolean", nullable: false),
                 display_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                group_id = table.Column<int>(type: "integer", nullable: true),
-                teacher_id = table.Column<int>(type: "integer", nullable: true),
+                department_id = table.Column<Guid>(type: "uuid", nullable: true),
+                group_id = table.Column<Guid>(type: "uuid", nullable: true),
+                teacher_id = table.Column<Guid>(type: "uuid", nullable: true),
                 organization_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
             },
             constraints: table =>
@@ -218,7 +217,7 @@ public partial class InitialCreate : Migration
             name: "ix_answer_submission_id_question_id",
             schema: "public",
             table: "answer",
-            columns: columns,
+            columns: ["submission_id", "question_id"],
             unique: true);
 
         migrationBuilder.CreateIndex(

@@ -13,22 +13,31 @@ internal sealed class OutboxDomainEventsDispatcher(
     IServiceProvider serviceProvider,
     ILogger<OutboxDomainEventsDispatcher> logger) : IDomainEventsDispatcher
 {
+    private static readonly Dictionary<string, Type> EventTypesCache = AppDomain.CurrentDomain.GetAssemblies()
+            .SelectMany(a => a.GetTypes())
+            .Where(t => typeof(IDomainEvent).IsAssignableFrom(t) && !t.IsInterface && !t.IsAbstract)
+            .ToDictionary(t => t.Name, t => t);
+
     public async Task DispatchAsync(
         IEnumerable<IDomainEvent> domainEvents,
         CancellationToken cancellationToken = default)
     {
-        // This method is kept for backward compatibility but should not be used
-        // Events are now processed from Outbox via background job
         await Task.CompletedTask;
     }
 
     public async Task ProcessOutboxMessagesAsync(CancellationToken cancellationToken = default)
     {
-        List<OutboxMessage> unprocessedMessages = await context
-            .OutboxMessages
-            .Where(m => m.ProcessedOn == null)
-            .OrderBy(m => m.OccurredOn)
-            .Take(20)
+        string sql = """
+                    SELECT id, type, content, occurred_on, processed_on, error 
+                    FROM public."OutboxMessages" 
+                    WHERE processed_on IS NULL 
+                    ORDER BY occurred_on 
+                    LIMIT 20 
+                    FOR UPDATE SKIP LOCKED
+                    """;
+
+        List<OutboxMessage> unprocessedMessages = await context.OutboxMessages
+            .FromSqlRaw(sql)
             .ToListAsync(cancellationToken);
 
         foreach (OutboxMessage message in unprocessedMessages)
@@ -60,12 +69,8 @@ internal sealed class OutboxDomainEventsDispatcher(
     {
         try
         {
-            Type? eventType = AppDomain.CurrentDomain
-                .GetAssemblies()
-                .SelectMany(a => a.GetTypes())
-                .FirstOrDefault(t => t.Name == message.Type && typeof(IDomainEvent).IsAssignableFrom(t));
-
-            if (eventType is null)
+            // 3. Быстрый поиск за O(1)
+            if (!EventTypesCache.TryGetValue(message.Type, out Type? eventType))
             {
                 return null;
             }
@@ -78,7 +83,6 @@ internal sealed class OutboxDomainEventsDispatcher(
             return null;
         }
     }
-
     private async Task DispatchDomainEventAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
         using IServiceScope scope = serviceProvider.CreateScope();

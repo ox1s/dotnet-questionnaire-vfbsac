@@ -20,6 +20,8 @@ using SharedKernel;
 using System.Text;
 using Infrastructure.Reports;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Application.Abstractions.Reports;
+using Infrastructure.Users;
 
 namespace Infrastructure;
 
@@ -42,10 +44,11 @@ public static class DependencyInjection
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
         services.AddTransient<IDomainEventsDispatcher, OutboxDomainEventsDispatcher>();
 
-        services.AddScoped<WordReportGenerator>();
+        services.AddScoped<IReportGenerator, WordReportGenerator>();
+        services.AddScoped<IStudentImporter, StudentImporter>();
 
         services.AddScoped<DbInitializer>();
-        
+
         return services;
     }
 

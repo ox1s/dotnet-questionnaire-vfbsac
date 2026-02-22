@@ -264,9 +264,6 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_submissions");
 
-                    b.HasIndex("FormId", "UserId")
-                        .HasDatabaseName("ix_submissions_form_id_user_id");
-
                     b.ToTable("submissions", "public");
                 });
 

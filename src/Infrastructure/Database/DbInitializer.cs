@@ -149,7 +149,7 @@ public class DbInitializer(
             [FilterField.Discipline]).Value;
 
         // ВАЖНО: Устанавливаем тот самый ID, который ищет фронтенд/лог
-        SetId(f1, Guid.Parse("2ccf04c2-0197-4d71-8b46-ac3394bfc8e5"));
+        f1.SetIdForSeeding(Guid.Parse("2ccf04c2-0197-4d71-8b46-ac3394bfc8e5"));
 
         f1.AddQuestion("Содержание образовательной программы", QuestionType.WeightedRating, 1);
         f1.AddQuestion("Лекционные занятия (методы)", QuestionType.WeightedRating, 2);
@@ -163,7 +163,7 @@ public class DbInitializer(
         Form f7 = Form.Create("Оценка руководителей производственной практики",
             [FilterField.Speciality]).Value;
 
-        SetId(f7, Guid.Parse("77777777-7777-7777-7777-777777777777"));
+        f7.SetIdForSeeding(Guid.Parse("77777777-7777-7777-7777-777777777777"));
 
         f7.AddQuestion("Актуальность теоретических знаний", QuestionType.Number, 1);
         f7.AddQuestion("Качество практических навыков", QuestionType.Number, 2);

@@ -1,13 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
-import {
-  Plus,
-  Trash2,
-  Save,
-  GripVertical,
-  CheckCircle2,
-} from "lucide-react";
+import { Plus, Trash2, Save, GripVertical, CheckCircle2 } from "lucide-react";
 import { AdminLayout } from "../layouts/AdminLayout";
 
 const QuestionType = {
@@ -50,6 +44,8 @@ export const CreateFormPage = () => {
     QuestionType.WeightedRating,
   );
 
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+
   const toggleFilter = (filter: FilterField) => {
     setSelectedFilters((prev) =>
       prev.includes(filter)
@@ -75,6 +71,32 @@ export const CreateFormPage = () => {
       .filter((_, i) => i !== index)
       .map((q, i) => ({ ...q, order: i + 1 }));
     setQuestions(updated);
+  };
+
+  // Начало перетаскивания
+  const handleDragStart = (index: number) => {
+    setDraggedIdx(index);
+  };
+
+  // Элемент пролетает над другим элементом
+  const handleDragEnter = (index: number) => {
+    if (draggedIdx === null || draggedIdx === index) return;
+
+    // Меняем элементы местами
+    const newQuestions = [...questions];
+    const draggedItem = newQuestions.splice(draggedIdx, 1)[0];
+    newQuestions.splice(index, 0, draggedItem);
+
+    // Пересчитываем поле order (1, 2, 3...)
+    const updated = newQuestions.map((q, i) => ({ ...q, order: i + 1 }));
+
+    setDraggedIdx(index); // Обновляем индекс, так как элемент сдвинулся
+    setQuestions(updated);
+  };
+
+  // Конец перетаскивания (отпустили мышь)
+  const handleDragEnd = () => {
+    setDraggedIdx(null);
   };
 
   const handleSave = async () => {
@@ -206,12 +228,22 @@ export const CreateFormPage = () => {
           <div className="space-y-3">
             {questions.map((q, idx) => (
               <div
-                key={idx}
-                className="group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 hover:shadow-md transition-all"
+                key={q.order} // Лучше использовать q.order вместо idx, чтобы React не путался при анимациях
+                draggable // Включаем нативную поддержку Drag-n-Drop
+                onDragStart={() => handleDragStart(idx)}
+                onDragEnter={() => handleDragEnter(idx)}
+                onDragEnd={handleDragEnd}
+                onDragOver={(e) => e.preventDefault()} // Обязательно, чтобы разрешить drop
+                className={`group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 hover:shadow-md transition-all ${
+                  draggedIdx === idx
+                    ? "opacity-40 shadow-inner bg-slate-50"
+                    : ""
+                }`}
               >
                 <div className="cursor-move text-slate-300 hover:text-slate-500">
                   <GripVertical size={20} />
                 </div>
+
                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
                   {q.order}
                 </div>

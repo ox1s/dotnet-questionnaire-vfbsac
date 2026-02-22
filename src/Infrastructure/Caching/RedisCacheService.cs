@@ -12,6 +12,7 @@ internal sealed class RedisCacheService(
 {
     private readonly IDatabase _database = connectionMultiplexer.GetDatabase();
 
+
     public async Task<T?> GetAsync<T>(string key, CancellationToken cancellationToken = default) where T : class
     {
         try
@@ -23,8 +24,14 @@ internal sealed class RedisCacheService(
                 return null;
             }
 
-            // Исправлено: явное приведение RedisValue к string
-            return JsonSerializer.Deserialize<T>(value.ToString());
+            string? stringValue = value;
+
+            if (string.IsNullOrEmpty(stringValue))
+            {
+                return null;
+            }
+
+            return JsonSerializer.Deserialize<T>(stringValue);
         }
         catch (Exception ex)
         {

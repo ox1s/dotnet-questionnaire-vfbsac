@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations;
 
 /// <inheritdoc />
-public partial class InitialCreate : Migration
+public partial class Initial : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -246,12 +246,6 @@ public partial class InitialCreate : Migration
             table: "question",
             columns: ["form_id", "order"],
             unique: true);
-
-        migrationBuilder.CreateIndex(
-            name: "ix_submissions_form_id_user_id",
-            schema: "public",
-            table: "submissions",
-            columns: ["form_id", "user_id"]);
     }
 
     /// <inheritdoc />

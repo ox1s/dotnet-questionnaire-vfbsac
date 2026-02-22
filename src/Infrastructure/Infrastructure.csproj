@@ -1,17 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-      <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
-      <PackageReference Include="DocumentFormat.OpenXml" />
-      <PackageReference Include="EFCore.NamingConventions" />
-      <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-      <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
-      <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
-      <PackageReference Include="Newtonsoft.Json" />
-      <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-      <PackageReference Include="Quartz" />
-      <PackageReference Include="Quartz.Extensions.Hosting" />
-      <PackageReference Include="StackExchange.Redis" />
+    <PackageReference Include="AspNetCore.HealthChecks.NpgSql" />
+    <PackageReference Include="DocumentFormat.OpenXml" />
+    <PackageReference Include="EFCore.NamingConventions" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Quartz" />
+    <PackageReference Include="Quartz.Extensions.Hosting" />
+    <PackageReference Include="StackExchange.Redis" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Application\Application.csproj" />

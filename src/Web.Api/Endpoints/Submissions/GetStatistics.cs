@@ -20,6 +20,6 @@ internal sealed class GetStatistics : IEndpoint
             return result.Match(Results.Ok, CustomResults.Problem);
         })
         .WithTags("Submissions")
-        .RequireAuthorization();
+        .RequireAuthorization(Permissions.ReportsView);
     }
 }

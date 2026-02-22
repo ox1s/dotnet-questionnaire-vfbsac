@@ -1,4 +1,5 @@
 using System.Globalization;
+using Application.Abstractions.Reports;
 using Application.Submissions.GetStatistics;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
@@ -7,7 +8,7 @@ using A = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Infrastructure.Reports;
 
-public class WordReportGenerator
+public class WordReportGenerator : IReportGenerator
 {
     public byte[] GenerateFormReport(string formTitle, SubmissionStatisticsResponse stats)
     {

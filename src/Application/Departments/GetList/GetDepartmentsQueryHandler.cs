@@ -11,6 +11,7 @@ internal sealed class GetDepartmentsQueryHandler(IApplicationDbContext context)
     public async Task<Result<List<DepartmentResponse>>> Handle(GetDepartmentsQuery query, CancellationToken cancellationToken)
     {
         List<DepartmentResponse> departments = await context.Departments
+            .AsNoTracking()
             .OrderBy(d => d.Name)
             .Select(d => new DepartmentResponse
             {

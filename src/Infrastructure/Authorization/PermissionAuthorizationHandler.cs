@@ -1,35 +1,26 @@
-﻿using Infrastructure.Authentication;
+﻿// src/Infrastructure/Authorization/PermissionAuthorizationHandler.cs
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Infrastructure.Authorization;
 
-internal sealed class PermissionAuthorizationHandler(IServiceScopeFactory serviceScopeFactory)
-    : AuthorizationHandler<PermissionRequirement>
+internal sealed class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
 {
-    protected override async Task HandleRequirementAsync(
+    protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         PermissionRequirement requirement)
     {
-        // 1. Проверяем, что пользователь аутентифицирован (есть токен)
+        // 1. Проверяем, что пользователь аутентифицирован
         if (context.User.Identity?.IsAuthenticated is not true)
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        // 2. Получаем ID пользователя из токена
-        Guid userId = context.User.GetUserId();
-
-        // 3. Получаем права через Provider (который лезет в БД)
-        using IServiceScope scope = serviceScopeFactory.CreateScope();
-        PermissionProvider permissionProvider = scope.ServiceProvider.GetRequiredService<PermissionProvider>();
-
-        HashSet<string> permissions = await permissionProvider.GetForUserIdAsync(userId);
-
-        // 4. Сверяем
-        if (permissions.Contains(requirement.Permission))
+        // 2. Ищем нужный claim "permission" в токене
+        if (context.User.HasClaim("permission", requirement.Permission))
         {
             context.Succeed(requirement);
         }
+
+        return Task.CompletedTask;
     }
 }

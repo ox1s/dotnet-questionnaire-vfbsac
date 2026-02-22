@@ -1,4 +1,5 @@
 using Application.Abstractions.Messaging;
+using Application.Abstractions.Reports;
 using Application.Submissions.GetStatistics;
 using Infrastructure.Reports;
 using SharedKernel;
@@ -14,7 +15,7 @@ internal sealed class Download : IEndpoint
         app.MapGet("reports/word/{formId:guid}", async (
                 Guid formId,
                 IQueryHandler<GetSubmissionStatisticsQuery, SubmissionStatisticsResponse> handler,
-                WordReportGenerator reportGenerator,
+                IReportGenerator reportGenerator,
                 CancellationToken cancellationToken) =>
             {
                 var query = new GetSubmissionStatisticsQuery(formId);

@@ -49,7 +49,5 @@ internal sealed class SubmissionConfiguration : IEntityTypeConfiguration<Submiss
             .WithOne()
             .HasForeignKey(a => a.SubmissionId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasIndex(s => new { s.FormId, s.UserId });
     }
 }

@@ -18,6 +18,7 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
         GetSubmissionStatisticsQuery query,
         CancellationToken cancellationToken)
     {
+        // 1. Проверка прав пользователя
         User? currentUser = await context.Users
             .AsNoTracking()
             .FirstOrDefaultAsync(u => u.Id == userContext.UserId, cancellationToken);
@@ -27,6 +28,7 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
             return Result.Failure<SubmissionStatisticsResponse>(UserErrors.NotFound(userContext.UserId));
         }
 
+        // 2. Получение формы и структуры вопросов
         Form? form = await context.Forms
             .Include(f => f.Questions)
             .FirstOrDefaultAsync(f => f.Id == query.FormId, cancellationToken);
@@ -36,48 +38,46 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
             return Result.Failure<SubmissionStatisticsResponse>(FormErrors.NotFound(query.FormId));
         }
 
-        IQueryable<Submission> submissionsQuery = context.Submissions
-            .Include(s => s.Answers)
-            .Where(s => s.FormId == query.FormId);
+        // 3. Формирование базового запроса с фильтрами
+        IQueryable<Submission> submissionsQuery = context.Submissions.Where(s => s.FormId == query.FormId);
 
+        // Фильтр для зам. кафедры (видит только свою кафедру)
         if (currentUser.Role == UserRole.DeputyHead && currentUser.DepartmentId.HasValue)
         {
             submissionsQuery = submissionsQuery.Where(s => s.Context.DepartmentId == currentUser.DepartmentId.Value);
         }
+
+        // Фильтры из запроса
         if (query.DisciplineId.HasValue)
         {
             submissionsQuery = submissionsQuery.Where(s => s.Context.DisciplineId == query.DisciplineId);
         }
-
         if (query.TeacherId.HasValue)
         {
             submissionsQuery = submissionsQuery.Where(s => s.Context.TeacherId == query.TeacherId);
         }
-
         if (query.DepartmentId.HasValue)
         {
             submissionsQuery = submissionsQuery.Where(s => s.Context.DepartmentId == query.DepartmentId);
         }
-
         if (query.SpecialityId.HasValue)
         {
             submissionsQuery = submissionsQuery.Where(s => s.Context.SpecialityId == query.SpecialityId);
         }
-
         if (query.SpecializationId.HasValue)
         {
             submissionsQuery = submissionsQuery.Where(s => s.Context.SpecializationId == query.SpecializationId);
         }
-
         if (!string.IsNullOrWhiteSpace(query.OrganizationName))
         {
             submissionsQuery = submissionsQuery.Where(s => s.Context.OrganizationName != null &&
                 s.Context.OrganizationName.Contains(query.OrganizationName));
         }
 
-        List<Submission> submissions = await submissionsQuery.ToListAsync(cancellationToken);
+        // 4. Подсчет общего количества анкет (быстрая операция в БД)
+        int totalSubmissions = await submissionsQuery.CountAsync(cancellationToken);
 
-        if (submissions.Count == 0)
+        if (totalSubmissions == 0)
         {
             return new SubmissionStatisticsResponse
             {
@@ -90,6 +90,25 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
                 OverallStandardDeviation = 0
             };
         }
+
+        // 5. Выгрузка данных для статистики (Оптимизация памяти)
+        // Загружаем только необходимые поля, а не всю сущность Submission
+        var answersData = await submissionsQuery
+            .SelectMany(s => s.Answers)
+            .Where(a => a.NumericValue != null) // Исключаем текстовые ответы
+            .Select(a => new
+            {
+                a.QuestionId,
+                // Явное получение значения, т.к. фильтр выше гарантирует !null
+                NumericValue = a.NumericValue!.Value,
+                a.Weight
+            })
+            .ToListAsync(cancellationToken);
+
+        // 6. Группировка данных в памяти
+        var groupedAnswers = answersData
+            .GroupBy(a => a.QuestionId)
+            .ToDictionary(g => g.Key, g => g.ToList());
 
         var numericQuestions = form.Questions
             .Where(q => q.Type == QuestionType.Number ||
@@ -104,12 +123,8 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
 
         foreach (Question question in numericQuestions)
         {
-            var questionAnswers = submissions
-                .SelectMany(s => s.Answers)
-                .Where(a => a.QuestionId == question.Id && a.NumericValue.HasValue)
-                .ToList();
-
-            if (questionAnswers.Count == 0)
+            // Если ответов нет, добавляем нули
+            if (!groupedAnswers.TryGetValue(question.Id, out var questionAnswers) || questionAnswers.Count == 0)
             {
                 averageScores.Add(0);
                 resultScores.Add(0);
@@ -117,60 +132,53 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
                 continue;
             }
 
-            decimal average = questionAnswers.Average(a => a.NumericValue!.Value);
+            // --- Расчет среднего арифметического ---
+            decimal average = questionAnswers.Average(a => a.NumericValue);
             averageScores.Add(average);
 
+            // --- Расчет итогового балла (с учетом весов) ---
             decimal result = 0;
 
-            // Логика для нового типа WeightedRating
             if (question.Type == QuestionType.WeightedRating)
             {
-                // Берем ответы, где есть и оценка, и вес
-                var validAnswers = questionAnswers
-                    .Where(a => a.NumericValue.HasValue && a.Weight.HasValue && a.Weight.Value > 0)
+                // Для вопросов с весом: нормализуем оценку относительно веса к 10-балльной шкале.
+                // Формула: (Оценка / Вес) * 10
+                // Пример: Оценка 4 из 5 (вес) -> (4/5)*10 = 8 баллов.
+                var validWeightedAnswers = questionAnswers
+                    .Where(a => a.Weight.HasValue && a.Weight.Value > 0)
                     .ToList();
 
-                if (validAnswers.Count > 0)
+                if (validWeightedAnswers.Count > 0)
                 {
-                    // Вариант расчета: Средний процент удовлетворенности
-                    // (Оценка / Вес) * 10. 
-                    // Пример: Оценка 8, Вес 10 -> 8 баллов.
-                    // Пример: Оценка 4, Вес 5 -> (4/5)*10 = 8 баллов.
-
-                    decimal sumOfNormalizedScores = validAnswers
-                        .Sum(a => a.NumericValue!.Value / a.Weight!.Value * 10);
-
-                    result = sumOfNormalizedScores / validAnswers.Count;
+                    decimal sumOfNormalizedScores = validWeightedAnswers
+                        .Sum(a => a.NumericValue / a.Weight!.Value * 10);
+                    result = sumOfNormalizedScores / validWeightedAnswers.Count;
                 }
-            }
-            else if (question.Type == QuestionType.Number)
-            {
-                // Старая логика для простых чисел (если там использовался вес как коэффициент значимости вопроса)
-                // Если веса нет, просто среднее
-                result = average;
             }
             else
             {
+                // Для обычных вопросов результат равен среднему
                 result = average;
             }
 
             resultScores.Add(result);
 
+            // --- Расчет стандартного отклонения ---
+            // Variance = Average((x - mean)^2)
             decimal variance = questionAnswers
-                .Select(a => a.NumericValue!.Value)
-                .Select(score => (score - average) * (score - average))
-                .Average();
+                .Average(a => (a.NumericValue - average) * (a.NumericValue - average));
             decimal stdDev = (decimal)Math.Sqrt((double)variance);
             standardDeviations.Add(stdDev);
         }
 
+        // 7. Расчет общих показателей по всей анкете
         decimal overallAverage = resultScores.Count > 0 ? resultScores.Average() : 0;
         decimal overallStdDev = standardDeviations.Count > 0 ? standardDeviations.Average() : 0;
 
         return new SubmissionStatisticsResponse
         {
             FormId = query.FormId,
-            TotalSubmissions = submissions.Count,
+            TotalSubmissions = totalSubmissions,
             AverageScores = averageScores,
             ResultScores = resultScores,
             StandardDeviations = standardDeviations,

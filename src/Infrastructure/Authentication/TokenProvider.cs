@@ -5,6 +5,7 @@ using Domain.UserAggregate;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using SharedKernel;
 
 namespace Infrastructure.Authentication;
 
@@ -17,13 +18,22 @@ internal sealed class TokenProvider(IConfiguration configuration) : ITokenProvid
 
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
+
+        var claims = new List<Claim>
+        {
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new("role", user.Role.ToString())
+        };
+
+        IEnumerable<string> permissions = GetPermissionsForRole(user.Role);
+        foreach (string permission in permissions)
+        {
+            claims.Add(new Claim("permission", permission));
+        }
+
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity(
-            [
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim("role", user.Role.ToString())
-            ]),
+            Subject = new ClaimsIdentity(claims),
             Expires = DateTime.UtcNow.AddMinutes(configuration.GetValue<int>("Jwt:ExpirationInMinutes")),
             SigningCredentials = credentials,
             Issuer = configuration["Jwt:Issuer"],
@@ -35,5 +45,15 @@ internal sealed class TokenProvider(IConfiguration configuration) : ITokenProvid
         string token = handler.CreateToken(tokenDescriptor);
 
         return token;
+    }
+    private static IEnumerable<string> GetPermissionsForRole(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.Admin => [Permissions.Admin, Permissions.UsersAccess, Permissions.DictionariesWrite, Permissions.ReportsView],
+            UserRole.StudentGroup => [Permissions.SubmitForms],
+            UserRole.Staff or UserRole.DeputyHead => [Permissions.ReportsView],
+            _ => []
+        };
     }
 }

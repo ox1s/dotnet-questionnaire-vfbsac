@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -7,7 +7,8 @@ import {
   Users,
   Settings,
   LogOut,
-  School,
+  Menu, // Иконка бургера
+  X, // Иконка крестика
 } from "lucide-react";
 
 interface AdminLayoutProps {
@@ -25,6 +26,7 @@ export const AdminLayout = ({
 }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -32,6 +34,8 @@ export const AdminLayout = ({
     localStorage.removeItem("token");
     navigate("/login");
   };
+
+  const closeMenu = () => setIsMobileMenuOpen(false);
 
   const NavItem = ({
     to,
@@ -44,10 +48,11 @@ export const AdminLayout = ({
   }) => (
     <Link
       to={to}
+      onClick={closeMenu} // Закрываем меню при клике
       className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors group ${
         isActive(to)
-          ? "bg-primary/10 text-primary font-bold"
-          : "text-slate-600 hover:bg-slate-50 font-medium"
+          ? "bg-primary/5 text-primary font-bold border-l-4 border-accent"
+          : "text-slate-600 hover:bg-slate-50 font-medium border-l-4 border-transparent"
       }`}
     >
       <Icon
@@ -63,21 +68,48 @@ export const AdminLayout = ({
   );
 
   return (
-    <div className="flex h-screen w-full bg-background-light text-slate-900 font-display overflow-hidden">
+    <div className="flex h-screen w-full bg-background-light text-slate-900 font-display overflow-hidden relative">
+      {/* Затемнение фона для мобильного меню */}
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={closeMenu}
+        />
+      )}
+
       {/* Сайдбар */}
-      <aside className="hidden lg:flex flex-col w-72 h-full bg-surface-light border-r border-slate-200 transition-colors z-20">
-        <div className="p-6 flex items-center gap-3 border-b border-slate-100">
-          <div className="w-10 h-10 rounded-lg bg-slate-800 flex items-center justify-center text-white shrink-0 shadow-lg shadow-primary/20">
-            <School size={24} />
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-surface-light border-r border-slate-200 transform transition-transform duration-300 ease-in-out flex flex-col h-full lg:relative lg:translate-x-0 ${
+          isMobileMenuOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"
+        }`}
+      >
+        <div className="p-6 flex items-center justify-between gap-3 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            {/* Логотип */}
+            <div className="w-12 h-12 shrink-0 flex items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="Логотип"
+                className="w-full h-full object-contain"
+              />
+            </div>
+            <div>
+              <h1 className="text-primary text-lg font-bold leading-none tracking-tight">
+                ВФБАС
+              </h1>
+              <p className="text-accent text-xs font-bold mt-1">
+                Анкетирование
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-primary text-lg font-bold leading-none tracking-tight">
-              Анкетирование
-            </h1>
-            <p className="text-secondary text-xs font-medium mt-1">
-              Панель Админа
-            </p>
-          </div>
+
+          {/* Кнопка закрытия только для мобилок */}
+          <button
+            className="lg:hidden p-2 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-100"
+            onClick={closeMenu}
+          >
+            <X size={24} />
+          </button>
         </div>
 
         <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1">
@@ -94,12 +126,12 @@ export const AdminLayout = ({
 
           {/* Блок справочников */}
           <div
-            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors border-l-4 ${
               location.pathname.includes("/admin/departments") ||
               location.pathname.includes("/admin/teachers") ||
               location.pathname.includes("/admin/disciplines")
-                ? "bg-primary/10 text-primary font-bold"
-                : "text-slate-600 hover:bg-slate-50 font-medium"
+                ? "bg-primary/5 text-primary font-bold border-accent"
+                : "text-slate-600 hover:bg-slate-50 font-medium border-transparent"
             }`}
           >
             <FolderOpen
@@ -117,19 +149,22 @@ export const AdminLayout = ({
           <div className="ml-12 flex flex-col gap-1 border-l-2 border-slate-100 pl-3 my-1">
             <Link
               to="/admin/departments"
-              className={`text-sm py-1 ${isActive("/admin/departments") ? "text-primary font-bold" : "text-slate-500 hover:text-slate-800"}`}
+              onClick={closeMenu}
+              className={`text-sm py-1.5 ${isActive("/admin/departments") ? "text-primary font-bold" : "text-slate-500 hover:text-slate-800"}`}
             >
               Кафедры
             </Link>
             <Link
               to="/admin/teachers"
-              className={`text-sm py-1 ${isActive("/admin/teachers") ? "text-primary font-bold" : "text-slate-500 hover:text-slate-800"}`}
+              onClick={closeMenu}
+              className={`text-sm py-1.5 ${isActive("/admin/teachers") ? "text-primary font-bold" : "text-slate-500 hover:text-slate-800"}`}
             >
               Преподаватели
             </Link>
             <Link
               to="/admin/disciplines"
-              className={`text-sm py-1 ${isActive("/admin/disciplines") ? "text-primary font-bold" : "text-slate-500 hover:text-slate-800"}`}
+              onClick={closeMenu}
+              className={`text-sm py-1.5 ${isActive("/admin/disciplines") ? "text-primary font-bold" : "text-slate-500 hover:text-slate-800"}`}
             >
               Дисциплины
             </Link>
@@ -144,7 +179,7 @@ export const AdminLayout = ({
         <div className="p-4 border-t border-slate-200">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 p-2 rounded-lg hover:bg-red-50 text-slate-600 hover:text-red-600 transition-colors"
+            className="flex w-full items-center gap-3 p-3 rounded-lg hover:bg-accent/10 text-slate-600 hover:text-accent transition-colors"
           >
             <LogOut size={20} />
             <span className="text-sm font-bold">Выйти</span>
@@ -153,24 +188,41 @@ export const AdminLayout = ({
       </aside>
 
       {/* Основной контент */}
-      <main className="flex-1 flex flex-col h-full overflow-hidden relative">
+      <main className="flex-1 flex flex-col h-full overflow-hidden w-full relative">
         {/* Шапка страницы */}
-        <header className="flex-none bg-surface-light border-b border-slate-200 px-8 pt-8 pb-4 z-10">
-          <div className="max-w-7xl mx-auto w-full">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+        <header className="flex-none bg-surface-light border-b border-slate-200 px-4 md:px-8 pt-4 md:pt-8 pb-4 z-10">
+          <div className="max-w-7xl mx-auto w-full flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+            <div className="flex items-center gap-3">
+              {/* Бургер для мобилки */}
+              <button
+                className="lg:hidden p-2 -ml-2 text-slate-500 hover:bg-slate-100 rounded-lg"
+                onClick={() => setIsMobileMenuOpen(true)}
+              >
+                <Menu size={28} />
+              </button>
               <div>
-                <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
+                <h2 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
                   {title}
                 </h2>
-                {subtitle && <p className="text-secondary mt-1">{subtitle}</p>}
+                {subtitle && (
+                  <p className="text-secondary mt-1 text-sm md:text-base">
+                    {subtitle}
+                  </p>
+                )}
               </div>
-              {actions && <div className="flex gap-3">{actions}</div>}
             </div>
+
+            {/* Панель кнопок действий (с прокруткой на узких экранах, если их много) */}
+            {actions && (
+              <div className="flex gap-3 overflow-x-auto pb-2 md:pb-0">
+                {actions}
+              </div>
+            )}
           </div>
         </header>
 
         {/* Тело страницы */}
-        <div className="flex-1 overflow-y-auto bg-background-light p-8">
+        <div className="flex-1 overflow-y-auto bg-background-light p-4 md:p-8">
           <div className="max-w-7xl mx-auto w-full">{children}</div>
         </div>
       </main>

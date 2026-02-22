@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../api";
-import { Plus, Trash2, Save, GripVertical, CheckCircle2 } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Save,
+  GripVertical,
+  CheckCircle2,
+  ChevronUp,
+  ChevronDown,
+} from "lucide-react";
 import { AdminLayout } from "../layouts/AdminLayout";
 
 const QuestionType = {
@@ -72,7 +80,19 @@ export const CreateFormPage = () => {
       .map((q, i) => ({ ...q, order: i + 1 }));
     setQuestions(updated);
   };
+  const moveQuestion = (index: number, direction: "up" | "down") => {
+    if (direction === "up" && index === 0) return;
+    if (direction === "down" && index === questions.length - 1) return;
 
+    const newQs = [...questions];
+    const swapIdx = direction === "up" ? index - 1 : index + 1;
+
+    // Меняем элементы местами
+    [newQs[index], newQs[swapIdx]] = [newQs[swapIdx], newQs[index]];
+
+    // Пересчитываем order
+    setQuestions(newQs.map((q, i) => ({ ...q, order: i + 1 })));
+  };
   // Начало перетаскивания
   const handleDragStart = (index: number) => {
     setDraggedIdx(index);
@@ -198,9 +218,11 @@ export const CreateFormPage = () => {
                 onChange={(e) => setNewQText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addQuestion()}
               />
-              <div className="flex gap-3">
+              
+              {/* ИСПРАВЛЕНИЕ ТУТ: flex-col для телефонов, sm:flex-row для ПК */}
+              <div className="flex flex-col sm:flex-row gap-3">
                 <select
-                  className="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-slate-900/10 outline-none"
+                  className="w-full sm:flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-slate-900/10 outline-none"
                   value={newQType}
                   onChange={(e) =>
                     setNewQType(Number(e.target.value) as QuestionType)
@@ -213,10 +235,9 @@ export const CreateFormPage = () => {
                   ))}
                 </select>
 
-                {/* КНОПКА ДОБАВИТЬ: Явно черный фон */}
                 <button
                   onClick={addQuestion}
-                  className="px-6 py-3 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 hover:shadow-lg transition-all flex items-center gap-2 whitespace-nowrap"
+                  className="w-full sm:w-auto px-6 py-3 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 hover:shadow-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap"
                 >
                   <Plus size={18} /> Добавить
                 </button>
@@ -228,37 +249,57 @@ export const CreateFormPage = () => {
           <div className="space-y-3">
             {questions.map((q, idx) => (
               <div
-                key={q.order} // Лучше использовать q.order вместо idx, чтобы React не путался при анимациях
-                draggable // Включаем нативную поддержку Drag-n-Drop
+                key={q.order}
+                draggable
                 onDragStart={() => handleDragStart(idx)}
                 onDragEnter={() => handleDragEnter(idx)}
                 onDragEnd={handleDragEnd}
-                onDragOver={(e) => e.preventDefault()} // Обязательно, чтобы разрешить drop
-                className={`group flex items-center gap-4 p-4 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 hover:shadow-md transition-all ${
-                  draggedIdx === idx
-                    ? "opacity-40 shadow-inner bg-slate-50"
-                    : ""
+                onDragOver={(e) => e.preventDefault()}
+                className={`group flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl transition-all ${
+                  draggedIdx === idx ? "opacity-40 shadow-inner bg-slate-50" : "hover:border-slate-300 hover:shadow-md"
                 }`}
               >
-                <div className="cursor-move text-slate-300 hover:text-slate-500">
+                {/* Иконка перетаскивания только для ПК */}
+                <div className="hidden sm:block cursor-move text-slate-300 hover:text-slate-500">
                   <GripVertical size={20} />
                 </div>
-
+                
                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
                   {q.order}
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-slate-800">{q.text}</p>
+                
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-slate-800 truncate">{q.text}</p>
                   <span className="inline-block mt-1 text-[10px] uppercase font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
                     {QUESTION_TYPES.find((t) => t.value === q.type)?.label}
                   </span>
                 </div>
-                <button
-                  onClick={() => removeQuestion(idx)}
-                  className="p-2 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <Trash2 size={18} />
-                </button>
+                
+                {/* Панель управления вопросом (Стрелки + Удалить) */}
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <div className="flex flex-col sm:flex-row">
+                    <button 
+                      onClick={() => moveQuestion(idx, 'up')} 
+                      disabled={idx === 0}
+                      className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
+                    >
+                      <ChevronUp size={20} />
+                    </button>
+                    <button 
+                      onClick={() => moveQuestion(idx, 'down')} 
+                      disabled={idx === questions.length - 1}
+                      className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
+                    >
+                      <ChevronDown size={20} />
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => removeQuestion(idx)}
+                    className="p-2 text-slate-300 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors ml-1"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
               </div>
             ))}
 

@@ -69,7 +69,6 @@ internal sealed class GetSubmissionsQueryHandler(IApplicationDbContext context)
             submissionsQuery = submissionsQuery.Where(s => s.SubmittedAt <= query.SubmittedTo.Value);
         }
 
-        // Исправлено: явный тип вместо var
         List<SubmissionResponse> submissions = await submissionsQuery
             .Include(s => s.Answers)
             .OrderByDescending(s => s.SubmittedAt)

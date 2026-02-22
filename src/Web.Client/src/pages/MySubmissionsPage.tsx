@@ -18,6 +18,7 @@ export const MySubmissionsPage = () => {
   const [disciplines, setDisciplines] = useState<DictionaryItem[]>([]);
 
   useEffect(() => {
+
     const loadData = async () => {
       try {
         const [subRes, teachRes, discRes] = await Promise.all([

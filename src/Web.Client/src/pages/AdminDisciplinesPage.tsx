@@ -106,19 +106,18 @@ export const AdminDisciplinesPage = () => {
         </div>
       </div>
 
+      {/* Таблица */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/50 border-b border-slate-200">
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase">
+              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase">
                 Название
               </th>
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase">
+              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase">
                 Кафедра
               </th>
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase text-right">
-                Действия
-              </th>
+              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase text-right w-12 md:w-24"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -127,40 +126,50 @@ export const AdminDisciplinesPage = () => {
                 key={d.id}
                 className="group hover:bg-slate-50 transition-colors"
               >
-                <td className="py-4 px-6">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
-                      <Book size={16} />
+                <td className="py-3 px-3 md:py-4 md:px-6 align-top">
+                  <div className="flex items-start gap-2 md:gap-3">
+                    <div className="p-1.5 md:p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0 mt-0.5">
+                      <Book size={14} className="md:w-[16px] md:h-[16px]" />
                     </div>
-                    <span className="text-sm font-bold text-slate-900">
+                    {/* Перенос названия на 3 строки */}
+                    <span className="text-xs md:text-sm font-bold text-slate-900 line-clamp-3 leading-snug">
                       {d.name}
                     </span>
                   </div>
                 </td>
-                <td className="py-4 px-6">
-                  <span className="text-sm text-slate-600 bg-slate-100 px-2 py-1 rounded">
+                <td className="py-3 px-3 md:py-4 md:px-6 align-top">
+                  <span className="inline-block px-2 py-1 rounded text-[10px] md:text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 line-clamp-3 leading-tight">
                     {getDeptName(d.departmentId)}
                   </span>
                 </td>
-                <td className="py-4 px-6 text-right">
-                  <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                    {" "}
+                <td className="py-3 px-3 md:py-4 md:px-6 align-top text-right">
+                  <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => openModal(d)}
-                      className="p-1.5 rounded text-slate-400 hover:text-primary"
+                      className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
                     >
-                      <Edit2 size={18} />
+                      <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
                     </button>
                     <button
                       onClick={() => handleDelete(d.id)}
-                      className="p-1.5 rounded text-slate-400 hover:text-red-600"
+                      className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-accent hover:bg-accent/10 transition-colors"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
+            {filteredDisciplines.length === 0 && (
+              <tr>
+                <td
+                  colSpan={3}
+                  className="p-8 text-center text-slate-400 text-sm"
+                >
+                  Ничего не найдено
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

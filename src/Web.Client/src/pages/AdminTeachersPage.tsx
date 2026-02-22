@@ -78,6 +78,14 @@ export const AdminTeachersPage = () => {
       alert("Ошибка сохранения");
     }
   };
+  // Функция, которая обрезает только первое слово (Фамилию), если оно длиннее 10 букв
+  const truncateFirstWord = (fullName: string, maxLen: number = 10) => {
+    const words = fullName.split(" "); // Разбиваем на слова
+    if (words.length > 0 && words[0].length > maxLen) {
+      words[0] = words[0].substring(0, maxLen) + "..."; // Обрезаем первое слово
+    }
+    return words.join(" "); // Склеиваем обратно
+  };
 
   return (
     <AdminLayout
@@ -114,15 +122,13 @@ export const AdminTeachersPage = () => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/50 border-b border-slate-200">
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                ФИО Преподавателя
+              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
+                ФИО
               </th>
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
                 Кафедра
               </th>
-              <th className="py-4 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
-                Действия
-              </th>
+              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider text-right w-12 md:w-24"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -131,40 +137,54 @@ export const AdminTeachersPage = () => {
                 key={t.id}
                 className="group hover:bg-slate-50 transition-colors"
               >
-                <td className="py-4 px-6">
-                  <div className="flex items-center gap-3">
-                    <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold">
+                <td className="py-3 px-3 md:py-4 md:px-6 align-top">
+                  <div className="flex items-start gap-2 md:gap-3">
+                    <div className="h-7 w-7 md:h-9 md:w-9 shrink-0 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold mt-0.5">
                       {t.fullName.substring(0, 1)}
                     </div>
-                    <span className="text-sm font-bold text-slate-900">
-                      {t.fullName}
+
+                    <span
+                      className="text-xs md:text-sm font-bold text-slate-900 leading-snug pt-1"
+                      title={t.fullName}
+                    >
+                      {truncateFirstWord(t.fullName, 10)}
                     </span>
                   </div>
                 </td>
-                <td className="py-4 px-6">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                <td className="py-3 px-3 md:py-4 md:px-6 align-top">
+                  <span className="inline-block px-2 py-1 rounded text-[10px] md:text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 line-clamp-3 leading-tight">
                     {getDeptName(t.departmentId)}
                   </span>
                 </td>
-                <td className="py-4 px-6 text-right">
-                  <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                    {" "}
+                <td className="py-3 px-3 md:py-4 md:px-6 align-top text-right">
+                  {/* Кнопки перестроятся в колонку на узких экранах (flex-col sm:flex-row) */}
+                  <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => openEditModal(t)}
-                      className="p-1.5 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                      className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
                     >
-                      <Edit2 size={18} />
+                      <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
                     </button>
                     <button
                       onClick={() => handleDelete(t.id)}
-                      className="p-1.5 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                      className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-accent hover:bg-accent/10 transition-colors"
                     >
-                      <Trash2 size={18} />
+                      <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
+            {filteredTeachers.length === 0 && (
+              <tr>
+                <td
+                  colSpan={3}
+                  className="p-8 text-center text-slate-400 text-sm"
+                >
+                  Ничего не найдено
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

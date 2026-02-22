@@ -4,6 +4,7 @@ namespace Application.Submissions.Create;
 
 public sealed record CreateSubmissionCommand(
     Guid FormId,
+    string DeviceId,
     Guid UserId,
     List<AnswerRequest> Answers,
     Guid? DisciplineId = null,

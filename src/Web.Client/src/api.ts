@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getDeviceId } from "./utils/device";
 
 const api = axios.create({
   baseURL: "/api",
@@ -11,7 +12,16 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  },
+);
 export interface DictionaryItem {
   id: string;
   name: string;
@@ -89,7 +99,10 @@ export const submissionsApi = {
   getMyList: () => {
     const user = JSON.parse(atob(localStorage.getItem("token")!.split(".")[1]));
     const userId = user.sub;
-    return api.get<SubmissionListItem[]>(`/submissions?userId=${userId}`);
+    const deviceId = getDeviceId();
+    return api.get<SubmissionListItem[]>(
+      `/submissions?userId=${userId}&deviceId=${deviceId}`,
+    );
   },
 };
 

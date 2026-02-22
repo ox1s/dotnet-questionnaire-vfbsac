@@ -12,6 +12,7 @@ internal sealed class Create : IEndpoint
 {
     public sealed record CreateSubmissionRequest(
         Guid FormId,
+        string DeviceId,
         List<AnswerRequest> Answers,
         Guid? DisciplineId = null,
         Guid? TeacherId = null,
@@ -33,6 +34,7 @@ internal sealed class Create : IEndpoint
         {
             var command = new CreateSubmissionCommand(
                 request.FormId,
+                request.DeviceId,
                 userContext.UserId,
                 request.Answers,
                 request.DisciplineId,

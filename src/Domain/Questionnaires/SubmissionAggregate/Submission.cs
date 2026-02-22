@@ -9,15 +9,17 @@ public sealed class Submission : AggregateRoot
     public Guid UserId { get; private set; }
     public DateTime SubmittedAt { get; private set; }
     public SubmissionContext Context { get; private set; }
+    public string DeviceId { get; set; }
 
     private readonly List<Answer> _answers = [];
     public IReadOnlyList<Answer> Answers => _answers.AsReadOnly();
 
     private Submission() { }
 
-    private Submission(Guid id, Guid formId, Guid userId, DateTime submittedAt, SubmissionContext context) : base(id)
+    private Submission(Guid id, string deviceId, Guid formId, Guid userId, DateTime submittedAt, SubmissionContext context) : base(id)
     {
         FormId = formId;
+        DeviceId = deviceId;
         UserId = userId;
         Context = context;
         SubmittedAt = submittedAt;
@@ -25,6 +27,7 @@ public sealed class Submission : AggregateRoot
 
     public static Result<Submission> Create(
         Guid formId,
+        string deviceId,
         Guid userId,
         Guid? disciplineId = null,
         Guid? teacherId = null,
@@ -40,16 +43,17 @@ public sealed class Submission : AggregateRoot
             specialityId,
             specializationId,
             organizationName);
-        
+
         var submission = new Submission(
             Guid.NewGuid(),
+            deviceId,
             formId,
             userId,
             DateTime.UtcNow,
             context);
-        
+
         submission.RaiseDomainEvent(new SubmissionCreatedDomainEvent(submission.Id, formId, userId));
-        
+
         return submission;
     }
 

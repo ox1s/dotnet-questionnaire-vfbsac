@@ -8,6 +8,7 @@ import {
 } from "../components/ContextSelector"; // Импорт
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { getDeviceId } from "../utils/device";
 
 export const SurveyPage = () => {
   const { id } = useParams();
@@ -67,10 +68,10 @@ export const SurveyPage = () => {
       // Отправка на сервер
       await api.post("/submissions", {
         formId: form.id,
+        deviceId: getDeviceId(),
         educationForm: context.educationForm,
         teacherId: context.teacherId || null,
         disciplineId: context.disciplineId || null,
-
         answers: answersPayload,
       });
       toast.success("Анкета успешно отправлена!");

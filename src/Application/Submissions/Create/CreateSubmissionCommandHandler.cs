@@ -26,7 +26,9 @@ internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext conte
         }
 
         IQueryable<Submission> query = context.Submissions
-            .Where(s => s.FormId == command.FormId && s.UserId == command.UserId);
+            .Where(s => s.FormId == command.FormId &&
+                s.UserId == command.UserId &&
+                s.DeviceId == command.DeviceId);
 
         if (command.TeacherId.HasValue)
         {
@@ -47,6 +49,7 @@ internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext conte
 
         Result<Submission> submissionResult = Submission.Create(
             command.FormId,
+            command.DeviceId,
             command.UserId,
             command.DisciplineId,
             command.TeacherId,

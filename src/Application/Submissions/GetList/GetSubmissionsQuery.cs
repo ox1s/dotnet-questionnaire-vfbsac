@@ -4,6 +4,7 @@ namespace Application.Submissions.GetList;
 
 public sealed record GetSubmissionsQuery(
     Guid? FormId = null,
+    string? DeviceId = null,
     Guid? UserId = null,
     Guid? DisciplineId = null,
     Guid? TeacherId = null,

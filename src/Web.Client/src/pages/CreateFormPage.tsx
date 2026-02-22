@@ -218,7 +218,7 @@ export const CreateFormPage = () => {
                 onChange={(e) => setNewQText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && addQuestion()}
               />
-              
+
               {/* ИСПРАВЛЕНИЕ ТУТ: flex-col для телефонов, sm:flex-row для ПК */}
               <div className="flex flex-col sm:flex-row gap-3">
                 <select
@@ -256,37 +256,41 @@ export const CreateFormPage = () => {
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => e.preventDefault()}
                 className={`group flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl transition-all ${
-                  draggedIdx === idx ? "opacity-40 shadow-inner bg-slate-50" : "hover:border-slate-300 hover:shadow-md"
+                  draggedIdx === idx
+                    ? "opacity-40 shadow-inner bg-slate-50"
+                    : "hover:border-slate-300 hover:shadow-md"
                 }`}
               >
                 {/* Иконка перетаскивания только для ПК */}
                 <div className="hidden sm:block cursor-move text-slate-300 hover:text-slate-500">
                   <GripVertical size={20} />
                 </div>
-                
+
                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
                   {q.order}
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-slate-800 truncate">{q.text}</p>
+                  <p className="text-sm font-bold text-slate-800 truncate">
+                    {q.text}
+                  </p>
                   <span className="inline-block mt-1 text-[10px] uppercase font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
                     {QUESTION_TYPES.find((t) => t.value === q.type)?.label}
                   </span>
                 </div>
-                
+
                 {/* Панель управления вопросом (Стрелки + Удалить) */}
                 <div className="flex items-center gap-1 sm:gap-2">
                   <div className="flex flex-col sm:flex-row">
-                    <button 
-                      onClick={() => moveQuestion(idx, 'up')} 
+                    <button
+                      onClick={() => moveQuestion(idx, "up")}
                       disabled={idx === 0}
                       className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
                     >
                       <ChevronUp size={20} />
                     </button>
-                    <button 
-                      onClick={() => moveQuestion(idx, 'down')} 
+                    <button
+                      onClick={() => moveQuestion(idx, "down")}
                       disabled={idx === questions.length - 1}
                       className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
                     >

@@ -18,6 +18,11 @@ internal sealed class GetSubmissionsQueryHandler(IApplicationDbContext context)
             submissionsQuery = submissionsQuery.Where(s => s.FormId == query.FormId);
         }
 
+        if (!string.IsNullOrWhiteSpace(query.DeviceId))
+        {
+            submissionsQuery = submissionsQuery.Where(s => s.DeviceId == query.DeviceId);
+        }
+
         if (query.UserId.HasValue)
         {
             submissionsQuery = submissionsQuery.Where(s => s.UserId == query.UserId);

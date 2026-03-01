@@ -28,16 +28,16 @@ export const DashboardPage = () => {
       {forms.map((form) => (
         <div
           key={form.id}
-          className="group flex flex-col bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md hover:border-slate-300 transition-all duration-200"
+          className="soft-card group flex flex-col p-6"
         >
           <div className="flex items-start justify-between mb-4">
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <div className="p-3 rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-white transition-colors">
               <FileText size={24} />
             </div>
             {userIsAdmin && (
               <Link
                 to={`/admin/stats/${form.id}`}
-                className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-800"
                 title="Смотреть статистику"
               >
                 <BarChart3 size={20} />
@@ -60,7 +60,7 @@ export const DashboardPage = () => {
 
             <Link
               to={`/form/${form.id}`}
-              className="flex items-center justify-center w-full gap-2 py-2.5 rounded-lg bg-slate-50 text-slate-700 font-bold text-sm group-hover:bg-slate-900 group-hover:text-white transition-all"
+              className="flex w-full items-center justify-center gap-2 rounded-lg bg-slate-100 py-2.5 text-sm font-bold text-slate-700 transition-all group-hover:bg-primary group-hover:text-white"
             >
               Пройти опрос <ArrowRight size={16} />
             </Link>
@@ -69,7 +69,7 @@ export const DashboardPage = () => {
       ))}
 
       {forms.length === 0 && (
-        <div className="col-span-full p-12 text-center border-2 border-dashed border-slate-200 rounded-2xl">
+        <div className="col-span-full rounded-2xl border-2 border-dashed border-slate-300 bg-white/80 p-12 text-center">
           <p className="text-slate-400 font-medium">Нет доступных анкет</p>
         </div>
       )}
@@ -90,14 +90,14 @@ export const DashboardPage = () => {
 
   // --- Рендер для СТУДЕНТА (без сайдбара) ---
   return (
-    <div className="min-h-screen bg-slate-50 font-display text-slate-900">
-      <nav className="bg-white border-b border-slate-200 px-6 py-4">
+    <div className="page-gradient min-h-screen font-display text-slate-900">
+      <nav className="border-b border-slate-200/80 bg-white/85 px-6 py-4 backdrop-blur">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
               <FileText size={18} />
             </div>
-            <h1 className="text-lg font-bold text-slate-900">
+            <h1 className="text-lg font-bold text-slate-900 tracking-tight">
               Опросы Студентов
             </h1>
           </div>
@@ -119,9 +119,9 @@ export const DashboardPage = () => {
         </div>
       </nav>
 
-      <main className="max-w-5xl mx-auto px-6 py-10">
+      <main className="mx-auto max-w-5xl px-6 py-10">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
             Доступные анкеты
           </h2>
           <p className="text-slate-500">

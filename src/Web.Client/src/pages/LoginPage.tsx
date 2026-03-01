@@ -54,9 +54,6 @@ export const LoginPage = () => {
             Войти
           </button>
         </form>
-        <div className="mt-4 text-xs text-gray-400 text-center">
-          Для теста: Логин <b>ПО111</b>, Пароль <b>12345678</b>
-        </div>
       </div>
     </div>
   );

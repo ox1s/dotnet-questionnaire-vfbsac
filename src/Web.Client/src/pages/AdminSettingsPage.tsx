@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { ShieldAlert, KeyRound, PowerOff, AlertTriangle } from "lucide-react";
-import { usersApi } from "../api";
+import { usersApi, settingsApi } from "../api";
 import { getUserInfo } from "../utils/auth";
 import toast from "react-hot-toast";
 
@@ -10,7 +10,7 @@ export const AdminSettingsPage = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-
+  const [isClosing, setIsClosing] = useState(false);
   // Обработчик смены пароля
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,14 +44,23 @@ export const AdminSettingsPage = () => {
   };
 
   // Обработчик закрытия семестра
-  const handleCloseSemester = () => {
+  const handleCloseSemester = async () => {
     if (
       window.confirm(
         "ВНИМАНИЕ!\nВы уверены, что хотите завершить семестр? Все текущие анкеты будут скрыты от студентов, но статистика сохранится.",
       )
     ) {
-      // Здесь в будущем будет вызов API (например: await api.post('/settings/close-semester'))
-      toast.success("Семестр успешно закрыт. Анкеты скрыты.");
+      try {
+        setIsClosing(true);
+        await settingsApi.closeSemester();
+
+        toast.success("Семестр успешно закрыт. Все анкеты деактивированы.");
+      } catch (e) {
+        console.error(e);
+        toast.error("Не удалось закрыть семестр. Проверьте консоль.");
+      } finally {
+        setIsClosing(false);
+      }
     }
   };
 
@@ -141,10 +150,12 @@ export const AdminSettingsPage = () => {
 
             <button
               onClick={handleCloseSemester}
-              className="w-full sm:w-auto shrink-0 px-6 py-3 bg-white border-2 border-accent text-accent rounded-xl font-bold text-sm hover:bg-accent hover:text-white transition-all shadow-sm"
+              disabled={isClosing} // Блокируем кнопку во время запроса
+              className="w-full sm:w-auto shrink-0 px-6 py-3 bg-white border-2 border-accent text-accent rounded-xl font-bold text-sm hover:bg-accent hover:text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="flex items-center justify-center gap-2">
-                <PowerOff size={18} /> Завершить
+                <PowerOff size={18} />
+                {isClosing ? "Завершение..." : "Завершить"}
               </span>
             </button>
           </div>

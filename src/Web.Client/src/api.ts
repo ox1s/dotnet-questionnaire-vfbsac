@@ -71,6 +71,10 @@ export const usersApi = {
     api.post(`/users/${id}/set-password`, { userId: id, newPassword }),
 };
 
+export const settingsApi = {
+  closeSemester: () => api.post("/settings/close-semester"),
+};
+
 export const dictionariesApi = {
   getDepartments: () => api.get<DictionaryItem[]>("/dictionaries/departments"),
   getTeachers: () => api.get<TeacherItem[]>("/dictionaries/teachers"),

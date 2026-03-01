@@ -15,6 +15,7 @@ internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext conte
         Form? form = await context.Forms
             .FirstOrDefaultAsync(f => f.Id == command.FormId, cancellationToken);
 
+
         if (form is null)
         {
             return Result.Failure<Guid>(FormErrors.NotFound(command.FormId));
@@ -23,6 +24,11 @@ internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext conte
         if (!form.IsActive)
         {
             return Result.Failure<Guid>(FormErrors.FormInactive(command.FormId));
+        }
+
+        if (form.IsDeleted)
+        {
+            return Result.Failure<Guid>(FormErrors.NotFound(command.FormId));
         }
 
         IQueryable<Submission> query = context.Submissions

@@ -10,7 +10,6 @@ import { AdminTeachersPage } from "./pages/AdminTeachersPage";
 import { AdminDisciplinesPage } from "./pages/AdminDisciplinesPage";
 import { AdminDepartmentsPage } from "./pages/AdminDepartmentsPage";
 import { AdminGroupsPage } from "./pages/AdminGroupsPage";
-import { MySubmissionsPage } from "./pages/MySubmissionsPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 
 function App() {
@@ -24,7 +23,6 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/form/:id" element={<SurveyPage />} />
-          <Route path="/my-submissions" element={<MySubmissionsPage />} />
         </Route>
 
         <Route

@@ -106,15 +106,6 @@ export const DashboardPage = () => {
               <User size={14} /> Студент
             </div>
             <div className="flex items-center gap-4">
-              {/* Кнопка Мои анкеты */}
-              <button
-                onClick={() => navigate("/my-submissions")} // <-- Исправлено здесь
-                className="text-slate-500 hover:text-primary font-medium text-sm flex items-center gap-2"
-              >
-                <FileText size={18} />
-                <span className="hidden sm:inline">Мои анкеты</span>
-              </button>
-
               {/* Кнопка Выйти */}
               <button
                 onClick={logout}

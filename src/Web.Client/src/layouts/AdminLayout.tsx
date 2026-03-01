@@ -211,12 +211,9 @@ export const AdminLayout = ({
                 )}
               </div>
             </div>
-
-            {/* Панель кнопок действий (с прокруткой на узких экранах, если их много) */}
+            {/* Панель кнопок действий */}{" "}
             {actions && (
-              <div className="flex gap-3 overflow-x-auto pb-2 md:pb-0">
-                {actions}
-              </div>
+              <div className="flex flex-wrap gap-3 py-2 -my-2">{actions}</div>
             )}
           </div>
         </header>

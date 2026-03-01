@@ -19,7 +19,9 @@ internal sealed class DeleteSubmissionCommandHandler(IApplicationDbContext conte
             return Result.Failure(SubmissionErrors.NotFound(command.SubmissionId));
         }
 
-        context.Submissions.Remove(submission);
+        submission.MarkAsDeleted();
+        context.Submissions.Update(submission);
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

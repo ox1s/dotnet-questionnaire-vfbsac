@@ -19,7 +19,9 @@ internal sealed class DeleteFormCommandHandler(IApplicationDbContext context)
             return Result.Failure(FormErrors.NotFound(command.FormId));
         }
 
-        context.Forms.Remove(form);
+        form.MarkAsDeleted();
+        context.Forms.Update(form);
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

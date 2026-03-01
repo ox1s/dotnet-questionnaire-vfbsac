@@ -19,7 +19,9 @@ internal sealed class DeleteDisciplineCommandHandler(IApplicationDbContext conte
             return Result.Failure(DisciplineErrors.NotFound(command.DisciplineId));
         }
 
-        context.Disciplines.Remove(discipline);
+        discipline.MarkAsDeleted();
+        context.Disciplines.Update(discipline);
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

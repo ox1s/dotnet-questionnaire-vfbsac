@@ -19,7 +19,9 @@ internal sealed class DeleteUserCommandHandler(IApplicationDbContext context)
             return Result.Failure(UserErrors.NotFound(command.UserId));
         }
 
-        context.Users.Remove(user);
+        user.MarkAsDeleted();
+        context.Users.Update(user);
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

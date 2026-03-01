@@ -39,6 +39,11 @@ public sealed class ApplicationDbContext(
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         modelBuilder.HasDefaultSchema(Schemas.Default);
+
+        modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
+        modelBuilder.Entity<Discipline>().HasQueryFilter(d => !d.IsDeleted);
+        modelBuilder.Entity<Department>().HasQueryFilter(d => !d.IsDeleted);
+        modelBuilder.Entity<Form>().HasQueryFilter(f => !f.IsDeleted);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

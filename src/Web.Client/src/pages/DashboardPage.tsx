@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api, { type Form } from "../api";
-import { LogOut, FileText, BarChart3, User, ArrowRight } from "lucide-react";
+import {
+  LogOut,
+  FileText,
+  BarChart3,
+  User,
+  ArrowRight,
+  Edit2,
+} from "lucide-react";
+
 import { isAdmin } from "../utils/auth";
 import { AdminLayout } from "../layouts/AdminLayout";
 
@@ -35,19 +43,26 @@ export const DashboardPage = () => {
               <FileText size={24} />
             </div>
             {userIsAdmin && (
-              <Link
-                to={`/admin/stats/${form.id}`}
-                className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
-                title="Смотреть статистику"
-              >
-                <BarChart3 size={20} />
-              </Link>
+              <div className="flex items-center gap-1">
+                {/* НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
+                <Link
+                  to={`/admin/edit-form/${form.id}`}
+                  className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
+                  title="Редактировать анкету"
+                >
+                  <Edit2 size={20} />
+                </Link>
+
+                <Link
+                  to={`/admin/stats/${form.id}`}
+                  className="p-2 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                  title="Смотреть статистику"
+                >
+                  <BarChart3 size={20} />
+                </Link>
+              </div>
             )}
           </div>
-
-          <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 leading-tight">
-            {form.title}
-          </h3>
 
           <div className="mt-auto pt-4 border-t border-slate-100">
             {form.requiredFilters && form.requiredFilters.length > 0 ? (

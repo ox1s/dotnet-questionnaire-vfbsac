@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../api";
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import api, { type FormDetail } from "../api";
 import {
   Plus,
   Trash2,
@@ -9,8 +9,10 @@ import {
   CheckCircle2,
   ChevronUp,
   ChevronDown,
+  Lock,
 } from "lucide-react";
 import { AdminLayout } from "../layouts/AdminLayout";
+import toast from "react-hot-toast";
 
 const QuestionType = {
   Text: 1,
@@ -19,10 +21,10 @@ const QuestionType = {
 } as const;
 
 type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
-
 type FilterField = "Department" | "Discipline" | "Teacher" | "Speciality";
 
 interface QuestionDraft {
+  id?: string; // Для существующих вопросов
   text: string;
   type: QuestionType;
   order: number;
@@ -43,6 +45,9 @@ const QUESTION_TYPES = [
 
 export const CreateFormPage = () => {
   const navigate = useNavigate();
+  const { id } = useParams(); // Получаем ID из URL
+  const isEditMode = !!id; // Если ID есть, значит мы в режиме редактирования
+
   const [title, setTitle] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<FilterField[]>([]);
   const [questions, setQuestions] = useState<QuestionDraft[]>([]);
@@ -51,8 +56,33 @@ export const CreateFormPage = () => {
   const [newQType, setNewQType] = useState<QuestionType>(
     QuestionType.WeightedRating,
   );
-
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+
+  // Загрузка данных при редактировании
+  useEffect(() => {
+    if (isEditMode) {
+      api
+        .get<FormDetail>(`/forms/${id}`)
+        .then((res) => {
+          setTitle(res.data.title);
+          // Приводим типы к нужным для UI
+          setSelectedFilters((res.data.requiredFilters as FilterField[]) || []);
+
+          // Маппим строковые типы из БД в числовые константы фронтенда
+          const mappedQs = res.data.questions.map((q) => ({
+            ...q,
+            type:
+              QuestionType[q.type as keyof typeof QuestionType] ||
+              QuestionType.Text,
+          }));
+          setQuestions(mappedQs);
+        })
+        .catch(() => {
+          toast.error("Не удалось загрузить анкету");
+          navigate("/dashboard");
+        });
+    }
+  }, [id, isEditMode, navigate]);
 
   const toggleFilter = (filter: FilterField) => {
     setSelectedFilters((prev) =>
@@ -63,10 +93,7 @@ export const CreateFormPage = () => {
   };
 
   const addQuestion = () => {
-    if (!newQText.trim()) {
-      alert("Введите текст вопроса");
-      return;
-    }
+    if (!newQText.trim()) return toast.error("Введите текст вопроса");
     setQuestions([
       ...questions,
       { text: newQText, type: newQType, order: questions.length + 1 },
@@ -80,79 +107,83 @@ export const CreateFormPage = () => {
       .map((q, i) => ({ ...q, order: i + 1 }));
     setQuestions(updated);
   };
+
   const moveQuestion = (index: number, direction: "up" | "down") => {
     if (direction === "up" && index === 0) return;
     if (direction === "down" && index === questions.length - 1) return;
 
     const newQs = [...questions];
     const swapIdx = direction === "up" ? index - 1 : index + 1;
-
-    // Меняем элементы местами
     [newQs[index], newQs[swapIdx]] = [newQs[swapIdx], newQs[index]];
-
-    // Пересчитываем order
     setQuestions(newQs.map((q, i) => ({ ...q, order: i + 1 })));
   };
-  // Начало перетаскивания
-  const handleDragStart = (index: number) => {
-    setDraggedIdx(index);
-  };
 
-  // Элемент пролетает над другим элементом
+  // Drag and Drop (только для режима создания)
+  const handleDragStart = (index: number) => setDraggedIdx(index);
   const handleDragEnter = (index: number) => {
     if (draggedIdx === null || draggedIdx === index) return;
-
-    // Меняем элементы местами
     const newQuestions = [...questions];
     const draggedItem = newQuestions.splice(draggedIdx, 1)[0];
     newQuestions.splice(index, 0, draggedItem);
-
-    // Пересчитываем поле order (1, 2, 3...)
-    const updated = newQuestions.map((q, i) => ({ ...q, order: i + 1 }));
-
-    setDraggedIdx(index); // Обновляем индекс, так как элемент сдвинулся
-    setQuestions(updated);
+    setQuestions(newQuestions.map((q, i) => ({ ...q, order: i + 1 })));
+    setDraggedIdx(index);
   };
-
-  // Конец перетаскивания (отпустили мышь)
-  const handleDragEnd = () => {
-    setDraggedIdx(null);
-  };
+  const handleDragEnd = () => setDraggedIdx(null);
 
   const handleSave = async () => {
     if (!title.trim() || questions.length === 0) {
-      alert("Заполните название и добавьте вопросы");
+      toast.error("Заполните название и добавьте вопросы");
       return;
     }
+
     try {
-      await api.post("/forms", {
-        title,
-        requiredFilters: selectedFilters,
-        questions,
-      });
+      if (isEditMode) {
+        // Отправляем PUT запрос (без вопросов, так как бэкенд их не принимает)
+        await api.put(`/forms/${id}`, {
+          formId: id,
+          title,
+          requiredFilters: selectedFilters,
+          isActive: true, // По умолчанию сохраняем активной
+        });
+        toast.success("Анкета успешно обновлена!");
+      } else {
+        // Отправляем POST запрос с вопросами
+        await api.post("/forms", {
+          title,
+          requiredFilters: selectedFilters,
+          questions,
+        });
+        toast.success("Новая анкета создана!");
+      }
       navigate("/dashboard");
     } catch (e) {
-      alert("Ошибка сохранения");
+      console.error(e);
+      toast.error("Ошибка при сохранении");
     }
   };
 
   return (
     <AdminLayout
-      title="Конструктор анкет"
-      subtitle="Создание новой формы опроса."
+      title={isEditMode ? "Редактирование анкеты" : "Конструктор анкет"}
+      subtitle={
+        isEditMode
+          ? "Изменение названия и фильтров."
+          : "Создание новой формы опроса."
+      }
       actions={
         <button
           onClick={handleSave}
-          className="flex items-center gap-2 px-6 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-all text-sm"
+          className="flex items-center justify-center gap-2 w-full md:w-auto px-6 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-all text-sm whitespace-nowrap"
         >
-          <Save size={18} /> Сохранить анкету
+          <Save size={18} />{" "}
+          {isEditMode ? "Сохранить изменения" : "Сохранить анкету"}
         </button>
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Левая колонка: Настройки */}
+        {/* Левая колонка: Настройки (Доступно всегда) */}
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+          <div className="bg-surface-light p-6 rounded-2xl shadow-sm border border-slate-200">
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
               Настройки
             </h3>
@@ -163,7 +194,7 @@ export const CreateFormPage = () => {
               </label>
               <textarea
                 rows={3}
-                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 outline-none resize-none"
+                className="input-field resize-none bg-background-light"
                 placeholder="Например: Удовлетворенность качеством преподавания..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -186,13 +217,13 @@ export const CreateFormPage = () => {
                       onClick={() => toggleFilter(opt.key)}
                       className={`flex w-full items-center justify-between px-4 py-3 rounded-xl border transition-all text-sm font-medium ${
                         active
-                          ? "bg-slate-800 border-slate-800 text-white shadow-md"
+                          ? "bg-primary border-primary text-white shadow-md shadow-primary/20"
                           : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
                       }`}
                     >
                       {opt.label}
                       {active && (
-                        <CheckCircle2 size={16} className="text-green-400" />
+                        <CheckCircle2 size={16} className="text-white" />
                       )}
                     </button>
                   );
@@ -204,67 +235,87 @@ export const CreateFormPage = () => {
 
         {/* Правая колонка: Вопросы */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Добавление вопроса */}
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
-              Новый вопрос
-            </h3>
-            <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-slate-900/10 outline-none"
-                placeholder="Введите текст вопроса..."
-                value={newQText}
-                onChange={(e) => setNewQText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addQuestion()}
-              />
-
-              {/* ИСПРАВЛЕНИЕ ТУТ: flex-col для телефонов, sm:flex-row для ПК */}
-              <div className="flex flex-col sm:flex-row gap-3">
-                <select
-                  className="w-full sm:flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-slate-900/10 outline-none"
-                  value={newQType}
-                  onChange={(e) =>
-                    setNewQType(Number(e.target.value) as QuestionType)
-                  }
-                >
-                  {QUESTION_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-
-                <button
-                  onClick={addQuestion}
-                  className="w-full sm:w-auto px-6 py-3 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 hover:shadow-lg transition-all flex items-center justify-center gap-2 whitespace-nowrap"
-                >
-                  <Plus size={18} /> Добавить
-                </button>
+          {/* УВЕДОМЛЕНИЕ О БЛОКИРОВКЕ (Только в режиме редактирования) */}
+          {isEditMode && (
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-start gap-3 text-blue-800">
+              <Lock size={20} className="mt-0.5 shrink-0" />
+              <div className="text-sm">
+                <p className="font-bold mb-1">
+                  Редактирование вопросов заблокировано
+                </p>
+                <p className="opacity-90">
+                  Чтобы не нарушить статистику уже пройденных опросов,
+                  добавление или удаление вопросов после создания анкеты
+                  запрещено системой. Вы можете изменить только название и
+                  фильтры.
+                </p>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Добавление вопроса (Только если НЕ режим редактирования) */}
+          {!isEditMode && (
+            <div className="bg-surface-light p-6 rounded-2xl shadow-sm border border-slate-200">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
+                Новый вопрос
+              </h3>
+              <div className="flex flex-col gap-4">
+                <input
+                  type="text"
+                  className="input-field bg-background-light"
+                  placeholder="Введите текст вопроса..."
+                  value={newQText}
+                  onChange={(e) => setNewQText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addQuestion()}
+                />
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <select
+                    className="input-field bg-background-light w-full sm:flex-1"
+                    value={newQType}
+                    onChange={(e) =>
+                      setNewQType(Number(e.target.value) as QuestionType)
+                    }
+                  >
+                    {QUESTION_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={addQuestion}
+                    className="w-full sm:w-auto px-6 py-2.5 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                  >
+                    <Plus size={18} /> Добавить
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Список вопросов */}
           <div className="space-y-3">
             {questions.map((q, idx) => (
               <div
                 key={q.order}
-                draggable
-                onDragStart={() => handleDragStart(idx)}
-                onDragEnter={() => handleDragEnter(idx)}
+                draggable={!isEditMode}
+                onDragStart={() => !isEditMode && handleDragStart(idx)}
+                onDragEnter={() => !isEditMode && handleDragEnter(idx)}
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => e.preventDefault()}
-                className={`group flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl transition-all ${
+                className={`group flex items-center gap-3 p-4 bg-surface-light border border-slate-200 rounded-2xl transition-all ${
                   draggedIdx === idx
                     ? "opacity-40 shadow-inner bg-slate-50"
-                    : "hover:border-slate-300 hover:shadow-md"
-                }`}
+                    : ""
+                } ${!isEditMode ? "hover:border-slate-300 hover:shadow-md cursor-grab" : "opacity-80"}`}
               >
-                {/* Иконка перетаскивания только для ПК */}
-                <div className="hidden sm:block cursor-move text-slate-300 hover:text-slate-500">
-                  <GripVertical size={20} />
-                </div>
+                {!isEditMode && (
+                  <div className="hidden sm:block text-slate-300 hover:text-slate-500">
+                    <GripVertical size={20} />
+                  </div>
+                )}
 
                 <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
                   {q.order}
@@ -275,41 +326,44 @@ export const CreateFormPage = () => {
                     {q.text}
                   </p>
                   <span className="inline-block mt-1 text-[10px] uppercase font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
-                    {QUESTION_TYPES.find((t) => t.value === q.type)?.label}
+                    {QUESTION_TYPES.find((t) => t.value === q.type)?.label ||
+                      "Вопрос"}
                   </span>
                 </div>
 
-                {/* Панель управления вопросом (Стрелки + Удалить) */}
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="flex flex-col sm:flex-row">
+                {/* Панель управления (скрыта в режиме редактирования) */}
+                {!isEditMode && (
+                  <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="flex flex-col sm:flex-row">
+                      <button
+                        onClick={() => moveQuestion(idx, "up")}
+                        disabled={idx === 0}
+                        className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
+                      >
+                        <ChevronUp size={20} />
+                      </button>
+                      <button
+                        onClick={() => moveQuestion(idx, "down")}
+                        disabled={idx === questions.length - 1}
+                        className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
+                      >
+                        <ChevronDown size={20} />
+                      </button>
+                    </div>
                     <button
-                      onClick={() => moveQuestion(idx, "up")}
-                      disabled={idx === 0}
-                      className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
+                      onClick={() => removeQuestion(idx)}
+                      className="p-2 text-slate-300 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors ml-1"
                     >
-                      <ChevronUp size={20} />
-                    </button>
-                    <button
-                      onClick={() => moveQuestion(idx, "down")}
-                      disabled={idx === questions.length - 1}
-                      className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
-                    >
-                      <ChevronDown size={20} />
+                      <Trash2 size={18} />
                     </button>
                   </div>
-                  <button
-                    onClick={() => removeQuestion(idx)}
-                    className="p-2 text-slate-300 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors ml-1"
-                  >
-                    <Trash2 size={18} />
-                  </button>
-                </div>
+                )}
               </div>
             ))}
 
-            {questions.length === 0 && (
-              <div className="p-10 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400">
-                Список вопросов пуст
+            {questions.length === 0 && !isEditMode && (
+              <div className="p-10 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium bg-surface-light">
+                Список вопросов пуст. Добавьте первый вопрос выше.
               </div>
             )}
           </div>

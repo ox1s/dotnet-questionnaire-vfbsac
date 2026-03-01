@@ -173,7 +173,7 @@ export const AdminLayout = ({
           <NavItem to="/admin/groups" icon={Users} label="Группы и доступы" />
 
           <div className="my-4 border-t border-slate-100"></div>
-          <NavItem to="#" icon={Settings} label="Настройки" />
+          <NavItem to="/admin/settings" icon={Settings} label="Настройки" />
         </div>
 
         <div className="p-4 border-t border-slate-200">

@@ -11,6 +11,7 @@ import { AdminDisciplinesPage } from "./pages/AdminDisciplinesPage";
 import { AdminDepartmentsPage } from "./pages/AdminDepartmentsPage";
 import { AdminGroupsPage } from "./pages/AdminGroupsPage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { AdminSettingsPage } from "./pages/AdminSettingsPage";
 
 function App() {
   return (
@@ -33,10 +34,12 @@ function App() {
 
         <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
           <Route path="/admin/create-form" element={<CreateFormPage />} />
+          <Route path="/admin/edit-form/:id" element={<CreateFormPage />} />
           <Route path="/admin/teachers" element={<AdminTeachersPage />} />
           <Route path="/admin/disciplines" element={<AdminDisciplinesPage />} />
           <Route path="/admin/departments" element={<AdminDepartmentsPage />} />
           <Route path="/admin/groups" element={<AdminGroupsPage />} />
+          <Route path="/admin/settings" element={<AdminSettingsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

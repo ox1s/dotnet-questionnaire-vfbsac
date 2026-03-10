@@ -40,8 +40,8 @@ public class DbInitializer(
         Dictionary<int, Department> depts = [];
         var deptData = new Dictionary<int, (string Name, Guid Id)>
         {
-            {1, ("ПОСТ", Guid.Parse("11111111-1111-1111-1111-111111111111"))},
-            {2, ("ИКТ", Guid.Parse("22222222-2222-2222-2222-222222222222"))},
+            {1, ("ПОСТ", Guid.NewGuid())},
+            {2, ("ИКТ", Guid.NewGuid())},
             {3, ("ТКС", Guid.NewGuid())},
             {4, ("ОТПС", Guid.NewGuid())},
             {5, ("РИТ", Guid.NewGuid())},
@@ -80,8 +80,10 @@ public class DbInitializer(
         Dictionary<int, Specialization> specializations = [];
         var speczData = new List<(int Id, string Name, int SpecId)>
         {
-            (2, "ПО сетей телеком", 1), (4, "Тех.экспл. сетей телеком", 1),
-            (6, "Экспл. инфо-тех сетей", 2), (8, "Радиосистемы охраны", 3),
+            (2, "ПО сетей телеком", 1),
+            (4, "Тех.экспл. сетей телеком", 1),
+            (6, "Экспл. инфо-тех сетей", 2),
+            (8, "Радиосистемы охраны", 3),
             (10, "Орг. торговли почтой", 2)
         };
         foreach ((int Id, string Name, int SpecId) item in speczData)
@@ -96,8 +98,12 @@ public class DbInitializer(
         Dictionary<int, Discipline> disciplines = [];
         var discData = new List<(int Id, string Name, int DeptId)>
         {
-            (5, "КПиЯП", 1), (7, "ИТ", 2), (8, "ООП", 1), (29, "Теор.алг", 1),
-            (33, "Тех.комм и ОК", 6), (50, "Инф", 2)
+            (5, "КПиЯП", 1),
+            (7, "ИТ", 2),
+            (8, "ООП", 1),
+            (29, "Теор.алг", 1),
+            (33, "Тех.комм и ОК", 6),
+            (50, "Инф", 2)
         };
         foreach ((int Id, string Name, int DeptId) item in discData)
         {
@@ -148,8 +154,7 @@ public class DbInitializer(
         Form f1 = Form.Create("Оценка удовлетворённости обучающихся преподаванием учебных дисциплин",
             [FilterField.Discipline]).Value;
 
-        // ВАЖНО: Устанавливаем тот самый ID, который ищет фронтенд/лог
-        f1.SetIdForSeeding(Guid.Parse("2ccf04c2-0197-4d71-8b46-ac3394bfc8e5"));
+        f1.SetIdForSeeding(Guid.NewGuid());
 
         f1.AddQuestion("Содержание образовательной программы", QuestionType.WeightedRating, 1);
         f1.AddQuestion("Лекционные занятия (методы)", QuestionType.WeightedRating, 2);
@@ -163,7 +168,7 @@ public class DbInitializer(
         Form f7 = Form.Create("Оценка руководителей производственной практики",
             [FilterField.Speciality]).Value;
 
-        f7.SetIdForSeeding(Guid.Parse("77777777-7777-7777-7777-777777777777"));
+        f7.SetIdForSeeding(Guid.NewGuid());
 
         f7.AddQuestion("Актуальность теоретических знаний", QuestionType.Number, 1);
         f7.AddQuestion("Качество практических навыков", QuestionType.Number, 2);
@@ -178,7 +183,6 @@ public class DbInitializer(
         logger.LogInformation("Seeding completed. Fixed Form ID restored.");
     }
 
-    // Хелпер для установки ID (так как set; private)
     private static void SetId<T>(T entity, Guid id) where T : Entity
     {
         typeof(T).GetProperty(nameof(Entity.Id))?.SetValue(entity, id);

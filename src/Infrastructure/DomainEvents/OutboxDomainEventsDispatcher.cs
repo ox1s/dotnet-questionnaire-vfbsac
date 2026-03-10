@@ -28,7 +28,7 @@ internal sealed class OutboxDomainEventsDispatcher(
     public async Task ProcessOutboxMessagesAsync(CancellationToken cancellationToken = default)
     {
         string sql = """
-                    SELECT id, type, content, occurred_on, processed_on, error 
+                    SELECT id, type, content, occurred_on, processed_on, error
                     FROM public."OutboxMessages" 
                     WHERE processed_on IS NULL 
                     ORDER BY occurred_on 

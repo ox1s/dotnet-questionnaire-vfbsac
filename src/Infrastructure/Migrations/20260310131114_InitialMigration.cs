@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Infrastructure.Migrations;
 
 /// <inheritdoc />
-public partial class Initial : Migration
+public partial class InitialMigration : Migration
 {
     /// <inheritdoc />
     protected override void Up(MigrationBuilder migrationBuilder)
@@ -20,7 +20,8 @@ public partial class Initial : Migration
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
-                name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
+                name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -35,7 +36,8 @@ public partial class Initial : Migration
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 title = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                 is_active = table.Column<bool>(type: "boolean", nullable: false),
-                required_filters = table.Column<string>(type: "text", nullable: true)
+                required_filters = table.Column<string>(type: "text", nullable: true),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -52,7 +54,8 @@ public partial class Initial : Migration
                 content = table.Column<string>(type: "text", nullable: false),
                 occurred_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 processed_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                error = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
+                error = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -65,7 +68,8 @@ public partial class Initial : Migration
             columns: table => new
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
-                name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
+                name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -79,7 +83,8 @@ public partial class Initial : Migration
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                speciality_id = table.Column<Guid>(type: "uuid", nullable: true)
+                speciality_id = table.Column<Guid>(type: "uuid", nullable: true),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -103,7 +108,9 @@ public partial class Initial : Migration
                 context_organization_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                 context_education_form = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                 context_employee_category = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                context_position = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
+                context_position = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                device_id = table.Column<string>(type: "text", nullable: false),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -117,7 +124,8 @@ public partial class Initial : Migration
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 full_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                department_id = table.Column<Guid>(type: "uuid", nullable: false)
+                department_id = table.Column<Guid>(type: "uuid", nullable: false),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -138,7 +146,8 @@ public partial class Initial : Migration
                 department_id = table.Column<Guid>(type: "uuid", nullable: true),
                 group_id = table.Column<Guid>(type: "uuid", nullable: true),
                 teacher_id = table.Column<Guid>(type: "uuid", nullable: true),
-                organization_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
+                organization_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -152,7 +161,8 @@ public partial class Initial : Migration
             {
                 id = table.Column<Guid>(type: "uuid", nullable: false),
                 name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                department_id = table.Column<Guid>(type: "uuid", nullable: false)
+                department_id = table.Column<Guid>(type: "uuid", nullable: false),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -175,7 +185,8 @@ public partial class Initial : Migration
                 form_id = table.Column<Guid>(type: "uuid", nullable: false),
                 text = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                 type = table.Column<int>(type: "integer", nullable: false),
-                order = table.Column<int>(type: "integer", nullable: false)
+                order = table.Column<int>(type: "integer", nullable: false),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {
@@ -199,7 +210,8 @@ public partial class Initial : Migration
                 question_id = table.Column<Guid>(type: "uuid", nullable: false),
                 value = table.Column<string>(type: "character varying(5000)", maxLength: 5000, nullable: true),
                 numeric_value = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
-                weight = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true)
+                weight = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: true),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
             },
             constraints: table =>
             {

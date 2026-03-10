@@ -7,7 +7,7 @@ public sealed class Specialization : AggregateRoot, ISoftDeletable
     public string? Name { get; private set; }
     public Guid? SpecialityId { get; private set; }
     public bool IsDeleted { get; set; }
-    private Specialization() { }
+    private Specialization() { } // EF
 
     private Specialization(Guid id, string? name, Guid? specialityId) : base(id)
     {

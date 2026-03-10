@@ -33,7 +33,6 @@ public sealed class Teacher : AggregateRoot, ISoftDeletable
         }
 
         FullName = fullName.Trim();
-
         return Result.Success();
     }
 

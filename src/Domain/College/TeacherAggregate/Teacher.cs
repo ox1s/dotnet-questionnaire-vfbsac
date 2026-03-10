@@ -25,14 +25,16 @@ public sealed class Teacher : AggregateRoot
         return new Teacher(Guid.NewGuid(), fullName.Trim(), departmentId);
     }
 
-    public void UpdateFullName(string fullName)
+    public Result UpdateFullName(string fullName)
     {
         if (string.IsNullOrWhiteSpace(fullName))
         {
-            return;
+            return Result.Failure(Error.NullValue);
         }
 
         FullName = fullName.Trim();
+
+        return Result.Success();
     }
 
     public void ChangeDepartment(Guid departmentId)

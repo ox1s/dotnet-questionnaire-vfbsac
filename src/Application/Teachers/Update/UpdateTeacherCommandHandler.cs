@@ -14,16 +14,17 @@ internal sealed class UpdateTeacherCommandHandler(IApplicationDbContext context)
     {
         Teacher? teacher = await context.Teachers
             .FirstOrDefaultAsync(t => t.Id == command.TeacherId, cancellationToken);
-
         if (teacher is null)
         {
             return Result.Failure(TeacherErrors.NotFound(command.TeacherId));
         }
 
-        // Обновляем имя
-        teacher.UpdateFullName(command.FullName);
+        Result teacherResult = teacher.UpdateFullName(command.FullName);
+        if (teacherResult.IsFailure)
+        {
+            return Result.Failure(teacherResult.Error);
+        }
 
-        // Обновляем кафедру (нужна проверка, существует ли новая кафедра)
         if (teacher.DepartmentId != command.DepartmentId)
         {
             bool deptExists = await context.Departments

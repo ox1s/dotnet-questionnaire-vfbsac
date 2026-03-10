@@ -12,7 +12,6 @@ internal sealed class CreateTeacherCommandHandler(IApplicationDbContext context)
 {
     public async Task<Result<Guid>> Handle(CreateTeacherCommand command, CancellationToken cancellationToken)
     {
-        // 1. Проверяем, существует ли кафедра
         bool departmentExists = await context.Departments
             .AnyAsync(d => d.Id == command.DepartmentId, cancellationToken);
 
@@ -21,7 +20,6 @@ internal sealed class CreateTeacherCommandHandler(IApplicationDbContext context)
             return Result.Failure<Guid>(DepartmentErrors.NotFound(command.DepartmentId));
         }
 
-        // 2. Создаем сущность через фабричный метод Домена
         Result<Teacher> teacherResult = Teacher.Create(command.FullName, command.DepartmentId);
 
         if (teacherResult.IsFailure)
@@ -29,7 +27,6 @@ internal sealed class CreateTeacherCommandHandler(IApplicationDbContext context)
             return Result.Failure<Guid>(teacherResult.Error);
         }
 
-        // 3. Сохраняем в БД
         context.Teachers.Add(teacherResult.Value);
         await context.SaveChangesAsync(cancellationToken);
 

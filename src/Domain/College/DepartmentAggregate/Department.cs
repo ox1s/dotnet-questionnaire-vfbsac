@@ -2,10 +2,10 @@ using SharedKernel;
 
 namespace Domain.College.DepartmentAggregate;
 
-public sealed class Department : AggregateRoot
+public sealed class Department : AggregateRoot, ISoftDeletable
 {
     public string Name { get; private set; }
-
+    public bool IsDeleted { get; set; }
     private Department() { }
 
     private Department(Guid id, string name) : base(id)

@@ -3,12 +3,12 @@ using SharedKernel;
 
 namespace Domain.Questionnaires.FormAggregate;
 
-public sealed class Form : AggregateRoot
+public sealed class Form : AggregateRoot, ISoftDeletable
 {
     public string Title { get; private set; }
     public bool IsActive { get; private set; }
+    public bool IsDeleted { get; set; }
     public List<FilterField>? RequiredFilters { get; private set; }
-
     private readonly List<Question> _questions = [];
     public IReadOnlyList<Question> Questions => _questions.AsReadOnly();
 
@@ -38,9 +38,7 @@ public sealed class Form : AggregateRoot
     {
         if (_questions.Any(q => q.Order == order))
         {
-            return Result.Failure<Question>(Error.Failure(
-                "Forms.QuestionOrderExists",
-                $"Question with order {order} already exists"));
+            return Result.Failure<Question>(FormErrors.QuestionOrderExists(order));
         }
 
         Result<Question> questionResult = Question.Create(Id, text, type, order);
@@ -55,23 +53,27 @@ public sealed class Form : AggregateRoot
         return question;
     }
 
-    public void RemoveQuestion(Guid questionId)
+    public Result RemoveQuestion(Guid questionId)
     {
         Question? question = _questions.FirstOrDefault(q => q.Id == questionId);
-        if (question is not null)
+        if (question is null)
         {
-            _questions.Remove(question);
+            return Result.Failure(FormErrors.QuestionNotFound(questionId));
         }
+
+        _questions.Remove(question);
+        return Result.Success();
     }
 
-    public void UpdateTitle(string title)
+    public Result UpdateTitle(string title)
     {
         if (string.IsNullOrWhiteSpace(title))
         {
-            return;
+            return Result.Failure(Error.NullValue);
         }
 
         Title = title.Trim();
+        return Result.Success();
     }
 
     public void Activate()
@@ -79,13 +81,16 @@ public sealed class Form : AggregateRoot
         IsActive = true;
     }
 
-    public void Deactivate()
+    public Result Deactivate()
     {
-        if (IsActive)
+        if (!IsActive)
         {
-            IsActive = false;
-            RaiseDomainEvent(new FormDeactivatedDomainEvent(Id));
+            return Result.Failure(FormErrors.AlreadyDeactivated(Id));
         }
+        IsActive = false;
+
+        RaiseDomainEvent(new FormDeactivatedDomainEvent(Id));
+        return Result.Success();
     }
 
     public void UpdateRequiredFilters(List<FilterField>? requiredFilters)

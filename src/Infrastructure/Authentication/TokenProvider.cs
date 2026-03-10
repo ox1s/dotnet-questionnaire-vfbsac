@@ -18,7 +18,6 @@ internal sealed class TokenProvider(IConfiguration configuration) : ITokenProvid
 
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),

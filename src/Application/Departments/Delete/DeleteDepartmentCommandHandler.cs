@@ -19,7 +19,7 @@ internal sealed class DeleteDepartmentCommandHandler(IApplicationDbContext conte
             return Result.Failure(DepartmentErrors.NotFound(command.DepartmentId));
         }
 
-        department.MarkAsDeleted();
+        department.IsDeleted = true;
         context.Departments.Update(department);
 
         await context.SaveChangesAsync(cancellationToken);

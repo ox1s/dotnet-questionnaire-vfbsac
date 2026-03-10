@@ -2,11 +2,11 @@ using SharedKernel;
 
 namespace Domain.College.TeacherAggregate;
 
-public sealed class Teacher : AggregateRoot
+public sealed class Teacher : AggregateRoot, ISoftDeletable
 {
     public string FullName { get; private set; }
     public Guid DepartmentId { get; private set; }
-
+    public bool IsDeleted { get; set; }
     private Teacher() { }
 
     private Teacher(Guid id, string fullName, Guid departmentId) : base(id)

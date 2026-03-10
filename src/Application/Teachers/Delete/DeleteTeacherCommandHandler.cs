@@ -19,7 +19,7 @@ internal sealed class DeleteTeacherCommandHandler(IApplicationDbContext context)
             return Result.Failure(TeacherErrors.NotFound(command.TeacherId));
         }
 
-        teacher.MarkAsDeleted();
+        teacher.IsDeleted = true;
         context.Teachers.Update(teacher);
 
         await context.SaveChangesAsync(cancellationToken);

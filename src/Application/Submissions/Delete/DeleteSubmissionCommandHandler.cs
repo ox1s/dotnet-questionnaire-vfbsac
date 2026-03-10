@@ -19,7 +19,7 @@ internal sealed class DeleteSubmissionCommandHandler(IApplicationDbContext conte
             return Result.Failure(SubmissionErrors.NotFound(command.SubmissionId));
         }
 
-        submission.MarkAsDeleted();
+        submission.IsDeleted = true;
         context.Submissions.Update(submission);
 
         await context.SaveChangesAsync(cancellationToken);

@@ -18,7 +18,6 @@ internal sealed class RegisterUserCommandHandler(IApplicationDbContext context, 
             return Result.Failure<Guid>(loginResult.Error);
         }
 
-        // Проверка на уникальность логина
         if (await context.Users.AnyAsync(u => u.Login.Value == loginResult.Value.Value, cancellationToken))
         {
             return Result.Failure<Guid>(UserErrors.Conflict("Users.LoginExists", "Такой логин уже занят"));

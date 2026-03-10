@@ -8,6 +8,7 @@ using Domain.Questionnaires.FormAggregate;
 using Domain.Questionnaires.SubmissionAggregate;
 using Domain.UserAggregate;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using SharedKernel;
 
 namespace Infrastructure.Database;
@@ -40,10 +41,15 @@ public sealed class ApplicationDbContext(
 
         modelBuilder.HasDefaultSchema(Schemas.Default);
 
-        modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
+
         modelBuilder.Entity<Discipline>().HasQueryFilter(d => !d.IsDeleted);
         modelBuilder.Entity<Department>().HasQueryFilter(d => !d.IsDeleted);
+        modelBuilder.Entity<Speciality>().HasQueryFilter(s => !s.IsDeleted);
+        modelBuilder.Entity<Specialization>().HasQueryFilter(s => !s.IsDeleted);
         modelBuilder.Entity<Form>().HasQueryFilter(f => !f.IsDeleted);
+        modelBuilder.Entity<Submission>().HasQueryFilter(s => !s.IsDeleted);
+        modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
+        modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

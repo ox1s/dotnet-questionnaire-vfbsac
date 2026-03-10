@@ -2,12 +2,13 @@ using SharedKernel;
 
 namespace Domain.Questionnaires.FormAggregate;
 
-public sealed class Question : Entity
+public sealed class Question : Entity, ISoftDeletable
 {
     public Guid FormId { get; private set; }
     public string Text { get; private set; }
     public QuestionType Type { get; private set; }
     public int Order { get; private set; }
+    public bool IsDeleted { get; set; }
 
     private Question() { }
 
@@ -28,31 +29,9 @@ public sealed class Question : Entity
 
         if (order < 0)
         {
-            return Result.Failure<Question>(Error.Failure(
-                "Questions.OrderInvalid",
-                "Order must be non-negative"));
+            return Result.Failure<Question>(QuestionErrors.OrderInvalid);
         }
 
         return new Question(Guid.NewGuid(), formId, text.Trim(), type, order);
-    }
-
-    public void UpdateText(string text)
-    {
-        if (string.IsNullOrWhiteSpace(text))
-        {
-            return;
-        }
-
-        Text = text.Trim();
-    }
-
-    public void UpdateOrder(int order)
-    {
-        if (order < 0)
-        {
-            return;
-        }
-
-        Order = order;
     }
 }

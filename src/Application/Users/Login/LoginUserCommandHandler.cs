@@ -23,15 +23,12 @@ internal sealed class LoginUserCommandHandler(
         User? user = await context.Users
             .AsNoTracking()
             .SingleOrDefaultAsync(u => u.Login.Value == loginResult.Value.Value, cancellationToken);
-
         if (user is null)
         {
             return Result.Failure<string>(UserErrors.NotFoundByLogin(command.Login));
         }
 
-        // 3. Проверяем пароль
         bool verified = passwordHasher.Verify(command.Password, user.PasswordHash);
-
         if (!verified)
         {
             return Result.Failure<string>(UserErrors.NotFoundByLogin(command.Login)); // Или "InvalidPassword"

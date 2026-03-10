@@ -20,18 +20,22 @@ internal sealed class UpdateDisciplineCommandHandler(IApplicationDbContext conte
             return Result.Failure(DisciplineErrors.NotFound(command.DisciplineId));
         }
 
-        discipline.UpdateName(command.Name);
+        Result updateNameResult = discipline.UpdateName(command.Name);
+        if (updateNameResult.IsFailure)
+        {
+            return Result.Failure(updateNameResult.Error);
+        }
 
         if (discipline.DepartmentId != command.DepartmentId)
         {
-             bool deptExists = await context.Departments
-                 .AnyAsync(d => d.Id == command.DepartmentId, cancellationToken);
-             
-             if (!deptExists)
-             {
-                 return Result.Failure(DepartmentErrors.NotFound(command.DepartmentId));
-             }
-             discipline.ChangeDepartment(command.DepartmentId);
+            bool deptExists = await context.Departments
+                .AnyAsync(d => d.Id == command.DepartmentId, cancellationToken);
+
+            if (!deptExists)
+            {
+                return Result.Failure(DepartmentErrors.NotFound(command.DepartmentId));
+            }
+            discipline.ChangeDepartment(command.DepartmentId);
         }
 
         await context.SaveChangesAsync(cancellationToken);

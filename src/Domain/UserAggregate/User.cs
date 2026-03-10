@@ -4,7 +4,7 @@ using SharedKernel;
 
 namespace Domain.UserAggregate;
 
-public sealed class User : AggregateRoot
+public sealed class User : AggregateRoot, ISoftDeletable
 {
     public Login Login { get; private set; } // номер группы
     public string PasswordHash { get; private set; }
@@ -12,7 +12,7 @@ public sealed class User : AggregateRoot
     public UserRole Role { get; private set; }
     public bool IsActive { get; private set; }
     public string DisplayName { get; private set; }
-
+    public bool IsDeleted { get; set; }
 
     public Guid? DepartmentId { get; private set; }
     public Guid? GroupId { get; private set; }   // Если Role == StudentGroup
@@ -85,10 +85,16 @@ public sealed class User : AggregateRoot
         PasswordHash = newPasswordHash;
     }
 
-    public void UpdateDetails(Login login, string displayName)
+    public Result UpdateDetails(Login login, string displayName)
     {
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            return Result.Failure(Error.NullValue);
+        }
         Login = login;
         DisplayName = displayName;
+
+        return Result.Success();
     }
 
     public void SetDepartment(Guid departmentId)

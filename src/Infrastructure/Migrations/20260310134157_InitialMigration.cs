@@ -54,8 +54,7 @@ public partial class InitialMigration : Migration
                 content = table.Column<string>(type: "text", nullable: false),
                 occurred_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                 processed_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                error = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
+                error = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true)
             },
             constraints: table =>
             {
@@ -143,11 +142,11 @@ public partial class InitialMigration : Migration
                 role = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                 is_active = table.Column<bool>(type: "boolean", nullable: false),
                 display_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                is_deleted = table.Column<bool>(type: "boolean", nullable: false),
                 department_id = table.Column<Guid>(type: "uuid", nullable: true),
                 group_id = table.Column<Guid>(type: "uuid", nullable: true),
                 teacher_id = table.Column<Guid>(type: "uuid", nullable: true),
-                organization_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                is_deleted = table.Column<bool>(type: "boolean", nullable: false)
+                organization_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
             },
             constraints: table =>
             {

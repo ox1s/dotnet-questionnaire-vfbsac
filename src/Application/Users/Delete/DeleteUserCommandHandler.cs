@@ -19,7 +19,7 @@ internal sealed class DeleteUserCommandHandler(IApplicationDbContext context)
             return Result.Failure(UserErrors.NotFound(command.UserId));
         }
 
-        user.MarkAsDeleted();
+        user.IsDeleted = true;
         context.Users.Update(user);
 
         await context.SaveChangesAsync(cancellationToken);

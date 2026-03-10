@@ -2,10 +2,10 @@ using SharedKernel;
 
 namespace Domain.College.SpecialityAggregate;
 
-public sealed class Speciality : AggregateRoot
+public sealed class Speciality : AggregateRoot, ISoftDeletable
 {
     public string Name { get; private set; }
-
+    public bool IsDeleted { get; set; }
     private Speciality() { }
 
     private Speciality(Guid id, string name) : base(id)
@@ -23,13 +23,14 @@ public sealed class Speciality : AggregateRoot
         return new Speciality(Guid.NewGuid(), name.Trim());
     }
 
-    public void UpdateName(string name)
+    public Result UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return;
+            return Result.Failure(Error.NullValue);
         }
 
         Name = name.Trim();
+        return Result.Success();
     }
 }

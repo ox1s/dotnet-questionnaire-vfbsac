@@ -13,7 +13,6 @@ internal sealed class UpdateUserCommandHandler(IApplicationDbContext context)
     {
         User? user = await context.Users
             .FirstOrDefaultAsync(u => u.Id == command.UserId, cancellationToken);
-
         if (user is null)
         {
             return Result.Failure(UserErrors.NotFound(command.UserId));
@@ -36,7 +35,12 @@ internal sealed class UpdateUserCommandHandler(IApplicationDbContext context)
             }
         }
 
-        user.UpdateDetails(loginResult.Value, command.DisplayName);
+        Result updateUserDetailsResult = user.UpdateDetails(loginResult.Value, command.DisplayName);
+        if (updateUserDetailsResult.IsFailure)
+        {
+            return Result.Failure(updateUserDetailsResult.Error);
+        }
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

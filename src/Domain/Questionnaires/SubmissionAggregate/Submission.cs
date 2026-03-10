@@ -10,6 +10,7 @@ public sealed class Submission : AggregateRoot
     public DateTime SubmittedAt { get; private set; }
     public SubmissionContext Context { get; private set; }
     public string DeviceId { get; set; }
+    public bool IsDeleted { get; set; }
 
     private readonly List<Answer> _answers = [];
     public IReadOnlyList<Answer> Answers => _answers.AsReadOnly();
@@ -77,16 +78,6 @@ public sealed class Submission : AggregateRoot
 
         return answer;
     }
-
-    public void RemoveAnswer(Guid answerId)
-    {
-        Answer? answer = _answers.FirstOrDefault(a => a.Id == answerId);
-        if (answer is not null)
-        {
-            _answers.Remove(answer);
-        }
-    }
-
     public void UpdateContext(SubmissionContext context)
     {
         Context = context;

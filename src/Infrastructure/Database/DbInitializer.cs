@@ -54,7 +54,7 @@ public class DbInitializer(
         foreach (KeyValuePair<int, (string Name, Guid Id)> kvp in deptData)
         {
             Department d = Department.Create(kvp.Value.Name).Value;
-            SetId(d, kvp.Value.Id); // Фиксируем ID
+            d.SetIdForSeeding(kvp.Value.Id); // Фиксируем ID
             context.Departments.Add(d);
             depts.Add(kvp.Key, d);
         }
@@ -181,10 +181,5 @@ public class DbInitializer(
         await context.SaveChangesAsync();
 
         logger.LogInformation("Seeding completed. Fixed Form ID restored.");
-    }
-
-    private static void SetId<T>(T entity, Guid id) where T : Entity
-    {
-        typeof(T).GetProperty(nameof(Entity.Id))?.SetValue(entity, id);
     }
 }

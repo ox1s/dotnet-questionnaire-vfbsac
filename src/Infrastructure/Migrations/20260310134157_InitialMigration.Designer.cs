@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260310131114_InitialMigration")]
+    [Migration("20260310134157_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -383,10 +383,6 @@ namespace Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("error");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
 
                     b.Property<DateTime>("OccurredOn")
                         .HasColumnType("timestamp with time zone")

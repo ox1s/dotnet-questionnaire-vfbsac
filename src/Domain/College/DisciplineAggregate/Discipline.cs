@@ -2,11 +2,11 @@ using SharedKernel;
 
 namespace Domain.College.DisciplineAggregate;
 
-public sealed class Discipline : AggregateRoot
+public sealed class Discipline : AggregateRoot, ISoftDeletable
 {
     public string Name { get; private set; }
     public Guid DepartmentId { get; private set; }
-
+    public bool IsDeleted { get; set; }
     private Discipline() { }
 
     private Discipline(Guid id, string name, Guid departmentId) : base(id)
@@ -25,14 +25,15 @@ public sealed class Discipline : AggregateRoot
         return new Discipline(Guid.NewGuid(), name.Trim(), departmentId);
     }
 
-    public void UpdateName(string name)
+    public Result UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return;
+            return Result.Failure(Error.NullValue);
         }
 
         Name = name.Trim();
+        return Result.Success();
     }
 
     public void ChangeDepartment(Guid departmentId)

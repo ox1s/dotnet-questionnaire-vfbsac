@@ -2,15 +2,16 @@ using SharedKernel;
 
 namespace Domain.Questionnaires.SubmissionAggregate;
 
-public sealed class Answer : Entity
+public sealed class Answer : Entity, ISoftDeletable
 {
     public Guid SubmissionId { get; private set; }
     public Guid QuestionId { get; private set; }
     public string? Value { get; private set; }
     public decimal? NumericValue { get; private set; }
     public decimal? Weight { get; private set; }
+    public bool IsDeleted { get; set; }
 
-    private Answer() { }
+    private Answer() { } // EF
 
     private Answer(Guid id, Guid submissionId, Guid questionId, string? value, decimal? numericValue, decimal? weight) : base(id)
     {
@@ -25,9 +26,7 @@ public sealed class Answer : Entity
     {
         if (value is null && numericValue is null)
         {
-            return Result.Failure<Answer>(Error.Failure(
-                "Answers.ValueRequired",
-                "Either Value or NumericValue must be provided"));
+            return Result.Failure<Answer>(AnswerErrors.ValueRequired);
         }
 
         const int MinValue = 1;
@@ -35,14 +34,13 @@ public sealed class Answer : Entity
 
         if (numericValue.HasValue && (numericValue.Value < MinValue || numericValue.Value > MaxValue))
         {
-            return Result.Failure<Answer>(Error.Validation("Answers.InvalidScore", $"Score must be between {MinValue} and {MaxValue}"));
+            return Result.Failure<Answer>(AnswerErrors.InvalidScore(MinValue, MaxValue));
         }
 
         if (weight.HasValue && (weight.Value < MinValue || weight.Value > MaxValue))
         {
-            return Result.Failure<Answer>(Error.Validation("Answers.InvalidWeight", $"Weight must be between {MinValue} and {MaxValue}"));
+            return Result.Failure<Answer>(AnswerErrors.InvalidWeight(MinValue, MaxValue));
         }
-        // ---------------------------------------
 
         if (weight.HasValue && numericValue.HasValue && numericValue.Value > weight.Value)
         {
@@ -50,28 +48,5 @@ public sealed class Answer : Entity
         }
 
         return new Answer(Guid.NewGuid(), submissionId, questionId, value?.Trim(), numericValue, weight);
-
-    }
-    public void UpdateValue(string? value)
-    {
-        Value = value?.Trim();
-    }
-
-    public Result UpdateNumericStats(decimal? numericValue, decimal? weight)
-    {
-        if (weight.HasValue && numericValue.HasValue && numericValue.Value > weight.Value)
-        {
-            return Result.Failure(SubmissionErrors.InvalidWeight(QuestionId));
-        }
-
-        NumericValue = numericValue;
-        Weight = weight;
-
-        return Result.Success();
-    }
-
-    public void UpdateWeight(decimal? weight)
-    {
-        Weight = weight;
     }
 }

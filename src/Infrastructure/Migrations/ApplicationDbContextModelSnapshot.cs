@@ -381,10 +381,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("character varying(1000)")
                         .HasColumnName("error");
 
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_deleted");
-
                     b.Property<DateTime>("OccurredOn")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("occurred_on");

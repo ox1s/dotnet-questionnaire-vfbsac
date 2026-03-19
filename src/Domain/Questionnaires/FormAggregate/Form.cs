@@ -1,4 +1,3 @@
-using Domain.Questionnaires.FormAggregate.Events;
 using SharedKernel;
 
 namespace Domain.Questionnaires.FormAggregate;
@@ -12,8 +11,7 @@ public sealed class Form : AggregateRoot, ISoftDeletable
     private readonly List<Question> _questions = [];
     public IReadOnlyList<Question> Questions => _questions.AsReadOnly();
 
-    private Form() { }
-
+    private Form() { } // EF Core
     private Form(Guid id, string title, bool isActive, List<FilterField>? requiredFilters) : base(id)
     {
         Title = title;
@@ -29,7 +27,6 @@ public sealed class Form : AggregateRoot, ISoftDeletable
         }
 
         var form = new Form(Guid.NewGuid(), title.Trim(), isActive: true, requiredFilters);
-        form.RaiseDomainEvent(new FormCreatedDomainEvent(form.Id));
 
         return form;
     }
@@ -89,12 +86,6 @@ public sealed class Form : AggregateRoot, ISoftDeletable
         }
         IsActive = false;
 
-        RaiseDomainEvent(new FormDeactivatedDomainEvent(Id));
         return Result.Success();
-    }
-
-    public void UpdateRequiredFilters(List<FilterField>? requiredFilters)
-    {
-        RequiredFilters = requiredFilters;
     }
 }

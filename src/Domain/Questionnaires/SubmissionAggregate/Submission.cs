@@ -1,4 +1,3 @@
-using Domain.Questionnaires.SubmissionAggregate.Events;
 using SharedKernel;
 
 namespace Domain.Questionnaires.SubmissionAggregate;
@@ -15,8 +14,7 @@ public sealed class Submission : AggregateRoot
     private readonly List<Answer> _answers = [];
     public IReadOnlyList<Answer> Answers => _answers.AsReadOnly();
 
-    private Submission() { }
-
+    private Submission() { } // EF Core
     private Submission(Guid id, string deviceId, Guid formId, Guid userId, DateTime submittedAt, SubmissionContext context) : base(id)
     {
         FormId = formId;
@@ -53,8 +51,6 @@ public sealed class Submission : AggregateRoot
             DateTime.UtcNow,
             context);
 
-        submission.RaiseDomainEvent(new SubmissionCreatedDomainEvent(submission.Id, formId, userId));
-
         return submission;
     }
 
@@ -78,6 +74,7 @@ public sealed class Submission : AggregateRoot
 
         return answer;
     }
+    // TODO: Result
     public void UpdateContext(SubmissionContext context)
     {
         Context = context;

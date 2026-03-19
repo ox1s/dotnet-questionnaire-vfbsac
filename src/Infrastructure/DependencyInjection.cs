@@ -2,11 +2,7 @@ using Application.Abstractions.Authentication;
 using Application.Abstractions.Caching;
 using Application.Abstractions.Data;
 using Infrastructure.Authentication;
-using Infrastructure.Authorization;
-using Infrastructure.BackgroundJobs;
-using Infrastructure.Caching;
 using Infrastructure.Database;
-using Infrastructure.DomainEvents;
 using Infrastructure.Time;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -32,8 +28,6 @@ public static class DependencyInjection
         return services
             .AddServices()
             .AddDatabase(configuration)
-            .AddCaching(configuration)
-            .AddBackgroundJobs()
             .AddHealthChecksInternal(configuration)
             .AddAuthenticationInternal(configuration)
             .AddAuthorizationInternal();
@@ -42,7 +36,6 @@ public static class DependencyInjection
     private static IServiceCollection AddServices(this IServiceCollection services)
     {
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
-        services.AddTransient<IDomainEventsDispatcher, OutboxDomainEventsDispatcher>();
 
         services.AddScoped<IReportGenerator, WordReportGenerator>();
         services.AddScoped<IStudentImporter, StudentImporter>();
@@ -63,46 +56,6 @@ public static class DependencyInjection
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-
-        return services;
-    }
-
-    private static IServiceCollection AddCaching(this IServiceCollection services, IConfiguration configuration)
-    {
-        string? redisConnectionString = configuration.GetConnectionString("Redis");
-
-        if (!string.IsNullOrWhiteSpace(redisConnectionString))
-        {
-            services.AddSingleton<IConnectionMultiplexer>(sp =>
-                ConnectionMultiplexer.Connect(redisConnectionString));
-
-            services.AddScoped<ICacheService, RedisCacheService>();
-        }
-
-        return services;
-    }
-
-    private static IServiceCollection AddBackgroundJobs(this IServiceCollection services)
-    {
-        services.AddQuartz(configure =>
-        {
-            JobKey jobKey = new("ProcessOutboxMessages");
-
-            configure
-                .AddJob<ProcessOutboxMessagesJob>(jobKey)
-                .AddTrigger(trigger =>
-                    trigger
-                        .ForJob(jobKey)
-                        .WithSimpleSchedule(schedule =>
-                            schedule
-                                .WithIntervalInSeconds(10)
-                                .RepeatForever()));
-        });
-
-        services.AddQuartzHostedService(options =>
-        {
-            options.WaitForJobsToComplete = true;
-        });
 
         return services;
     }
@@ -142,9 +95,6 @@ public static class DependencyInjection
     private static IServiceCollection AddAuthorizationInternal(this IServiceCollection services)
     {
         services.AddAuthorization();
-        services.AddScoped<PermissionProvider>();
-        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
-        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 
         return services;
     }

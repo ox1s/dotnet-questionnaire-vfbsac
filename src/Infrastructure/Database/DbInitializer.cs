@@ -34,9 +34,6 @@ public class DbInitializer(
 
         logger.LogInformation("Seeding database...");
 
-        // ================= 1. REFERENCE DATA =================
-
-        // Departments
         Dictionary<int, Department> depts = [];
         var deptData = new Dictionary<int, (string Name, Guid Id)>
         {
@@ -54,13 +51,12 @@ public class DbInitializer(
         foreach (KeyValuePair<int, (string Name, Guid Id)> kvp in deptData)
         {
             Department d = Department.Create(kvp.Value.Name).Value;
-            d.SetIdForSeeding(kvp.Value.Id); // Фиксируем ID
+            d.SetIdForSeeding(kvp.Value.Id);
             context.Departments.Add(d);
             depts.Add(kvp.Key, d);
         }
         await context.SaveChangesAsync();
 
-        // Specialities
         Dictionary<int, Speciality> specs = [];
         var specDataList = new Dictionary<int, string>
         {
@@ -76,7 +72,6 @@ public class DbInitializer(
         }
         await context.SaveChangesAsync();
 
-        // Specializations
         Dictionary<int, Specialization> specializations = [];
         var speczData = new List<(int Id, string Name, int SpecId)>
         {
@@ -94,7 +89,6 @@ public class DbInitializer(
         }
         await context.SaveChangesAsync();
 
-        // Disciplines
         Dictionary<int, Discipline> disciplines = [];
         var discData = new List<(int Id, string Name, int DeptId)>
         {
@@ -116,15 +110,12 @@ public class DbInitializer(
         }
         await context.SaveChangesAsync();
 
-        // ================= 2. USERS =================
 
         string defaultPass = passwordHasher.Hash("12345678");
 
-        // 2.1 Admin
         User admin = User.CreateAdmin(Login.Create("ADMIN").Value, defaultPass).Value;
         context.Users.Add(admin);
 
-        // 2.2 Student Groups
         string[] groups = ["ПО111", "ТС111", "РТ111", "ПС111"];
         foreach (string gName in groups)
         {
@@ -132,7 +123,6 @@ public class DbInitializer(
             context.Users.Add(u);
         }
 
-        // 2.3 Staff (Зав. Кафедрой ИКТ)
         if (depts.TryGetValue(2, out Department? deptICT))
         {
             User staffUser = User.CreateStaff(
@@ -148,9 +138,6 @@ public class DbInitializer(
 
         await context.SaveChangesAsync();
 
-        // ================= 3. FORMS =================
-
-        // Form 1: Удовл. преподаванием
         Form f1 = Form.Create("Оценка удовлетворённости обучающихся преподаванием учебных дисциплин",
             [FilterField.Discipline]).Value;
 

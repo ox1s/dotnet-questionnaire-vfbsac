@@ -5,12 +5,8 @@ namespace Domain.Questionnaires;
 
 public static class ScoreCalculator
 {
-    /// <summary>
-    /// Рассчитывает средний балл по списку ответов с учетом типа вопроса.
-    /// </summary>
     public static decimal CalculateAverage(IEnumerable<Answer> answers, QuestionType type)
     {
-        // Берем только ответы, где есть числовое значение
         var validAnswers = answers
             .Where(a => a.NumericValue.HasValue)
             .ToList();
@@ -22,8 +18,6 @@ public static class ScoreCalculator
 
         if (type == QuestionType.WeightedRating)
         {
-            // Логика для взвешенной оценки:
-            // Исключаем ответы, где вес не указан или <= 0 (защита от деления на ноль)
             var weightedAnswers = validAnswers
                 .Where(a => a.Weight.HasValue && a.Weight.Value > 0)
                 .ToList();

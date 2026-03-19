@@ -23,6 +23,7 @@ public sealed class Department : AggregateRoot, ISoftDeletable
         return new Department(Guid.NewGuid(), name.Trim());
     }
 
+    // TODO: обработка обновления через Result
     public void UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))

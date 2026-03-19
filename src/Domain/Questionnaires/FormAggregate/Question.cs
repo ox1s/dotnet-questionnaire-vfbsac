@@ -10,8 +10,7 @@ public sealed class Question : Entity, ISoftDeletable
     public int Order { get; private set; }
     public bool IsDeleted { get; set; }
 
-    private Question() { }
-
+    private Question() { } // EF Core
     private Question(Guid id, Guid formId, string text, QuestionType type, int order) : base(id)
     {
         FormId = formId;

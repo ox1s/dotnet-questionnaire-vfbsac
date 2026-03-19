@@ -6,7 +6,7 @@ public sealed class Speciality : AggregateRoot, ISoftDeletable
 {
     public string Name { get; private set; }
     public bool IsDeleted { get; set; }
-    private Speciality() { } // EF
+    private Speciality() { } // EF Core
 
     private Speciality(Guid id, string name) : base(id)
     {

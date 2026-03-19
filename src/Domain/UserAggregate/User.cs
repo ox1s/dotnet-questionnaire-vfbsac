@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
-using Domain.UserAggregate.Events;
 using SharedKernel;
+using Throw;
 
 namespace Domain.UserAggregate;
 
 public sealed class User : AggregateRoot, ISoftDeletable
 {
-    public Login Login { get; private set; } // номер группы
+    public Login Login { get; private set; }
     public string PasswordHash { get; private set; }
 
     public UserRole Role { get; private set; }
@@ -15,13 +15,12 @@ public sealed class User : AggregateRoot, ISoftDeletable
     public bool IsDeleted { get; set; }
 
     public Guid? DepartmentId { get; private set; }
-    public Guid? GroupId { get; private set; }   // Если Role == StudentGroup
-    public Guid? TeacherId { get; private set; } // Если Role == Teacher
-    public string? OrganizationName { get; private set; } // Если Role == Employer
+    public Guid? GroupId { get; private set; }
+    public Guid? TeacherId { get; private set; }
+    public string? OrganizationName { get; private set; }
 
 
-    private User() { }
-
+    private User() { } // EF Core
     public static Result<User> CreateGroupUser(
         GroupName groupName,
         Guid groupId,
@@ -99,6 +98,7 @@ public sealed class User : AggregateRoot, ISoftDeletable
 
     public void SetDepartment(Guid departmentId)
     {
+        departmentId.ThrowIfNull();
         DepartmentId = departmentId;
     }
 

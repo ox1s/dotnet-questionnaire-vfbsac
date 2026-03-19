@@ -33,8 +33,6 @@ public sealed class ApplicationDbContext(
 
     public DbSet<Specialization> Specializations { get; set; }
 
-    public DbSet<OutboxMessage> OutboxMessages { get; set; }
-
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
@@ -54,34 +52,8 @@ public sealed class ApplicationDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        await SaveDomainEventsToOutboxAsync();
-
         int result = await base.SaveChangesAsync(cancellationToken);
 
         return result;
-    }
-
-    private async Task SaveDomainEventsToOutboxAsync()
-    {
-        var domainEvents = ChangeTracker
-            .Entries<AggregateRoot>()
-            .Select(entry => entry.Entity)
-            .SelectMany(aggregateRoot =>
-            {
-                List<IDomainEvent> domainEvents = aggregateRoot.DomainEvents;
-
-                aggregateRoot.ClearDomainEvents();
-
-                return domainEvents;
-            })
-            .ToList();
-
-        foreach (IDomainEvent domainEvent in domainEvents)
-        {
-            var outboxMessage = OutboxMessage.Create(domainEvent);
-            OutboxMessages.Add(outboxMessage);
-        }
-
-        await Task.CompletedTask;
     }
 }

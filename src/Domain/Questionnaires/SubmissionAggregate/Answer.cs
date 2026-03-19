@@ -11,8 +11,7 @@ public sealed class Answer : Entity, ISoftDeletable
     public decimal? Weight { get; private set; }
     public bool IsDeleted { get; set; }
 
-    private Answer() { } // EF
-
+    private Answer() { } // EF Core
     private Answer(Guid id, Guid submissionId, Guid questionId, string? value, decimal? numericValue, decimal? weight) : base(id)
     {
         SubmissionId = submissionId;

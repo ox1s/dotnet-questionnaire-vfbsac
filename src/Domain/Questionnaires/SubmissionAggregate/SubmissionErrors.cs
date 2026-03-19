@@ -14,7 +14,7 @@ public static class SubmissionErrors
     public static Error InvalidWeight(Guid questionId) => Error.Validation(
     "Submissions.InvalidWeight",
     $"The value cannot be greater than the weight for question '{questionId}'.");
-    
+
     public static Error AlreadySubmitted() => Error.Conflict(
         "Submissions.AlreadySubmitted",
         "Вы уже отправляли ответ на эту анкету с выбранными параметрами.");

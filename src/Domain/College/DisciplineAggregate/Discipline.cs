@@ -7,8 +7,8 @@ public sealed class Discipline : AggregateRoot, ISoftDeletable
     public string Name { get; private set; }
     public Guid DepartmentId { get; private set; }
     public bool IsDeleted { get; set; }
-    private Discipline() { }
 
+    private Discipline() { } // EF Core
     private Discipline(Guid id, string name, Guid departmentId) : base(id)
     {
         Name = name;

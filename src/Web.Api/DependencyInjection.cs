@@ -11,7 +11,6 @@ public static class DependencyInjection
         services.AddEndpointsApiExplorer();
         services.AddSwaggerGen();
 
-        // REMARK: If you want to use Controllers, you'll need this.
         services.AddControllers();
 
         services.Configure<JsonOptions>(options =>

@@ -6,12 +6,10 @@ import { getUserInfo } from "../utils/auth";
 import toast from "react-hot-toast";
 
 export const AdminSettingsPage = () => {
-  // Состояния для смены пароля
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  // Обработчик смены пароля
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -29,7 +27,6 @@ export const AdminSettingsPage = () => {
       const user = getUserInfo();
       if (!user?.sub) throw new Error("Пользователь не найден");
 
-      // Вызываем API для изменения пароля (ID берется из токена текущего админа)
       await usersApi.setPassword(user.sub, newPassword);
 
       toast.success("Ваш пароль успешно изменен!");
@@ -43,7 +40,6 @@ export const AdminSettingsPage = () => {
     }
   };
 
-  // Обработчик закрытия семестра
   const handleCloseSemester = async () => {
     if (
       window.confirm(
@@ -150,7 +146,7 @@ export const AdminSettingsPage = () => {
 
             <button
               onClick={handleCloseSemester}
-              disabled={isClosing} // Блокируем кнопку во время запроса
+              disabled={isClosing}
               className="w-full sm:w-auto shrink-0 px-6 py-3 bg-white border-2 border-accent text-accent rounded-xl font-bold text-sm hover:bg-accent hover:text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="flex items-center justify-center gap-2">

@@ -5,7 +5,7 @@ import { WeightedRatingInput } from "../components/WeightedRatingInput";
 import {
   ContextSelector,
   type SubmissionContext,
-} from "../components/ContextSelector"; // Импорт
+} from "../components/ContextSelector";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { getDeviceId } from "../utils/device";
@@ -16,7 +16,6 @@ export const SurveyPage = () => {
   const [form, setForm] = useState<FormDetail | null>(null);
   const [answers, setAnswers] = useState<Record<string, any>>({});
 
-  // Храним выбранный контекст
   const [context, setContext] = useState<SubmissionContext>({
     educationForm: "ДФПО",
   });
@@ -25,7 +24,6 @@ export const SurveyPage = () => {
     api.get<FormDetail>(`/forms/${id}`).then((res) => setForm(res.data));
   }, [id]);
 
-  // Callback для обновления из дочернего компонента
   const handleContextChange = useCallback((newContext: SubmissionContext) => {
     setContext(newContext);
   }, []);
@@ -43,7 +41,6 @@ export const SurveyPage = () => {
       return;
     }
 
-    // Формируем ответы
     const answersPayload = form.questions
       .map((q) => {
         const ans = answers[q.id];
@@ -59,13 +56,11 @@ export const SurveyPage = () => {
         if (q.type === "Number") {
           return { questionId: q.id, numericValue: ans };
         }
-        // Text
         return { questionId: q.id, value: ans };
       })
       .filter(Boolean);
 
     try {
-      // Отправка на сервер
       await api.post("/submissions", {
         formId: form.id,
         deviceId: getDeviceId(),
@@ -103,13 +98,11 @@ export const SurveyPage = () => {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 space-y-6">
-        {/* Вставляем наш новый компонент */}
         <ContextSelector
           requiredFilters={form.requiredFilters}
           onChange={handleContextChange}
         />
 
-        {/* Список вопросов */}
         {form.questions.map((q, idx) => (
           <div key={q.id} className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex gap-3 mb-4">
@@ -120,7 +113,6 @@ export const SurveyPage = () => {
             </div>
 
             <div className="pl-11">
-              {/* Оценка с весом */}
               {q.type === "WeightedRating" && (
                 <WeightedRatingInput
                   value={answers[q.id]?.value}
@@ -131,7 +123,6 @@ export const SurveyPage = () => {
                 />
               )}
 
-              {/* Текст */}
               {q.type === "Text" && (
                 <textarea
                   className="input-field min-h-[100px]"
@@ -143,7 +134,6 @@ export const SurveyPage = () => {
                 />
               )}
 
-              {/* Число */}
               {q.type === "Number" && (
                 <input
                   type="number"

@@ -24,7 +24,7 @@ type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
 type FilterField = "Department" | "Discipline" | "Teacher" | "Speciality";
 
 interface QuestionDraft {
-  id?: string; // Для существующих вопросов
+  id?: string;
   text: string;
   type: QuestionType;
   order: number;
@@ -45,8 +45,8 @@ const QUESTION_TYPES = [
 
 export const CreateFormPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Получаем ID из URL
-  const isEditMode = !!id; // Если ID есть, значит мы в режиме редактирования
+  const { id } = useParams();
+  const isEditMode = !!id;
 
   const [title, setTitle] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<FilterField[]>([]);
@@ -58,17 +58,15 @@ export const CreateFormPage = () => {
   );
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
 
-  // Загрузка данных при редактировании
   useEffect(() => {
     if (isEditMode) {
       api
         .get<FormDetail>(`/forms/${id}`)
         .then((res) => {
           setTitle(res.data.title);
-          // Приводим типы к нужным для UI
+
           setSelectedFilters((res.data.requiredFilters as FilterField[]) || []);
 
-          // Маппим строковые типы из БД в числовые константы фронтенда
           const mappedQs = res.data.questions.map((q) => ({
             ...q,
             type:
@@ -118,7 +116,6 @@ export const CreateFormPage = () => {
     setQuestions(newQs.map((q, i) => ({ ...q, order: i + 1 })));
   };
 
-  // Drag and Drop (только для режима создания)
   const handleDragStart = (index: number) => setDraggedIdx(index);
   const handleDragEnter = (index: number) => {
     if (draggedIdx === null || draggedIdx === index) return;
@@ -138,16 +135,14 @@ export const CreateFormPage = () => {
 
     try {
       if (isEditMode) {
-        // Отправляем PUT запрос (без вопросов, так как бэкенд их не принимает)
         await api.put(`/forms/${id}`, {
           formId: id,
           title,
           requiredFilters: selectedFilters,
-          isActive: true, // По умолчанию сохраняем активной
+          isActive: true,
         });
         toast.success("Анкета успешно обновлена!");
       } else {
-        // Отправляем POST запрос с вопросами
         await api.post("/forms", {
           title,
           requiredFilters: selectedFilters,
@@ -181,7 +176,6 @@ export const CreateFormPage = () => {
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Левая колонка: Настройки (Доступно всегда) */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-surface-light p-6 rounded-2xl shadow-sm border border-slate-200">
             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
@@ -233,9 +227,7 @@ export const CreateFormPage = () => {
           </div>
         </div>
 
-        {/* Правая колонка: Вопросы */}
         <div className="lg:col-span-2 space-y-6">
-          {/* УВЕДОМЛЕНИЕ О БЛОКИРОВКЕ (Только в режиме редактирования) */}
           {isEditMode && (
             <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl flex items-start gap-3 text-blue-800">
               <Lock size={20} className="mt-0.5 shrink-0" />
@@ -253,7 +245,6 @@ export const CreateFormPage = () => {
             </div>
           )}
 
-          {/* Добавление вопроса (Только если НЕ режим редактирования) */}
           {!isEditMode && (
             <div className="bg-surface-light p-6 rounded-2xl shadow-sm border border-slate-200">
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
@@ -295,7 +286,6 @@ export const CreateFormPage = () => {
             </div>
           )}
 
-          {/* Список вопросов */}
           <div className="space-y-3">
             {questions.map((q, idx) => (
               <div
@@ -331,7 +321,6 @@ export const CreateFormPage = () => {
                   </span>
                 </div>
 
-                {/* Панель управления (скрыта в режиме редактирования) */}
                 {!isEditMode && (
                   <div className="flex items-center gap-1 sm:gap-2">
                     <div className="flex flex-col sm:flex-row">

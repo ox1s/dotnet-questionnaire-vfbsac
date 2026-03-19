@@ -7,11 +7,9 @@ export const AdminTeachersPage = () => {
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
 
-  // Состояния для UI
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Состояния формы
   const [newName, setNewName] = useState("");
   const [selectedDept, setSelectedDept] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -78,13 +76,13 @@ export const AdminTeachersPage = () => {
       alert("Ошибка сохранения");
     }
   };
-  // Функция, которая обрезает только первое слово (Фамилию), если оно длиннее 10 букв
+
   const truncateFirstWord = (fullName: string, maxLen: number = 10) => {
-    const words = fullName.split(" "); // Разбиваем на слова
+    const words = fullName.split(" ");
     if (words.length > 0 && words[0].length > maxLen) {
-      words[0] = words[0].substring(0, maxLen) + "..."; // Обрезаем первое слово
+      words[0] = words[0].substring(0, maxLen) + "...";
     }
-    return words.join(" "); // Склеиваем обратно
+    return words.join(" ");
   };
 
   return (
@@ -101,7 +99,6 @@ export const AdminTeachersPage = () => {
         </button>
       }
     >
-      {/* Поиск */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
         <div className="relative w-full md:max-w-md">
           <Search
@@ -117,7 +114,6 @@ export const AdminTeachersPage = () => {
         </div>
       </div>
 
-      {/* Таблица */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -157,7 +153,6 @@ export const AdminTeachersPage = () => {
                   </span>
                 </td>
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top text-right">
-                  {/* Кнопки перестроятся в колонку на узких экранах (flex-col sm:flex-row) */}
                   <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => openEditModal(t)}
@@ -189,7 +184,6 @@ export const AdminTeachersPage = () => {
         </table>
       </div>
 
-      {/* Модальное окно */}
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div

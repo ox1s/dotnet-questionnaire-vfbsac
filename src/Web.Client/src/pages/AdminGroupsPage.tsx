@@ -7,15 +7,12 @@ export const AdminGroupsPage = () => {
   const [groups, setGroups] = useState<GroupUser[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // UI Состояния
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  // Данные формы
   const [groupName, setGroupName] = useState("");
   const [password, setPassword] = useState("");
 
-  // Для уведомления
   const [lastCreated, setLastCreated] = useState<{
     name: string;
     pass: string;
@@ -36,13 +33,11 @@ export const AdminGroupsPage = () => {
     loadData();
   }, []);
 
-  // Генератор пароля
   const generatePassword = () => {
     const pass = Math.floor(10000000 + Math.random() * 90000000).toString();
     setPassword(pass);
   };
 
-  // Открыть на создание
   const openCreate = () => {
     setEditingId(null);
     setGroupName("");
@@ -50,15 +45,13 @@ export const AdminGroupsPage = () => {
     setIsFormOpen(true);
   };
 
-  // Открыть на редактирование
   const openEdit = (g: GroupUser) => {
     setEditingId(g.id);
     setGroupName(g.login);
-    setPassword(""); // Пароль пустой, если не хотим менять
+    setPassword("");
     setIsFormOpen(true);
   };
 
-  // Удаление
   const handleDelete = async (id: string, name: string) => {
     if (!window.confirm(`Вы уверены, что хотите удалить группу "${name}"?`))
       return;
@@ -70,22 +63,17 @@ export const AdminGroupsPage = () => {
     }
   };
 
-  // Сохранение (Create или Update)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       if (editingId) {
-        // --- РЕДАКТИРОВАНИЕ ---
-        // 1. Обновляем имя/логин
-        await usersApi.updateUser(editingId, groupName, groupName); // Для групп Login == DisplayName
+        await usersApi.updateUser(editingId, groupName, groupName);
 
-        // 2. Если введен пароль, обновляем его
         if (password) {
           await usersApi.setPassword(editingId, password);
         }
         alert("Группа обновлена");
       } else {
-        // --- СОЗДАНИЕ ---
         if (!password) {
           alert("Пароль обязателен при создании");
           return;
@@ -116,12 +104,10 @@ export const AdminGroupsPage = () => {
         </button>
       }
     >
-      {/* ДОБАВЛЯЕМ ПРОВЕРКУ ЗАГРУЗКИ СЮДА */}
       {loading ? (
         <div className="p-8 text-center text-slate-500">Загрузка данных...</div>
       ) : (
         <>
-          {/* Баннер успешного создания */}
           {lastCreated && (
             <div className="bg-green-50 border border-green-200 p-4 rounded-xl flex justify-between items-center mb-6 animate-in slide-in-from-top-2">
               <div className="flex gap-4 items-center">
@@ -153,7 +139,6 @@ export const AdminGroupsPage = () => {
             </div>
           )}
 
-          {/* Таблица */}
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -214,7 +199,6 @@ export const AdminGroupsPage = () => {
             </table>
           </div>
 
-          {/* Модальное окно (Create / Edit) */}
           {isFormOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div

@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import api, { type FormDetail, type Statistics, reportsApi } from "../api";
 import { Download, Users, TrendingUp, Activity } from "lucide-react";
 import { AdminLayout } from "../layouts/AdminLayout";
-// Импорты графиков
 import {
   BarChart,
   Bar,
@@ -84,15 +83,13 @@ export const AdminStatsPage = () => {
       .filter((q) => q.type === "Number" || q.type === "WeightedRating")
       .sort((a, b) => a.order - b.order);
 
-    // Подготовка данных для графика
     const chartData = numericQuestions.map((q, idx) => ({
-      name: `В${idx + 1}`, // Короткое имя для оси X
-      fullName: q.text, // Полный текст для тултипа
+      name: `В${idx + 1}`,
+      fullName: q.text,
       score: stats.resultScores[idx] || 0,
       average: stats.averageScores[idx] || 0,
     }));
 
-    // Кастомный тултип для графика
     const CustomTooltip = ({ active, payload }: any) => {
       if (active && payload && payload.length) {
         return (
@@ -114,7 +111,6 @@ export const AdminStatsPage = () => {
 
     return (
       <>
-        {/* KPI Карточки */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="bg-white p-5 md:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between min-h-[110px]">
             <div className="flex items-center gap-3 text-slate-500 mb-2">
@@ -159,7 +155,6 @@ export const AdminStatsPage = () => {
           </div>
         </div>
 
-        {/* Блок Графика */}
         <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-700">
           <h3 className="text-base md:text-lg font-bold text-slate-900 mb-6">
             Распределение оценок по вопросам
@@ -223,7 +218,6 @@ export const AdminStatsPage = () => {
           </p>
         </div>
 
-        {/* Таблица Деталей */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
           <div className="px-4 md:px-6 py-4 border-b border-slate-100">
             <h3 className="text-base md:text-lg font-bold text-slate-900">

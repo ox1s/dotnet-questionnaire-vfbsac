@@ -30,7 +30,6 @@ export const DashboardPage = () => {
     navigate("/login");
   };
 
-  // --- Контент для карточек ---
   const Content = () => (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
       {forms.map((form) => (
@@ -44,7 +43,6 @@ export const DashboardPage = () => {
             </div>
             {userIsAdmin && (
               <div className="flex items-center gap-1">
-                {/* НОВАЯ КНОПКА РЕДАКТИРОВАНИЯ */}
                 <Link
                   to={`/admin/edit-form/${form.id}`}
                   className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
@@ -91,7 +89,6 @@ export const DashboardPage = () => {
     </div>
   );
 
-  // --- Рендер для АДМИНА (с сайдбаром) ---
   if (userIsAdmin) {
     return (
       <AdminLayout
@@ -103,7 +100,6 @@ export const DashboardPage = () => {
     );
   }
 
-  // --- Рендер для СТУДЕНТА (без сайдбара) ---
   return (
     <div className="min-h-screen bg-slate-50 font-display text-slate-900">
       <nav className="bg-white border-b border-slate-200 px-6 py-4">
@@ -121,7 +117,6 @@ export const DashboardPage = () => {
               <User size={14} /> Студент
             </div>
             <div className="flex items-center gap-4">
-              {/* Кнопка Выйти */}
               <button
                 onClick={logout}
                 className="text-slate-500 hover:text-red-600 font-medium text-sm flex items-center gap-2"

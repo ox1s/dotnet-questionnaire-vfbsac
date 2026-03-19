@@ -106,7 +106,6 @@ export const AdminDisciplinesPage = () => {
         </div>
       </div>
 
-      {/* Таблица */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
@@ -131,7 +130,6 @@ export const AdminDisciplinesPage = () => {
                     <div className="p-1.5 md:p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0 mt-0.5">
                       <Book size={14} className="md:w-[16px] md:h-[16px]" />
                     </div>
-                    {/* Перенос названия на 3 строки */}
                     <span className="text-xs md:text-sm font-bold text-slate-900 line-clamp-3 leading-snug">
                       {d.name}
                     </span>

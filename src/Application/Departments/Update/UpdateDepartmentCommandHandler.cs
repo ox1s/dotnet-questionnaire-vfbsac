@@ -19,7 +19,12 @@ internal sealed class UpdateDepartmentCommandHandler(IApplicationDbContext conte
             return Result.Failure(DepartmentErrors.NotFound(command.DepartmentId));
         }
 
-        department.UpdateName(command.Name);
+        Result updateNameResult = department.UpdateName(command.Name);
+        if (updateNameResult.IsFailure)
+        {
+            return Result.Failure(updateNameResult.Error);
+        }
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

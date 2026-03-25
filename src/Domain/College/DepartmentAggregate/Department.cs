@@ -23,14 +23,14 @@ public sealed class Department : AggregateRoot, ISoftDeletable
         return new Department(Guid.NewGuid(), name.Trim());
     }
 
-    // TODO: обработка обновления через Result
-    public void UpdateName(string name)
+    public Result UpdateName(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
-            return;
+            return Result.Failure(Error.NullValue);
         }
 
         Name = name.Trim();
+        return Result.Success();
     }
 }

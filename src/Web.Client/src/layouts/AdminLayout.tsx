@@ -168,6 +168,20 @@ export const AdminLayout = ({
             >
               Дисциплины
             </Link>
+            <Link
+              to="/admin/specialities"
+              onClick={closeMenu}
+              className={`text-sm py-1.5 ${isActive("/admin/specialities") ? "text-primary font-bold" : "text-slate-500 hover:text-slate-800"}`}
+            >
+              Специальности
+            </Link>
+            <Link
+              to="/admin/specializations"
+              onClick={closeMenu}
+              className={`text-sm py-1.5 ${isActive("/admin/specializations") ? "text-primary font-bold" : "text-slate-500 hover:text-slate-800"}`}
+            >
+              Специализации
+            </Link>
           </div>
 
           <NavItem to="/admin/groups" icon={Users} label="Группы и доступы" />

@@ -105,7 +105,7 @@ export const SurveyPage = () => {
         {form.questions.map((q, idx) => (
           <div key={q.id} className="bg-white p-6 rounded-lg shadow-sm">
             <div className="flex gap-3 mb-4">
-              <span className="flex-shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600 text-sm">
+              <span className="shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600 text-sm">
                 {idx + 1}
               </span>
               <p className="font-medium text-gray-800 pt-1">{q.text}</p>
@@ -124,7 +124,7 @@ export const SurveyPage = () => {
 
               {q.type === "Text" && (
                 <textarea
-                  className="input-field min-h-[100px]"
+                  className="input-field min-h-25"
                   placeholder="Ваш ответ..."
                   value={answers[q.id] || ""}
                   onChange={(e) =>

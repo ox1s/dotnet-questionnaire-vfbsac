@@ -7,7 +7,7 @@ import {
   BarChart3,
   User,
   ArrowRight,
-  Edit2,
+  Trash2,
 } from "lucide-react";
 
 import { isAdmin } from "../utils/auth";
@@ -19,15 +19,34 @@ export const DashboardPage = () => {
   const userIsAdmin = isAdmin();
 
   useEffect(() => {
-    api
-      .get<Form[]>("/forms")
-      .then((res) => setForms(res.data))
-      .catch(() => navigate("/login"));
+    loadForms().catch(() => navigate("/login"));
   }, [navigate]);
+
+  const loadForms = async () => {
+    const res = await api.get<Form[]>("/forms");
+    setForms(res.data);
+  };
 
   const logout = () => {
     localStorage.removeItem("token");
     navigate("/login");
+  };
+
+  const deleteForm = async (id: string, title: string) => {
+    const isConfirmed = window.confirm(
+      `Удалить анкету "${title}"? Это действие нельзя отменить.`,
+    );
+
+    if (!isConfirmed) {
+      return;
+    }
+
+    try {
+      await api.delete(`/forms/${id}`);
+      setForms((prev) => prev.filter((form) => form.id !== id));
+    } catch {
+      window.alert("Не удалось удалить анкету.");
+    }
   };
 
   const Content = () => (
@@ -43,13 +62,14 @@ export const DashboardPage = () => {
             </div>
             {userIsAdmin && (
               <div className="flex items-center gap-1">
-                <Link
-                  to={`/admin/edit-form/${form.id}`}
-                  className="p-2 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg transition-colors"
-                  title="Редактировать анкету"
+                <button
+                  type="button"
+                  onClick={() => deleteForm(form.id, form.title)}
+                  className="p-2 text-slate-400 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
+                  title="Удалить анкету"
                 >
-                  <Edit2 size={20} />
-                </Link>
+                  <Trash2 size={20} />
+                </button>
 
                 <Link
                   to={`/admin/stats/${form.id}`}
@@ -61,7 +81,7 @@ export const DashboardPage = () => {
               </div>
             )}
           </div>
-
+          <p className="text-s mb-5">{form.title}</p>
           <div className="mt-auto pt-4 border-t border-slate-100">
             {form.requiredFilters && form.requiredFilters.length > 0 ? (
               <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-3">
@@ -70,13 +90,14 @@ export const DashboardPage = () => {
             ) : (
               <p className="text-xs text-slate-400 mb-3">Без фильтров</p>
             )}
-
-            <Link
-              to={`/form/${form.id}`}
-              className="flex items-center justify-center w-full gap-2 py-2.5 rounded-lg bg-slate-50 text-slate-700 font-bold text-sm group-hover:bg-slate-900 group-hover:text-white transition-all"
-            >
-              Пройти опрос <ArrowRight size={16} />
-            </Link>
+            {!userIsAdmin && (
+              <Link
+                to={`/form/${form.id}`}
+                className="flex items-center justify-center w-full gap-2 py-2.5 rounded-lg bg-slate-50 text-slate-700 font-bold text-sm group-hover:bg-slate-900 group-hover:text-white transition-all"
+              >
+                Пройти опрос <ArrowRight size={16} />
+              </Link>
+            )}
           </div>
         </div>
       ))}

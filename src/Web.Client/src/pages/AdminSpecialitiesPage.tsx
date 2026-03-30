@@ -1,27 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { dictionariesApi, type DictionaryItem } from "../api";
 import { AdminLayout } from "../layouts/AdminLayout";
-import { Plus, Search, Edit2, Trash2, Book } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, GraduationCap } from "lucide-react";
 
-export const AdminDisciplinesPage = () => {
-  const [disciplines, setDisciplines] = useState<DictionaryItem[]>([]);
-  const [departments, setDepartments] = useState<DictionaryItem[]>([]);
-
+export const AdminSpecialitiesPage = () => {
+  const [specialities, setSpecialities] = useState<DictionaryItem[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [newName, setNewName] = useState("");
-  const [selectedDept, setSelectedDept] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
-      const [discRes, deptsRes] = await Promise.all([
-        dictionariesApi.getDisciplines(),
-        dictionariesApi.getDepartments(),
-      ]);
-      setDisciplines(discRes.data);
-      setDepartments(deptsRes.data);
+      const res = await dictionariesApi.getSpecialities();
+      setSpecialities(res.data);
     } catch (e) {
       console.error(e);
     }
@@ -31,30 +23,27 @@ export const AdminDisciplinesPage = () => {
     loadData();
   }, []);
 
-  const filteredDisciplines = disciplines.filter((d) =>
-    d.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredSpecialities = specialities.filter((speciality) =>
+    speciality.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const getDeptName = (deptId?: string) =>
-    departments.find((d) => d.id === deptId)?.name || "-";
-
-  const openModal = (d?: DictionaryItem) => {
-    if (d) {
-      setEditingId(d.id);
-      setNewName(d.name);
-      setSelectedDept(d.departmentId || "");
+  const openModal = (speciality?: DictionaryItem) => {
+    if (speciality) {
+      setEditingId(speciality.id);
+      setNewName(speciality.name);
     } else {
       setEditingId(null);
       setNewName("");
-      setSelectedDept("");
     }
+
     setIsFormOpen(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Удалить дисциплину?")) return;
+    if (!window.confirm("Удалить специальность?")) return;
+
     try {
-      await dictionariesApi.deleteDiscipline(id);
+      await dictionariesApi.deleteSpeciality(id);
       loadData();
     } catch (e) {
       alert("Ошибка");
@@ -63,14 +52,14 @@ export const AdminDisciplinesPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      if (editingId)
-        await dictionariesApi.updateDiscipline(
-          editingId,
-          newName,
-          selectedDept,
-        );
-      else await dictionariesApi.createDiscipline(newName, selectedDept);
+      if (editingId) {
+        await dictionariesApi.updateSpeciality(editingId, newName);
+      } else {
+        await dictionariesApi.createSpeciality(newName);
+      }
+
       setIsFormOpen(false);
       loadData();
     } catch (e) {
@@ -80,8 +69,8 @@ export const AdminDisciplinesPage = () => {
 
   return (
     <AdminLayout
-      title="Дисциплины"
-      subtitle="Справочник учебных предметов и читающих кафедр."
+      title="Специальности"
+      subtitle="Управление перечнем образовательных специальностей."
       actions={
         <button
           onClick={() => openModal()}
@@ -99,7 +88,7 @@ export const AdminDisciplinesPage = () => {
           />
           <input
             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-            placeholder="Поиск предмета..."
+            placeholder="Поиск специальности..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -113,55 +102,50 @@ export const AdminDisciplinesPage = () => {
               <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase">
                 Название
               </th>
-              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase">
-                Кафедра
-              </th>
               <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase text-right w-12 md:w-24"></th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredDisciplines.map((d) => (
+            {filteredSpecialities.map((speciality) => (
               <tr
-                key={d.id}
+                key={speciality.id}
                 className="group hover:bg-slate-50 transition-colors"
               >
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top">
                   <div className="flex items-start gap-2 md:gap-3">
-                    <div className="p-1.5 md:p-2 rounded-lg bg-blue-50 text-blue-600 shrink-0 mt-0.5">
-                      <Book size={14} className="md:w-4 md:h-4" />
+                    <div className="p-1.5 md:p-2 rounded-lg bg-emerald-50 text-emerald-600 shrink-0 mt-0.5">
+                      <GraduationCap
+                        size={14}
+                        className="md:w-[16px] md:h-[16px]"
+                      />
                     </div>
                     <span className="text-xs md:text-sm font-bold text-slate-900 line-clamp-3 leading-snug">
-                      {d.name}
+                      {speciality.name}
                     </span>
                   </div>
-                </td>
-                <td className="py-3 px-3 md:py-4 md:px-6 align-top">
-                  <span className="inline-block px-2 py-1 rounded text-[10px] md:text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 line-clamp-3 leading-tight">
-                    {getDeptName(d.departmentId)}
-                  </span>
                 </td>
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top text-right">
                   <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     <button
-                      onClick={() => openModal(d)}
+                      onClick={() => openModal(speciality)}
                       className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
                     >
-                      <Edit2 size={16} className="md:w-4.5 md:h-4.5" />
+                      <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
                     </button>
                     <button
-                      onClick={() => handleDelete(d.id)}
+                      onClick={() => handleDelete(speciality.id)}
                       className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-accent hover:bg-accent/10 transition-colors"
                     >
-                      <Trash2 size={16} className="md:w-4.5 md:h-4.5" />
+                      <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
-            {filteredDisciplines.length === 0 && (
+            {filteredSpecialities.length === 0 && (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={2}
                   className="p-8 text-center text-slate-400 text-sm"
                 >
                   Ничего не найдено
@@ -180,7 +164,7 @@ export const AdminDisciplinesPage = () => {
           ></div>
           <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
             <h3 className="text-lg font-bold text-slate-900 mb-4">
-              {editingId ? "Редактирование" : "Новая дисциплина"}
+              {editingId ? "Редактирование" : "Новая специальность"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -191,24 +175,8 @@ export const AdminDisciplinesPage = () => {
                   className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm"
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
+                  placeholder="Например: Программное обеспечение информационных технологий"
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
-                  Кафедра
-                </label>
-                <select
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm"
-                  value={selectedDept}
-                  onChange={(e) => setSelectedDept(e.target.value)}
-                >
-                  <option value="">Выберите...</option>
-                  {departments.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
               </div>
               <div className="flex gap-3 pt-4">
                 <button

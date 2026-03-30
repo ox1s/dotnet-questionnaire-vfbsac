@@ -12,9 +12,11 @@ internal sealed class GetDepartmentsQueryHandler(IApplicationDbContext context)
         CancellationToken cancellationToken)
     {
         List<GetDepartmentResponse> departments = await context.Departments
+            .IgnoreQueryFilters()
             .AsNoTracking()
-            .OrderBy(d => d.Name)
-            .Select(d => new GetDepartmentResponse(d.Id, d.Name))
+            .OrderBy(d => d.IsDeleted)
+            .ThenBy(d => d.Name)
+            .Select(d => new GetDepartmentResponse(d.Id, d.Name, d.IsDeleted))
             .ToListAsync(cancellationToken);
 
         return departments;

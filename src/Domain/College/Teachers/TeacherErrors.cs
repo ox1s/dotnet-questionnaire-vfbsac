@@ -7,4 +7,12 @@ public static class TeacherErrors
     public static Error NotFound(Guid teacherId) => Error.NotFound(
         "Teachers.NotFound",
         $"The teacher with the Id = '{teacherId}' was not found");
+
+    public static Error HasUsers() => Error.Conflict(
+        "Teachers.HasUsers",
+        "К преподавателю привязаны пользователи, поэтому сначала уберите их.");
+
+    public static Error DepartmentDeleted(Guid departmentId) => Error.Conflict(
+        "Teachers.DepartmentDeleted",
+        $"Нельзя восстановить преподавателя, пока кафедра '{departmentId}' удалена.");
 }

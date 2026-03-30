@@ -7,7 +7,7 @@ public sealed class Teacher : Entity, ISoftDeletable
 {
     public string FullName { get; private set; }
     public bool IsDeleted { get; set; }
-    
+
     public Guid DepartmentId { get; private set; }
 
     private Teacher() { } // EF Core

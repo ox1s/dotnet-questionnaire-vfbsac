@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { dictionariesApi, type DictionaryItem } from "../api";
+import { dictionariesApi, getApiErrorMessage, type DictionaryItem } from "../api";
 import { AdminLayout } from "../layouts/AdminLayout";
-import { Plus, Search, Edit2, Trash2, Layers3 } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Layers3, RotateCcw } from "lucide-react";
 
 type SpecializationItem = DictionaryItem & {
   specialityId?: string;
@@ -67,7 +67,16 @@ export const AdminSpecializationsPage = () => {
       await dictionariesApi.deleteSpecialization(id);
       loadData();
     } catch (e) {
-      alert("Ошибка");
+      alert(getApiErrorMessage(e, "Ошибка удаления"));
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      await dictionariesApi.restoreSpecialization(id);
+      loadData();
+    } catch (e) {
+      alert(getApiErrorMessage(e, "Ошибка восстановления"));
     }
   };
 
@@ -137,16 +146,27 @@ export const AdminSpecializationsPage = () => {
             {filteredSpecializations.map((specialization) => (
               <tr
                 key={specialization.id}
-                className="group hover:bg-slate-50 transition-colors"
+                className={`group transition-colors ${
+                  specialization.isDeleted
+                    ? "bg-slate-50/70 text-slate-400"
+                    : "hover:bg-slate-50"
+                }`}
               >
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top">
                   <div className="flex items-start gap-2 md:gap-3">
                     <div className="p-1.5 md:p-2 rounded-lg bg-violet-50 text-violet-600 shrink-0 mt-0.5">
                       <Layers3 size={14} className="md:w-[16px] md:h-[16px]" />
                     </div>
-                    <span className="text-xs md:text-sm font-bold text-slate-900 line-clamp-3 leading-snug">
+                    <span className={`text-xs md:text-sm font-bold line-clamp-3 leading-snug ${
+                      specialization.isDeleted ? "text-slate-500" : "text-slate-900"
+                    }`}>
                       {specialization.name}
                     </span>
+                    {specialization.isDeleted && (
+                      <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                        Удалено
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top">
@@ -158,18 +178,38 @@ export const AdminSpecializationsPage = () => {
                 </td>
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top text-right">
                   <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => openModal(specialization)}
-                      className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
-                    >
-                      <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(specialization.id)}
-                      className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-accent hover:bg-accent/10 transition-colors"
-                    >
-                      <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
-                    </button>
+                    {specialization.isDeleted ? (
+                      <button
+                        onClick={() => handleRestore(specialization.id)}
+                        className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                      >
+                        <RotateCcw
+                          size={16}
+                          className="md:w-[18px] md:h-[18px]"
+                        />
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => openModal(specialization)}
+                          className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                        >
+                          <Edit2
+                            size={16}
+                            className="md:w-[18px] md:h-[18px]"
+                          />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(specialization.id)}
+                          className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-accent hover:bg-accent/10 transition-colors"
+                        >
+                          <Trash2
+                            size={16}
+                            className="md:w-[18px] md:h-[18px]"
+                          />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -220,7 +260,9 @@ export const AdminSpecializationsPage = () => {
                   onChange={(e) => setSelectedSpeciality(e.target.value)}
                 >
                   <option value="">Выберите специальность...</option>
-                  {specialities.map((speciality) => (
+                  {specialities
+                    .filter((speciality) => !speciality.isDeleted)
+                    .map((speciality) => (
                     <option key={speciality.id} value={speciality.id}>
                       {speciality.name}
                     </option>

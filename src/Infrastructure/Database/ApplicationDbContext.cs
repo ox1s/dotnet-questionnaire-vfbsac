@@ -39,7 +39,6 @@ public sealed class ApplicationDbContext(
 
         modelBuilder.HasDefaultSchema(Schemas.Default);
 
-
         modelBuilder.Entity<Discipline>().HasQueryFilter(d => !d.IsDeleted);
         modelBuilder.Entity<Department>().HasQueryFilter(d => !d.IsDeleted);
         modelBuilder.Entity<Speciality>().HasQueryFilter(s => !s.IsDeleted);

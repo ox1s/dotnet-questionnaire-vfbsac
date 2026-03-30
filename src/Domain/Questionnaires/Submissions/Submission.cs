@@ -7,7 +7,7 @@ public sealed class Submission : Entity
     public DateTime SubmittedAt { get; private set; }
     public SubmissionContext Context { get; private set; }
     public bool IsDeleted { get; set; }
-    
+
     public Guid FormId { get; private set; }
     public Guid UserId { get; private set; }
     public string DeviceId { get; private set; }

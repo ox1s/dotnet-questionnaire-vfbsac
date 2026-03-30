@@ -13,9 +13,11 @@ internal sealed class GetSpecialitiesQueryHandler(IApplicationDbContext context)
         CancellationToken cancellationToken)
     {
         List<SpecialityResponse> specialities = await context.Specialities
+            .IgnoreQueryFilters()
             .AsNoTracking()
-            .OrderBy(s => s.Name)
-            .Select(s => new SpecialityResponse(s.Id, s.Name))
+            .OrderBy(s => s.IsDeleted)
+            .ThenBy(s => s.Name)
+            .Select(s => new SpecialityResponse(s.Id, s.Name, s.IsDeleted))
             .ToListAsync(cancellationToken);
 
         return specialities;

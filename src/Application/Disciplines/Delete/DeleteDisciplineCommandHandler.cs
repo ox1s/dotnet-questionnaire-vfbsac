@@ -12,6 +12,7 @@ internal sealed class DeleteDisciplineCommandHandler(IApplicationDbContext conte
     public async Task<Result> Handle(DeleteDisciplineCommand command, CancellationToken cancellationToken)
     {
         Discipline? discipline = await context.Disciplines
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(d => d.Id == command.DisciplineId, cancellationToken);
 
         if (discipline is null)
@@ -19,8 +20,19 @@ internal sealed class DeleteDisciplineCommandHandler(IApplicationDbContext conte
             return Result.Failure(DisciplineErrors.NotFound(command.DisciplineId));
         }
 
-        discipline.IsDeleted = true;
-        context.Disciplines.Update(discipline);
+        bool usedInSubmissions = await context.Submissions
+            .IgnoreQueryFilters()
+            .AnyAsync(s => s.Context.DisciplineId == command.DisciplineId, cancellationToken);
+
+        if (usedInSubmissions)
+        {
+            discipline.IsDeleted = true;
+            context.Disciplines.Update(discipline);
+        }
+        else
+        {
+            context.Disciplines.Remove(discipline);
+        }
 
         await context.SaveChangesAsync(cancellationToken);
 

@@ -11,8 +11,11 @@ internal sealed class GetTeachersQueryHandler(IApplicationDbContext context)
     public async Task<Result<List<TeacherResponse>>> Handle(GetTeachersQuery query, CancellationToken cancellationToken)
     {
         List<TeacherResponse> teachers = await context.Teachers
-            .OrderBy(t => t.FullName)
-            .Select(t => new TeacherResponse(t.Id, t.FullName, t.DepartmentId))
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .OrderBy(t => t.IsDeleted)
+            .ThenBy(t => t.FullName)
+            .Select(t => new TeacherResponse(t.Id, t.FullName, t.DepartmentId, t.IsDeleted))
             .ToListAsync(cancellationToken);
 
         return teachers;

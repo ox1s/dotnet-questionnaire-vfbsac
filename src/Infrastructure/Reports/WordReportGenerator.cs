@@ -37,7 +37,7 @@ public class WordReportGenerator : IReportGenerator
             // 2. Общая статистика
             AddParagraph(body, $"Всего анкет: {stats.TotalSubmissions}");
             AddParagraph(body, $"Средний балл (общий): {stats.OverallAverage.ToString("F2", CultureInfo.InvariantCulture)}");
-            AddParagraph(body, $"Отклонение (Sigma): {stats.OverallStandardDeviation.ToString("F2", CultureInfo.InvariantCulture)}");
+            AddParagraph(body, $"Отклонение: {stats.OverallStandardDeviation.ToString("F2", CultureInfo.InvariantCulture)}");
 
             body.AppendChild(new Paragraph());
 

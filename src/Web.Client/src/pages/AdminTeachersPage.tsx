@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { dictionariesApi, type TeacherItem, type DictionaryItem } from "../api";
+import {
+  dictionariesApi,
+  getApiErrorMessage,
+  type TeacherItem,
+  type DictionaryItem,
+} from "../api";
 import { AdminLayout } from "../layouts/AdminLayout";
-import { Plus, Search, Edit2, Trash2 } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, RotateCcw } from "lucide-react";
 
 export const AdminTeachersPage = () => {
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
@@ -59,7 +64,16 @@ export const AdminTeachersPage = () => {
       await dictionariesApi.deleteTeacher(id);
       loadData();
     } catch (e) {
-      alert("Ошибка удаления");
+      alert(getApiErrorMessage(e, "Ошибка удаления"));
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      await dictionariesApi.restoreTeacher(id);
+      loadData();
+    } catch (e) {
+      alert(getApiErrorMessage(e, "Ошибка восстановления"));
     }
   };
 
@@ -131,7 +145,11 @@ export const AdminTeachersPage = () => {
             {filteredTeachers.map((t) => (
               <tr
                 key={t.id}
-                className="group hover:bg-slate-50 transition-colors"
+                className={`group transition-colors ${
+                  t.isDeleted
+                    ? "bg-slate-50/70 text-slate-400"
+                    : "hover:bg-slate-50"
+                }`}
               >
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top">
                   <div className="flex items-start gap-2 md:gap-3">
@@ -140,11 +158,18 @@ export const AdminTeachersPage = () => {
                     </div>
 
                     <span
-                      className="text-xs md:text-sm font-bold text-slate-900 leading-snug pt-1"
+                      className={`text-xs md:text-sm font-bold leading-snug pt-1 ${
+                        t.isDeleted ? "text-slate-500" : "text-slate-900"
+                      }`}
                       title={t.fullName}
                     >
                       {truncateFirstWord(t.fullName, 10)}
                     </span>
+                    {t.isDeleted && (
+                      <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                        Удалено
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top">
@@ -154,18 +179,38 @@ export const AdminTeachersPage = () => {
                 </td>
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top text-right">
                   <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => openEditModal(t)}
-                      className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
-                    >
-                      <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(t.id)}
-                      className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-accent hover:bg-accent/10 transition-colors"
-                    >
-                      <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
-                    </button>
+                    {t.isDeleted ? (
+                      <button
+                        onClick={() => handleRestore(t.id)}
+                        className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                      >
+                        <RotateCcw
+                          size={16}
+                          className="md:w-[18px] md:h-[18px]"
+                        />
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => openEditModal(t)}
+                          className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                        >
+                          <Edit2
+                            size={16}
+                            className="md:w-[18px] md:h-[18px]"
+                          />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-accent hover:bg-accent/10 transition-colors"
+                        >
+                          <Trash2
+                            size={16}
+                            className="md:w-[18px] md:h-[18px]"
+                          />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -216,11 +261,13 @@ export const AdminTeachersPage = () => {
                   onChange={(e) => setSelectedDept(e.target.value)}
                 >
                   <option value="">Выберите кафедру...</option>
-                  {departments.map((d) => (
-                    <option key={d.id} value={d.id}>
-                      {d.name}
-                    </option>
-                  ))}
+                  {departments
+                    .filter((d) => !d.isDeleted)
+                    .map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
                 </select>
               </div>
               <div className="flex gap-3 pt-4">

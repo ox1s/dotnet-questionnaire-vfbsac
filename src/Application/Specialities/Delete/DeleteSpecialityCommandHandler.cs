@@ -12,6 +12,7 @@ internal sealed class DeleteSpecialityCommandHandler(IApplicationDbContext conte
     public async Task<Result> Handle(DeleteSpecialityCommand command, CancellationToken cancellationToken)
     {
         Speciality? speciality = await context.Specialities
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == command.SpecialityId, cancellationToken);
 
         if (speciality is null)
@@ -19,8 +20,27 @@ internal sealed class DeleteSpecialityCommandHandler(IApplicationDbContext conte
             return Result.Failure(SpecialityErrors.NotFound(command.SpecialityId));
         }
 
-        speciality.IsDeleted = true;
-        context.Specialities.Update(speciality);
+        bool hasSpecializations = await context.Specializations
+            .AnyAsync(s => s.SpecialityId == command.SpecialityId, cancellationToken);
+
+        if (hasSpecializations)
+        {
+            return Result.Failure(SpecialityErrors.HasSpecializations());
+        }
+
+        bool usedInSubmissions = await context.Submissions
+            .IgnoreQueryFilters()
+            .AnyAsync(s => s.Context.SpecialityId == command.SpecialityId, cancellationToken);
+
+        if (usedInSubmissions)
+        {
+            speciality.IsDeleted = true;
+            context.Specialities.Update(speciality);
+        }
+        else
+        {
+            context.Specialities.Remove(speciality);
+        }
 
         await context.SaveChangesAsync(cancellationToken);
 

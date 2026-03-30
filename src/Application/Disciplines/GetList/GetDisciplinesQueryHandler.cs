@@ -11,8 +11,11 @@ public class GetDisciplinesQueryHandler(IApplicationDbContext context)
     public async Task<Result<List<DisciplineResponse>>> Handle(GetDisciplinesQuery query, CancellationToken cancellationToken)
     {
         List<DisciplineResponse> disciplines = await context.Disciplines
-            .OrderBy(d => d.Name)
-            .Select(d => new DisciplineResponse(d.Id, d.Name, d.DepartmentId))
+            .IgnoreQueryFilters()
+            .AsNoTracking()
+            .OrderBy(d => d.IsDeleted)
+            .ThenBy(d => d.Name)
+            .Select(d => new DisciplineResponse(d.Id, d.Name, d.DepartmentId, d.IsDeleted))
             .ToListAsync(cancellationToken);
 
         return disciplines;

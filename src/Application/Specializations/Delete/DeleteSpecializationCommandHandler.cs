@@ -12,6 +12,7 @@ internal sealed class DeleteSpecializationCommandHandler(IApplicationDbContext c
     public async Task<Result> Handle(DeleteSpecializationCommand command, CancellationToken cancellationToken)
     {
         Specialization? specialization = await context.Specializations
+            .IgnoreQueryFilters()
             .FirstOrDefaultAsync(s => s.Id == command.SpecializationId, cancellationToken);
 
         if (specialization is null)
@@ -19,8 +20,19 @@ internal sealed class DeleteSpecializationCommandHandler(IApplicationDbContext c
             return Result.Failure(SpecializationErrors.NotFound(command.SpecializationId));
         }
 
-        specialization.IsDeleted = true;
-        context.Specializations.Update(specialization);
+        bool usedInSubmissions = await context.Submissions
+            .IgnoreQueryFilters()
+            .AnyAsync(s => s.Context.SpecializationId == command.SpecializationId, cancellationToken);
+
+        if (usedInSubmissions)
+        {
+            specialization.IsDeleted = true;
+            context.Specializations.Update(specialization);
+        }
+        else
+        {
+            context.Specializations.Remove(specialization);
+        }
 
         await context.SaveChangesAsync(cancellationToken);
 

@@ -27,12 +27,14 @@ export interface DictionaryItem {
   name: string;
   departmentId?: string;
   specialityId?: string;
+  isDeleted?: boolean;
 }
 
 export interface TeacherItem {
   id: string;
   fullName: string;
   departmentId: string;
+  isDeleted?: boolean;
 }
 
 export interface GroupUser {
@@ -61,6 +63,10 @@ export const usersApi = {
   createGroup: (groupName: string, password: string) =>
     api.post<string>("/users/groups", { groupName, password }),
   getGroups: () => api.get<GroupUser[]>("/users/groups"),
+
+  createStaff: (login: string, displayName: string, password: string) =>
+    api.post<string>("/users/staff", { login, displayName, password }),
+  getStaff: () => api.get<GroupUser[]>("/users/staff"),
 
   deleteUser: (id: string) => api.delete(`/users/${id}`),
   updateUser: (id: string, login: string, displayName: string) =>
@@ -98,6 +104,12 @@ export const dictionariesApi = {
   deleteDiscipline: (id: string) => api.delete(`/disciplines/${id}`),
   deleteSpeciality: (id: string) => api.delete(`/specialities/${id}`),
   deleteSpecialization: (id: string) => api.delete(`/specializations/${id}`),
+  restoreDepartment: (id: string) => api.post(`/departments/${id}/restore`),
+  restoreTeacher: (id: string) => api.post(`/teachers/${id}/restore`),
+  restoreDiscipline: (id: string) => api.post(`/disciplines/${id}/restore`),
+  restoreSpeciality: (id: string) => api.post(`/specialities/${id}/restore`),
+  restoreSpecialization: (id: string) =>
+    api.post(`/specializations/${id}/restore`),
 
   updateDepartment: (id: string, name: string) =>
     api.put(`/departments/${id}`, { departmentId: id, name }),
@@ -160,4 +172,36 @@ export const reportsApi = {
 
   downloadWordReport: (formId: string) =>
     api.get(`/reports/word/${formId}`, { responseType: "blob" }),
+};
+
+export const getApiErrorMessage = (
+  error: unknown,
+  fallback: string = "Произошла ошибка",
+) => {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | {
+          detail?: string;
+          title?: string;
+          errors?: Record<string, string[]>;
+        }
+      | undefined;
+
+    if (data?.detail) {
+      return data.detail;
+    }
+
+    if (data?.errors) {
+      const firstErrorGroup = Object.values(data.errors)[0];
+      if (firstErrorGroup?.[0]) {
+        return firstErrorGroup[0];
+      }
+    }
+
+    if (data?.title) {
+      return data.title;
+    }
+  }
+
+  return fallback;
 };

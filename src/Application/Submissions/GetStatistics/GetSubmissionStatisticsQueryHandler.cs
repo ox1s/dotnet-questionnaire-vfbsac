@@ -27,10 +27,10 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
             return Result.Failure<SubmissionStatisticsResponse>(
                 FormErrors.NotFound(query.FormId));
         }
-        
+
         IQueryable<Submission> submissionsQuery = context.Submissions
             .Where(s => s.FormId == query.FormId);
-        
+
         if (query.DisciplineId.HasValue)
         {
             submissionsQuery = submissionsQuery
@@ -59,8 +59,8 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
         if (!string.IsNullOrWhiteSpace(query.OrganizationName))
         {
             submissionsQuery = submissionsQuery
-                .Where(s => 
-                    s.Context.OrganizationName != null 
+                .Where(s =>
+                    s.Context.OrganizationName != null
                     && s.Context.OrganizationName.Contains(query.OrganizationName));
         }
 
@@ -79,7 +79,7 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
                 OverallStandardDeviation = 0
             };
         }
-        
+
         var answersData = await submissionsQuery
             .SelectMany(s => s.Answers)
             .Where(a => a.NumericValue != null) // Исключаем текстовые ответы

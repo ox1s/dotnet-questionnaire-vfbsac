@@ -8,5 +8,5 @@ public sealed record CreateStaffUserCommand(
     string FullName,
     string Password,
     Guid? DepartmentId,
-    UserRole Role 
+    UserRole Role
 ) : ICommand<Guid>;

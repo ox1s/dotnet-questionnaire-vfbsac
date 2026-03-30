@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { dictionariesApi, type DictionaryItem } from "../api";
+import { dictionariesApi, getApiErrorMessage, type DictionaryItem } from "../api";
 import { AdminLayout } from "../layouts/AdminLayout";
-import { Plus, Edit2, Trash2, Building2 } from "lucide-react";
+import { Plus, Edit2, Trash2, Building2, RotateCcw } from "lucide-react";
 
 export const AdminDepartmentsPage = () => {
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
@@ -39,7 +39,16 @@ export const AdminDepartmentsPage = () => {
       await dictionariesApi.deleteDepartment(id);
       loadData();
     } catch (e) {
-      alert("Ошибка");
+      alert(getApiErrorMessage(e, "Ошибка удаления"));
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    try {
+      await dictionariesApi.restoreDepartment(id);
+      loadData();
+    } catch (e) {
+      alert(getApiErrorMessage(e, "Ошибка восстановления"));
     }
   };
 
@@ -84,32 +93,51 @@ export const AdminDepartmentsPage = () => {
             {departments.map((d) => (
               <tr
                 key={d.id}
-                className="group hover:bg-slate-50 transition-colors"
+                className={`group transition-colors ${
+                  d.isDeleted ? "bg-slate-50/70 text-slate-400" : "hover:bg-slate-50"
+                }`}
               >
                 <td className="py-4 px-6">
                   <div className="flex items-center gap-3">
                     <div className="p-2 rounded-lg bg-orange-50 text-orange-600">
                       <Building2 size={16} />
                     </div>
-                    <span className="text-sm font-bold text-slate-900">
+                    <span className={`text-sm font-bold ${d.isDeleted ? "text-slate-500" : "text-slate-900"}`}>
                       {d.name}
                     </span>
+                    {d.isDeleted && (
+                      <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600">
+                        Удалено
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => openModal(d)}
-                      className="p-1.5 rounded text-slate-400 hover:text-primary"
-                    >
-                      <Edit2 size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(d.id)}
-                      className="p-1.5 rounded text-slate-400 hover:text-red-600"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    {d.isDeleted ? (
+                      <button
+                        onClick={() => handleRestore(d.id)}
+                        className="p-1.5 rounded text-slate-400 hover:text-emerald-600"
+                        title="Восстановить"
+                      >
+                        <RotateCcw size={18} />
+                      </button>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => openModal(d)}
+                          className="p-1.5 rounded text-slate-400 hover:text-primary"
+                        >
+                          <Edit2 size={18} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(d.id)}
+                          className="p-1.5 rounded text-slate-400 hover:text-red-600"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>

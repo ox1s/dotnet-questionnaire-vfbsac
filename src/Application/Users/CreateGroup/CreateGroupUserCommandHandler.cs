@@ -19,7 +19,7 @@ internal sealed class CreateGroupUserCommandHandler(
         {
             return Result.Failure<Guid>(groupNameResult.Error);
         }
-        GroupName groupName = groupNameResult.Value;    
+        GroupName groupName = groupNameResult.Value;
         string login = groupName.Value;
 
         bool exists = await context.Users
@@ -28,7 +28,7 @@ internal sealed class CreateGroupUserCommandHandler(
         {
             return Result.Failure<Guid>(UserErrors.GroupExists(login));
         }
-        
+
         string passwordHash = passwordHasher.Hash(command.Password);
 
         Result<User> userResult = User.CreateGroupUser(groupNameResult.Value, Guid.NewGuid(), passwordHash);

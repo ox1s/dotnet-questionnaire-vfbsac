@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.College.SpecializationAggregate;
+namespace Domain.College.Specializations;
 
 public static class SpecializationErrors
 {

@@ -1,6 +1,6 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.UserAggregate;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -18,7 +18,7 @@ internal sealed class UpdateUserCommandHandler(IApplicationDbContext context)
             return Result.Failure(UserErrors.NotFound(command.UserId));
         }
 
-        Result<Domain.UserAggregate.Login> loginResult = Domain.UserAggregate.Login.Create(command.Login);
+        Result<Login> loginResult = Login.Create(command.Login);
         if (loginResult.IsFailure)
         {
             return Result.Failure(loginResult.Error);
@@ -31,7 +31,7 @@ internal sealed class UpdateUserCommandHandler(IApplicationDbContext context)
 
             if (exists)
             {
-                return Result.Failure(UserErrors.Conflict("Users.Duplicate", "Логин занят"));
+                return Result.Failure(UserErrors.UserExist());
             }
         }
 

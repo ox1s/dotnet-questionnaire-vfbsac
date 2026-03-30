@@ -1,7 +1,7 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.College.DepartmentAggregate;
-using Domain.College.TeacherAggregate;
+using Domain.College.Departments;
+using Domain.College.Teachers;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 

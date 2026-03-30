@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.UserAggregate;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -12,7 +12,7 @@ internal sealed class RegisterUserCommandHandler(IApplicationDbContext context, 
 {
     public async Task<Result<Guid>> Handle(RegisterUserCommand command, CancellationToken cancellationToken)
     {
-        Result<Domain.UserAggregate.Login> loginResult = Domain.UserAggregate.Login.Create(command.Login);
+        Result<Domain.User.Login> loginResult = Domain.User.Login.Create(command.Login);
         if (loginResult.IsFailure)
         {
             return Result.Failure<Guid>(loginResult.Error);
@@ -20,7 +20,7 @@ internal sealed class RegisterUserCommandHandler(IApplicationDbContext context, 
 
         if (await context.Users.AnyAsync(u => u.Login.Value == loginResult.Value.Value, cancellationToken))
         {
-            return Result.Failure<Guid>(UserErrors.Conflict("Users.LoginExists", "Такой логин уже занят"));
+            return Result.Failure<Guid>(UserErrors.UserExist());
         }
 
         Result<User> userResult = User.CreateAdmin(loginResult.Value, passwordHasher.Hash(command.Password));

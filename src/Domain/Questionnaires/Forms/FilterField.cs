@@ -1,4 +1,4 @@
-namespace Domain.Questionnaires.Form;
+namespace Domain.Questionnaires.Forms;
 
 public enum FilterField
 {

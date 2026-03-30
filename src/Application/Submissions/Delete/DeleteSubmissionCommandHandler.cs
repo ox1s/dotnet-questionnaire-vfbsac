@@ -1,6 +1,6 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.Questionnaires.SubmissionAggregate;
+using Domain.Questionnaires.Submissions;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 

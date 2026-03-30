@@ -1,11 +1,11 @@
-using Domain.College.DepartmentAggregate;
-using Domain.College.DisciplineAggregate;
-using Domain.College.SpecialityAggregate;
-using Domain.College.SpecializationAggregate;
-using Domain.College.TeacherAggregate;
-using Domain.Questionnaires.FormAggregate;
-using Domain.Questionnaires.SubmissionAggregate;
-using Domain.UserAggregate;
+using Domain.College.Departments;
+using Domain.College.Disciplines;
+using Domain.College.Specialities;
+using Domain.College.Specializations;
+using Domain.College.Teachers;
+using Domain.Questionnaires.Forms;
+using Domain.Questionnaires.Submissions;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace Application.Abstractions.Data;

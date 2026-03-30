@@ -1,12 +1,11 @@
-using Domain.College.Teacher;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.College.TeacherAggregate;
+namespace Infrastructure.College.Teacher;
 
-internal sealed class TeacherConfiguration : IEntityTypeConfiguration<Teacher>
+internal sealed class TeacherConfiguration : IEntityTypeConfiguration<Domain.College.Teachers.Teacher>
 {
-    public void Configure(EntityTypeBuilder<Teacher> builder)
+    public void Configure(EntityTypeBuilder<Domain.College.Teachers.Teacher> builder)
     {
         builder.HasKey(t => t.Id);
 

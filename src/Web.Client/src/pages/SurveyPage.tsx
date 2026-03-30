@@ -15,7 +15,6 @@ export const SurveyPage = () => {
   const navigate = useNavigate();
   const [form, setForm] = useState<FormDetail | null>(null);
   const [answers, setAnswers] = useState<Record<string, any>>({});
-
   const [context, setContext] = useState<SubmissionContext>({
     educationForm: "ДФПО",
   });

@@ -1,7 +1,7 @@
 using Application.Abstractions.Messaging;
 using Application.Users.CreateGroup;
 using Application.Users.CreateStaff;
-using Domain.UserAggregate;
+using Domain.User;
 using SharedKernel;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
@@ -10,7 +10,7 @@ namespace Web.Api.Endpoints.Users;
 
 internal sealed class CreateStaff : IEndpoint
 {
-    public sealed record CreateGroupRequest(
+    private sealed record CreateGroupRequest(
         string Login,
         string FullName,
         string Password,

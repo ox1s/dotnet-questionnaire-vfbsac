@@ -1,5 +1,5 @@
 using Application.Abstractions.Messaging;
-using Domain.UserAggregate;
+using Domain.User;
 
 namespace Application.Users.CreateStaff;
 
@@ -8,5 +8,5 @@ public sealed record CreateStaffUserCommand(
     string FullName,
     string Password,
     Guid? DepartmentId,
-    UserRole Role // Staff или DeputyHead
+    UserRole Role 
 ) : ICommand<Guid>;

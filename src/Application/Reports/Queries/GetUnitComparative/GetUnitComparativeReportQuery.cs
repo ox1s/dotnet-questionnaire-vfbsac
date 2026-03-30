@@ -1,6 +1,6 @@
 using Application.Abstractions.Messaging;
 using Application.Reports.Queries.GetComparative;
-using Domain.Questionnaires.FormAggregate;
+using Domain.Questionnaires.Forms;
 
 namespace Application.Reports.Queries.GetUnitComparative;
 

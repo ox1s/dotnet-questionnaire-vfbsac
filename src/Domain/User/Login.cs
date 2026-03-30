@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.UserAggregate;
+namespace Domain.User;
 
 public sealed record Login(string Value)
 {
@@ -8,6 +8,6 @@ public sealed record Login(string Value)
     {
         return string.IsNullOrWhiteSpace(value)
             ? Result.Failure<Login>(Error.NullValue)
-            : Result.Success(new Login(value.Trim().ToUpperInvariant()));
+            : Result.Success(new Login(value.Trim()));
     }
 }

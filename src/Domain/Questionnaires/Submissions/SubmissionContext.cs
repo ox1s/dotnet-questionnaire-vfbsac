@@ -1,4 +1,4 @@
-namespace Domain.Questionnaires.Submission;
+namespace Domain.Questionnaires.Submissions;
 
 public record SubmissionContext(
     Guid? DisciplineId = null,

@@ -1,4 +1,4 @@
-using Domain.UserAggregate;
+using Domain.User;
 using FluentValidation;
 
 namespace Application.Users.CreateStaff;

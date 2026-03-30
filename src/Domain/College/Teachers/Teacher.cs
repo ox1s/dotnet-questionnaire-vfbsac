@@ -1,7 +1,7 @@
 using SharedKernel;
 using Throw;
 
-namespace Domain.College.Teacher;
+namespace Domain.College.Teachers;
 
 public sealed class Teacher : Entity, ISoftDeletable
 {

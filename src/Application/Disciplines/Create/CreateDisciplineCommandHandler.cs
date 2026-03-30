@@ -1,7 +1,7 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.College.DepartmentAggregate;
-using Domain.College.DisciplineAggregate;
+using Domain.College.Departments;
+using Domain.College.Disciplines;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -12,7 +12,6 @@ internal sealed class CreateDisciplineCommandHandler(IApplicationDbContext conte
 {
     public async Task<Result<Guid>> Handle(CreateDisciplineCommand command, CancellationToken cancellationToken)
     {
-        // 1. Проверяем существование кафедры
         bool departmentExists = await context.Departments
             .AnyAsync(d => d.Id == command.DepartmentId, cancellationToken);
 
@@ -20,16 +19,14 @@ internal sealed class CreateDisciplineCommandHandler(IApplicationDbContext conte
         {
             return Result.Failure<Guid>(DepartmentErrors.NotFound(command.DepartmentId));
         }
-
-        // 2. Создаем дисциплину
+        
         Result<Discipline> disciplineResult = Discipline.Create(command.Name, command.DepartmentId);
 
         if (disciplineResult.IsFailure)
         {
             return Result.Failure<Guid>(disciplineResult.Error);
         }
-
-        // 3. Сохраняем
+        
         context.Disciplines.Add(disciplineResult.Value);
         await context.SaveChangesAsync(cancellationToken);
 

@@ -1,7 +1,7 @@
 ﻿using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.UserAggregate;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 

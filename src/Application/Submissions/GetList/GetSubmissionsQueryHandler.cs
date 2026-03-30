@@ -1,6 +1,6 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.Questionnaires.SubmissionAggregate;
+using Domain.Questionnaires.Submissions;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -9,7 +9,9 @@ namespace Application.Submissions.GetList;
 internal sealed class GetSubmissionsQueryHandler(IApplicationDbContext context)
     : IQueryHandler<GetSubmissionsQuery, List<SubmissionResponse>>
 {
-    public async Task<Result<List<SubmissionResponse>>> Handle(GetSubmissionsQuery query, CancellationToken cancellationToken)
+    public async Task<Result<List<SubmissionResponse>>> Handle(
+        GetSubmissionsQuery query, 
+        CancellationToken cancellationToken)
     {
         IQueryable<Submission> submissionsQuery = context.Submissions.AsQueryable();
 

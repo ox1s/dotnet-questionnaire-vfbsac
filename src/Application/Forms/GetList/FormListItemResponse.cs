@@ -1,4 +1,4 @@
-using Domain.Questionnaires.FormAggregate;
+using Domain.Questionnaires.Forms;
 
 namespace Application.Forms.GetList;
 

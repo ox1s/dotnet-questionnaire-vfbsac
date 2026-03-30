@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.College.Department;
+namespace Domain.College.Departments;
 
 public static class DepartmentErrors
 {

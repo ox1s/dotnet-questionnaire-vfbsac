@@ -1,4 +1,4 @@
-using Domain.Questionnaires.FormAggregate;
+using Domain.Questionnaires.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

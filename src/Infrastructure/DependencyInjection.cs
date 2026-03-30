@@ -18,6 +18,7 @@ using Infrastructure.Reports;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Application.Abstractions.Reports;
 using Infrastructure.Users;
+using Infrastructure.Authorization;
 
 namespace Infrastructure;
 
@@ -38,7 +39,6 @@ public static class DependencyInjection
         services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
         services.AddScoped<IReportGenerator, WordReportGenerator>();
-        services.AddScoped<IStudentImporter, StudentImporter>();
 
         services.AddScoped<DbInitializer>();
 
@@ -95,6 +95,9 @@ public static class DependencyInjection
     private static IServiceCollection AddAuthorizationInternal(this IServiceCollection services)
     {
         services.AddAuthorization();
+        services.AddScoped<PermissionProvider>();
+        services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
+        services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 
         return services;
     }

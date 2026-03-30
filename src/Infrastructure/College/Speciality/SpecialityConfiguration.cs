@@ -1,12 +1,11 @@
-using Domain.College.Speciality;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.College.SpecialityAggregate;
+namespace Infrastructure.College.Speciality;
 
-internal sealed class SpecialityConfiguration : IEntityTypeConfiguration<Speciality>
+internal sealed class SpecialityConfiguration : IEntityTypeConfiguration<Domain.College.Specialities.Speciality>
 {
-    public void Configure(EntityTypeBuilder<Speciality> builder)
+    public void Configure(EntityTypeBuilder<Domain.College.Specialities.Speciality> builder)
     {
         builder.HasKey(s => s.Id);
 

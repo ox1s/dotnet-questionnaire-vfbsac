@@ -2,7 +2,7 @@
 using System.Threading;
 using Application.Abstractions.Messaging;
 using Application.Users.AdminSetPassword;
-using Domain.UserAggregate;
+using Domain.User;
 using Microsoft.AspNetCore.Routing;
 using SharedKernel;
 using Web.Api.Extensions;
@@ -13,7 +13,6 @@ namespace Web.Api.Endpoints.Users;
 
 internal sealed class AdminSetPassword : IEndpoint
 {
-    // DTO запроса
     public sealed record Request(Guid UserId, string NewPassword);
 
     public void MapEndpoint(IEndpointRouteBuilder app)
@@ -24,7 +23,6 @@ internal sealed class AdminSetPassword : IEndpoint
                 ICommandHandler<AdminSetPasswordCommand> handler,
                 CancellationToken cancellationToken) =>
             {
-                // Проверка: ID в URL и в теле должны совпадать (или берем из URL)
                 var command = new AdminSetPasswordCommand(userId, request.NewPassword);
 
                 Result result = await handler.Handle(command, cancellationToken);

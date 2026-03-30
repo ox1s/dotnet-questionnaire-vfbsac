@@ -1,5 +1,5 @@
 using Application.Abstractions.Messaging;
-using Domain.Questionnaires.FormAggregate;
+using Domain.Questionnaires.Forms;
 
 namespace Application.Forms.Create;
 
@@ -8,8 +8,3 @@ public sealed record CreateFormCommand(
     List<FilterField>? RequiredFilters = null,
     List<QuestionRequest>? Questions = null)
     : ICommand<Guid>;
-
-public sealed record QuestionRequest(
-    string Text,
-    QuestionType Type,
-    int Order);

@@ -1,4 +1,4 @@
-using Domain.Questionnaires.SubmissionAggregate;
+using Domain.Questionnaires.Submissions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

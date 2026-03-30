@@ -1,7 +1,6 @@
 using SharedKernel;
-using Success = OneOf.Types.Success;
 
-namespace Domain.Questionnaires.Submission;
+namespace Domain.Questionnaires.Submissions;
 
 public sealed class Submission : Entity
 {

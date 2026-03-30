@@ -1,7 +1,7 @@
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.UserAggregate;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -14,7 +14,7 @@ internal sealed class CreateStaffUserCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateStaffUserCommand command, CancellationToken cancellationToken)
     {
-        Result<Domain.UserAggregate.Login> loginResult = Domain.UserAggregate.Login.Create(command.Login);
+        Result<Login> loginResult = Login.Create(command.Login);
         if (loginResult.IsFailure)
         {
             return Result.Failure<Guid>(loginResult.Error);
@@ -22,7 +22,7 @@ internal sealed class CreateStaffUserCommandHandler(
 
         if (await context.Users.AnyAsync(u => u.Login.Value == loginResult.Value.Value, cancellationToken))
         {
-            return Result.Failure<Guid>(UserErrors.Conflict("Users.Exists", "Логин занят"));
+            return Result.Failure<Guid>(UserErrors.UserExist());
         }
 
         string hash = passwordHasher.Hash(command.Password);

@@ -46,7 +46,7 @@ export interface SubmissionListItem {
   context: {
     disciplineId?: string;
     teacherId?: string;
-    departmenId?: string;
+    departmentId?: string;
     specialityId?: string;
     specializationId?: string;
     organizationName?: string;
@@ -59,11 +59,9 @@ export interface SubmissionListItem {
 export const usersApi = {
   createGroup: (groupName: string, password: string) =>
     api.post<string>("/users/groups", { groupName, password }),
-
   getGroups: () => api.get<GroupUser[]>("/users/groups"),
 
   deleteUser: (id: string) => api.delete(`/users/${id}`),
-
   updateUser: (id: string, login: string, displayName: string) =>
     api.put(`/users/${id}`, { login, displayName }),
 
@@ -79,15 +77,26 @@ export const dictionariesApi = {
   getDepartments: () => api.get<DictionaryItem[]>("/dictionaries/departments"),
   getTeachers: () => api.get<TeacherItem[]>("/dictionaries/teachers"),
   getDisciplines: () => api.get<DictionaryItem[]>("/dictionaries/disciplines"),
+  getSpecialities: () =>
+    api.get<DictionaryItem[]>("/dictionaries/specialities"),
+  getSpecializations: () =>
+    api.get<DictionaryItem[]>("/dictionaries/specializations"),
+
   createTeacher: (fullName: string, departmentId: string) =>
     api.post<string>("/teachers", { fullName, departmentId }),
   createDiscipline: (name: string, departmentId: string) =>
     api.post<string>("/disciplines", { name, departmentId }),
   createDepartment: (name: string) =>
     api.post<string>("/departments", { name }),
+  createSpeciality: (name: string) =>
+    api.post<string>("/specialities", { name }),
+  createSpecialization: (name: string, specializationId: string) =>
+    api.post<string>("/specializations", { name, specializationId }),
   deleteDepartment: (id: string) => api.delete(`/departments/${id}`),
   deleteTeacher: (id: string) => api.delete(`/teachers/${id}`),
   deleteDiscipline: (id: string) => api.delete(`/disciplines/${id}`),
+  deleteSpeciality: (id: string) => api.delete(`/specialities/${id}`),
+  deleteSpecialization: (id: string) => api.delete(`/specializations/${id}`),
 
   updateDepartment: (id: string, name: string) =>
     api.put(`/departments/${id}`, { departmentId: id, name }),
@@ -97,6 +106,12 @@ export const dictionariesApi = {
 
   updateDiscipline: (id: string, name: string, departmentId: string) =>
     api.put(`/disciplines/${id}`, { name, departmentId }),
+
+  updateSpeciality: (id: string, name: string) =>
+    api.put(`/specialities/${id}`, { name }),
+
+  updateSpecialization: (id: string, name: string, specializationId: string) =>
+    api.put(`/specializations/${id}`, { name, specializationId }),
 };
 
 export const submissionsApi = {

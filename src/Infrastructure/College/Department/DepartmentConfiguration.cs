@@ -1,12 +1,11 @@
-using Domain.College.Department;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.College.DepartmentAggregate;
+namespace Infrastructure.College.Department;
 
-internal sealed class DepartmentConfiguration : IEntityTypeConfiguration<Department>
+internal sealed class DepartmentConfiguration : IEntityTypeConfiguration<Domain.College.Departments.Department>
 {
-    public void Configure(EntityTypeBuilder<Department> builder)
+    public void Configure(EntityTypeBuilder<Domain.College.Departments.Department> builder)
     {
         builder.HasKey(d => d.Id);
 

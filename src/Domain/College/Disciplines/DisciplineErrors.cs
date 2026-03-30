@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.College.DisciplineAggregate;
+namespace Domain.College.Disciplines;
 
 public static class DisciplineErrors
 {

@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.UserAggregate;
+namespace Domain.User;
 
 public static class UserErrors
 {
@@ -23,7 +23,15 @@ public static class UserErrors
     public static Error ExpiredResetToken() => Error.Validation(
         "Users.ExpiredResetToken",
         "The password reset token has expired.");
+    
+    public static Error UserExist() => Error.Conflict(
+        "Users.UserExists",
+        "User already exists.");
+    public static Error GroupExists(string login) => Error.Conflict(
+        "Users.GroupExists", 
+        $"Group with {login} already exists");
 
-    public static Error Conflict(string code, string description) =>
-        Error.Conflict(code, description);
+    public static Error GroupNameInvalid() => Error.Failure(
+        "Users.GroupNameInvalid",
+        "Group name is invalid (should be less than 5 characters).");
 }

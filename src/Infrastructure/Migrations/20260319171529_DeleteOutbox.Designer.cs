@@ -311,7 +311,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("submissions", "public");
                 });
 
-            modelBuilder.Entity("Domain.UserAggregate.User", b =>
+            modelBuilder.Entity("Domain.User.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -458,9 +458,9 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.UserAggregate.User", b =>
+            modelBuilder.Entity("Domain.User.User", b =>
                 {
-                    b.OwnsOne("Domain.UserAggregate.Login", "Login", b1 =>
+                    b.OwnsOne("Domain.User.Login", "Login", b1 =>
                         {
                             b1.Property<Guid>("UserId")
                                 .HasColumnType("uuid")

@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.Questionnaires.Submission;
+namespace Domain.Questionnaires.Submissions;
 
 public sealed class Answer : Entity, ISoftDeletable
 {

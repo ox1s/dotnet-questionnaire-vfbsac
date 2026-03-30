@@ -25,7 +25,7 @@ internal sealed class Create : IEndpoint
 
             return Results.Ok(result.Value);
         })
-        .WithTags("Teachers") // Группировка в Swagger
+        .WithTags("Teachers") 
         .HasPermission(Permissions.Admin);
     }
 }

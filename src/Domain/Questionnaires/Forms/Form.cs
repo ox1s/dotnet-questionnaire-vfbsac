@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.Questionnaires.Form;
+namespace Domain.Questionnaires.Forms;
 
 public sealed class Form : Entity, ISoftDeletable
 {

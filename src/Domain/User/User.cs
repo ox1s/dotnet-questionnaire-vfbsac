@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using SharedKernel;
 using Throw;
 
-namespace Domain.UserAggregate;
+namespace Domain.User;
 
 public sealed class User : Entity, ISoftDeletable
 {
@@ -21,6 +21,7 @@ public sealed class User : Entity, ISoftDeletable
 
 
     private User() { } // EF Core
+
     public static Result<User> CreateGroupUser(
         GroupName groupName,
         Guid groupId,
@@ -39,6 +40,7 @@ public sealed class User : Entity, ISoftDeletable
             IsActive = true
         };
     }
+
     public static Result<User> CreateStaff(
         Login login,
         string fullName,
@@ -60,6 +62,7 @@ public sealed class User : Entity, ISoftDeletable
             PasswordHash = passwordHash,
             Role = role,
             TeacherId = teacherId,
+            DepartmentId = departmentId ?? null,
             GroupId = null,
             OrganizationName = null,
             IsActive = true
@@ -90,6 +93,7 @@ public sealed class User : Entity, ISoftDeletable
         {
             return Result.Failure(Error.NullValue);
         }
+
         Login = login;
         DisplayName = displayName;
 

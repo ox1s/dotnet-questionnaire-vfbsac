@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.College.Teacher;
+namespace Domain.College.Teachers;
 
 public static class TeacherErrors
 {

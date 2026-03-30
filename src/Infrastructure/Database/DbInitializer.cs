@@ -1,11 +1,11 @@
 using System.Reflection;
 using Application.Abstractions.Authentication;
-using Domain.College.DepartmentAggregate;
-using Domain.College.DisciplineAggregate;
-using Domain.College.SpecialityAggregate;
-using Domain.College.SpecializationAggregate;
-using Domain.Questionnaires.FormAggregate;
-using Domain.UserAggregate;
+using Domain.College.Departments;
+using Domain.College.Disciplines;
+using Domain.College.Specialities;
+using Domain.College.Specializations;
+using Domain.Questionnaires.Forms;
+using Domain.User;
 using Infrastructure.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -81,11 +81,11 @@ public class DbInitializer(
             (8, "Радиосистемы охраны", 3),
             (10, "Орг. торговли почтой", 2)
         };
-        foreach ((int Id, string Name, int SpecId) item in speczData)
+        foreach ((int id, string name, int specId) in speczData)
         {
-            Specialization s = Specialization.Create(item.Name, specs[item.SpecId].Id).Value;
+            Specialization s = Specialization.Create(name, specs[specId].Id).Value;
             context.Specializations.Add(s);
-            specializations.Add(item.Id, s);
+            specializations.Add(id, s);
         }
         await context.SaveChangesAsync();
 
@@ -123,13 +123,13 @@ public class DbInitializer(
             context.Users.Add(u);
         }
 
-        if (depts.TryGetValue(2, out Department? deptICT))
+        if (depts.TryGetValue(2, out Department? deptIct))
         {
             User staffUser = User.CreateStaff(
                 Login.Create("HEAD_ICT").Value,
                 "Зав. Кафедрой ИКТ",
                 teacherId: null,
-                departmentId: deptICT.Id,
+                departmentId: deptIct.Id,
                 passwordHash: defaultPass,
                 role: UserRole.DeputyHead
             ).Value;

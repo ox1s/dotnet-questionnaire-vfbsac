@@ -1,6 +1,6 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.Questionnaires.FormAggregate;
+using Domain.Questionnaires.Forms;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -9,7 +9,9 @@ namespace Application.Reports.Queries.GetComparative;
 internal sealed class GetComparativeReportQueryHandler(IApplicationDbContext context)
     : IQueryHandler<GetComparativeReportQuery, List<ComparativeReportResponse>>
 {
-    public async Task<Result<List<ComparativeReportResponse>>> Handle(GetComparativeReportQuery query, CancellationToken cancellationToken)
+    public async Task<Result<List<ComparativeReportResponse>>> Handle(
+        GetComparativeReportQuery query, 
+        CancellationToken cancellationToken)
     {
         Form? form = await context.Forms
             .Include(f => f.Questions)
@@ -17,14 +19,16 @@ internal sealed class GetComparativeReportQueryHandler(IApplicationDbContext con
 
         if (form is null)
         {
-            return Result.Failure<List<ComparativeReportResponse>>(Error.NotFound("Form.NotFound", "Form not found"));
+            return Result.Failure<List<ComparativeReportResponse>>(Error.NotFound(
+                "Form.NotFound", 
+                "Form not found"));
         }
 
         var questions = form.Questions
-            .Where(q => q.Type == QuestionType.Number || q.Type == QuestionType.Rating)
+            .Where(q => q.Type is QuestionType.Number or QuestionType.Rating)
             .OrderBy(q => q.Order)
             .ToList();
-
+        // TODO: Мда аллокации...
         Dictionary<Guid, decimal?> statsA = await context.Submissions
             .Where(s => s.FormId == query.FormId && s.SubmittedAt >= query.PeriodA_Start && s.SubmittedAt <= query.PeriodA_End)
             .SelectMany(s => s.Answers)

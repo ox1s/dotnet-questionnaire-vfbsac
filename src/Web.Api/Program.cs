@@ -1,7 +1,7 @@
 using System.Reflection;
 using Application;
 using Application.Abstractions.Authentication;
-using Domain.UserAggregate;
+using Domain.User;
 using HealthChecks.UI.Client;
 using Infrastructure;
 using Infrastructure.Database;

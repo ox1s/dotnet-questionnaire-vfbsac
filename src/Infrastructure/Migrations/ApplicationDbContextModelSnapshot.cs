@@ -23,7 +23,7 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Domain.College.DepartmentAggregate.Department", b =>
+            modelBuilder.Entity("Domain.College.Departments.Department", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -50,7 +50,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("departments", "public");
                 });
 
-            modelBuilder.Entity("Domain.College.DisciplineAggregate.Discipline", b =>
+            modelBuilder.Entity("Domain.College.Disciplines.Discipline", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -84,7 +84,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("disciplines", "public");
                 });
 
-            modelBuilder.Entity("Domain.College.SpecialityAggregate.Speciality", b =>
+            modelBuilder.Entity("Domain.College.Specialities.Speciality", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -107,7 +107,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("specialities", "public");
                 });
 
-            modelBuilder.Entity("Domain.College.SpecializationAggregate.Specialization", b =>
+            modelBuilder.Entity("Domain.College.Specializations.Specialization", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -119,11 +119,12 @@ namespace Infrastructure.Migrations
                         .HasColumnName("is_deleted");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
-                    b.Property<Guid?>("SpecialityId")
+                    b.Property<Guid>("SpecialityId")
                         .HasColumnType("uuid")
                         .HasColumnName("speciality_id");
 
@@ -133,7 +134,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("specializations", "public");
                 });
 
-            modelBuilder.Entity("Domain.College.TeacherAggregate.Teacher", b =>
+            modelBuilder.Entity("Domain.College.Teachers.Teacher", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -160,7 +161,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("teachers", "public");
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.FormAggregate.Form", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Forms.Form", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -191,7 +192,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("forms", "public");
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.FormAggregate.Question", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Forms.Question", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -230,7 +231,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("question", "public");
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.SubmissionAggregate.Answer", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Submissions.Answer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -274,7 +275,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("answer", "public");
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.SubmissionAggregate.Submission", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Submissions.Submission", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -308,7 +309,7 @@ namespace Infrastructure.Migrations
                     b.ToTable("submissions", "public");
                 });
 
-            modelBuilder.Entity("Domain.UserAggregate.User", b =>
+            modelBuilder.Entity("Domain.User.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -364,9 +365,9 @@ namespace Infrastructure.Migrations
                     b.ToTable("users", "public");
                 });
 
-            modelBuilder.Entity("Domain.College.DisciplineAggregate.Discipline", b =>
+            modelBuilder.Entity("Domain.College.Disciplines.Discipline", b =>
                 {
-                    b.HasOne("Domain.College.DepartmentAggregate.Department", null)
+                    b.HasOne("Domain.College.Departments.Department", null)
                         .WithMany()
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -374,9 +375,9 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("fk_disciplines_departments_department_id");
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.FormAggregate.Question", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Forms.Question", b =>
                 {
-                    b.HasOne("Domain.Questionnaires.FormAggregate.Form", null)
+                    b.HasOne("Domain.Questionnaires.Forms.Form", null)
                         .WithMany("Questions")
                         .HasForeignKey("FormId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -384,9 +385,9 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("fk_question_forms_form_id");
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.SubmissionAggregate.Answer", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Submissions.Answer", b =>
                 {
-                    b.HasOne("Domain.Questionnaires.SubmissionAggregate.Submission", null)
+                    b.HasOne("Domain.Questionnaires.Submissions.Submission", null)
                         .WithMany("Answers")
                         .HasForeignKey("SubmissionId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -394,9 +395,9 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("fk_answer_submissions_submission_id");
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.SubmissionAggregate.Submission", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Submissions.Submission", b =>
                 {
-                    b.OwnsOne("Domain.Questionnaires.SubmissionAggregate.SubmissionContext", "Context", b1 =>
+                    b.OwnsOne("Domain.Questionnaires.Submissions.SubmissionContext", "Context", b1 =>
                         {
                             b1.Property<Guid>("SubmissionId")
                                 .HasColumnType("uuid")
@@ -455,9 +456,9 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.UserAggregate.User", b =>
+            modelBuilder.Entity("Domain.User.User", b =>
                 {
-                    b.OwnsOne("Domain.UserAggregate.Login", "Login", b1 =>
+                    b.OwnsOne("Domain.User.Login", "Login", b1 =>
                         {
                             b1.Property<Guid>("UserId")
                                 .HasColumnType("uuid")
@@ -482,12 +483,12 @@ namespace Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.FormAggregate.Form", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Forms.Form", b =>
                 {
                     b.Navigation("Questions");
                 });
 
-            modelBuilder.Entity("Domain.Questionnaires.SubmissionAggregate.Submission", b =>
+            modelBuilder.Entity("Domain.Questionnaires.Submissions.Submission", b =>
                 {
                     b.Navigation("Answers");
                 });

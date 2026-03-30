@@ -1,7 +1,7 @@
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.UserAggregate;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -14,24 +14,21 @@ internal sealed class CreateGroupUserCommandHandler(
 {
     public async Task<Result<Guid>> Handle(CreateGroupUserCommand command, CancellationToken cancellationToken)
     {
-        // 1. Валидация имени группы (Domain Value Object)
         Result<GroupName> groupNameResult = GroupName.Create(command.GroupName);
         if (groupNameResult.IsFailure)
         {
             return Result.Failure<Guid>(groupNameResult.Error);
         }
+        GroupName groupName = groupNameResult.Value;    
+        string login = groupName.Value;
 
-        // 2. Проверка на уникальность логина
-        // Логин группы = Название группы
-        string login = groupNameResult.Value.Value;
-
-        bool exists = await context.Users.AnyAsync(u => u.Login.Value == login, cancellationToken);
+        bool exists = await context.Users
+            .AnyAsync(u => u.Login.Value == login, cancellationToken);
         if (exists)
         {
-            return Result.Failure<Guid>(UserErrors.Conflict("Users.GroupExists", $"Группа {login} уже существует"));
+            return Result.Failure<Guid>(UserErrors.GroupExists(login));
         }
-
-        // 3. Хеширование пароля
+        
         string passwordHash = passwordHasher.Hash(command.Password);
 
         Result<User> userResult = User.CreateGroupUser(groupNameResult.Value, Guid.NewGuid(), passwordHash);

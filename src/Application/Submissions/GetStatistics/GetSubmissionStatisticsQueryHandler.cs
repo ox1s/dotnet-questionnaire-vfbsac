@@ -1,80 +1,69 @@
 using Application.Abstractions.Authentication;
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.Questionnaires.FormAggregate;
-using Domain.Questionnaires.SubmissionAggregate;
-using Domain.UserAggregate;
+using Domain.Questionnaires.Forms;
+using Domain.Questionnaires.Submissions;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
 namespace Application.Submissions.GetStatistics;
 
 internal sealed class GetSubmissionStatisticsQueryHandler(
-    IApplicationDbContext context,
-    IUserContext userContext)
+    IApplicationDbContext context)
     : IQueryHandler<GetSubmissionStatisticsQuery, SubmissionStatisticsResponse>
 {
+    // TODO: Выколите глаза. Сервис в домене. Оптимизация
     public async Task<Result<SubmissionStatisticsResponse>> Handle(
         GetSubmissionStatisticsQuery query,
         CancellationToken cancellationToken)
     {
-        // 1. Проверка прав пользователя
-        User? currentUser = await context.Users
-            .AsNoTracking()
-            .FirstOrDefaultAsync(u => u.Id == userContext.UserId, cancellationToken);
-
-        if (currentUser is null)
-        {
-            return Result.Failure<SubmissionStatisticsResponse>(UserErrors.NotFound(userContext.UserId));
-        }
-
-        // 2. Получение формы и структуры вопросов
         Form? form = await context.Forms
             .Include(f => f.Questions)
             .FirstOrDefaultAsync(f => f.Id == query.FormId, cancellationToken);
 
         if (form is null)
         {
-            return Result.Failure<SubmissionStatisticsResponse>(FormErrors.NotFound(query.FormId));
+            return Result.Failure<SubmissionStatisticsResponse>(
+                FormErrors.NotFound(query.FormId));
         }
-
-        // 3. Формирование базового запроса с фильтрами
-        IQueryable<Submission> submissionsQuery = context.Submissions.Where(s => s.FormId == query.FormId);
-
-        // Фильтр для зам. кафедры (видит только свою кафедру)
-        if (currentUser.Role == UserRole.DeputyHead && currentUser.DepartmentId.HasValue)
-        {
-            submissionsQuery = submissionsQuery.Where(s => s.Context.DepartmentId == currentUser.DepartmentId.Value);
-        }
-
-        // Фильтры из запроса
+        
+        IQueryable<Submission> submissionsQuery = context.Submissions
+            .Where(s => s.FormId == query.FormId);
+        
         if (query.DisciplineId.HasValue)
         {
-            submissionsQuery = submissionsQuery.Where(s => s.Context.DisciplineId == query.DisciplineId);
+            submissionsQuery = submissionsQuery
+                .Where(s => s.Context.DisciplineId == query.DisciplineId);
         }
         if (query.TeacherId.HasValue)
         {
-            submissionsQuery = submissionsQuery.Where(s => s.Context.TeacherId == query.TeacherId);
+            submissionsQuery = submissionsQuery
+                .Where(s => s.Context.TeacherId == query.TeacherId);
         }
         if (query.DepartmentId.HasValue)
         {
-            submissionsQuery = submissionsQuery.Where(s => s.Context.DepartmentId == query.DepartmentId);
+            submissionsQuery = submissionsQuery
+                .Where(s => s.Context.DepartmentId == query.DepartmentId);
         }
         if (query.SpecialityId.HasValue)
         {
-            submissionsQuery = submissionsQuery.Where(s => s.Context.SpecialityId == query.SpecialityId);
+            submissionsQuery = submissionsQuery
+                .Where(s => s.Context.SpecialityId == query.SpecialityId);
         }
         if (query.SpecializationId.HasValue)
         {
-            submissionsQuery = submissionsQuery.Where(s => s.Context.SpecializationId == query.SpecializationId);
+            submissionsQuery = submissionsQuery
+                .Where(s => s.Context.SpecializationId == query.SpecializationId);
         }
         if (!string.IsNullOrWhiteSpace(query.OrganizationName))
         {
-            submissionsQuery = submissionsQuery.Where(s => s.Context.OrganizationName != null &&
-                s.Context.OrganizationName.Contains(query.OrganizationName));
+            submissionsQuery = submissionsQuery
+                .Where(s => 
+                    s.Context.OrganizationName != null 
+                    && s.Context.OrganizationName.Contains(query.OrganizationName));
         }
 
-        // 4. Подсчет общего количества анкет (быстрая операция в БД)
         int totalSubmissions = await submissionsQuery.CountAsync(cancellationToken);
 
         if (totalSubmissions == 0)
@@ -90,9 +79,7 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
                 OverallStandardDeviation = 0
             };
         }
-
-        // 5. Выгрузка данных для статистики (Оптимизация памяти)
-        // Загружаем только необходимые поля, а не всю сущность Submission
+        
         var answersData = await submissionsQuery
             .SelectMany(s => s.Answers)
             .Where(a => a.NumericValue != null) // Исключаем текстовые ответы

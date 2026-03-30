@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.College.Speciality;
+namespace Domain.College.Specialities;
 
 public static class SpecialityErrors
 {

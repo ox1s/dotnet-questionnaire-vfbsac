@@ -1,13 +1,12 @@
-using Domain.College.Department;
-using Domain.College.Discipline;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.College.DisciplineAggregate;
+namespace Infrastructure.College.Discipline;
 
-internal sealed class DisciplineConfiguration : IEntityTypeConfiguration<Discipline>
+internal sealed class DisciplineConfiguration
+    : IEntityTypeConfiguration<Domain.College.Disciplines.Discipline>
 {
-    public void Configure(EntityTypeBuilder<Discipline> builder)
+    public void Configure(EntityTypeBuilder<Domain.College.Disciplines.Discipline> builder)
     {
         builder.HasKey(d => d.Id);
 
@@ -16,14 +15,14 @@ internal sealed class DisciplineConfiguration : IEntityTypeConfiguration<Discipl
             .HasMaxLength(255);
 
         builder.Property(d => d.DepartmentId)
-        .IsRequired();
+            .IsRequired();
 
         builder.HasIndex(d => d.Name)
             .IsUnique();
 
-        builder.HasOne<Department>()
-        .WithMany()
-        .HasForeignKey(d => d.DepartmentId)
-        .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<Domain.College.Departments.Department>()
+            .WithMany()
+            .HasForeignKey(d => d.DepartmentId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

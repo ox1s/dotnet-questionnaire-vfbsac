@@ -1,6 +1,6 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
-using Domain.College.DepartmentAggregate;
+using Domain.College.Departments;
 using SharedKernel;
 
 namespace Application.Departments.Create;

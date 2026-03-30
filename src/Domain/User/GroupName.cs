@@ -1,6 +1,6 @@
 using SharedKernel;
 
-namespace Domain.UserAggregate;
+namespace Domain.User;
 
 public sealed record GroupName(string Value)
 {
@@ -12,7 +12,7 @@ public sealed record GroupName(string Value)
         }
         if (value.Length != 5)
         {
-            return Result.Failure<GroupName>(Error.Failure("Users.GroupNameInvalid", "Название группы должно быть 5 символов"));
+            return Result.Failure<GroupName>(UserErrors.GroupNameInvalid());
         }
 
         return new GroupName(value.Trim().ToUpperInvariant());

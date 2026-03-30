@@ -33,7 +33,6 @@ export interface DictionaryItem {
 export interface TeacherItem {
   id: string;
   fullName: string;
-  departmentId: string;
   isDeleted?: boolean;
 }
 
@@ -89,8 +88,7 @@ export const dictionariesApi = {
   getSpecializations: () =>
     api.get<DictionaryItem[]>("/dictionaries/specializations"),
 
-  createTeacher: (fullName: string, departmentId: string) =>
-    api.post<string>("/teachers", { fullName, departmentId }),
+  createTeacher: (fullName: string) => api.post<string>("/teachers", { fullName }),
   createDiscipline: (name: string, departmentId: string) =>
     api.post<string>("/disciplines", { name, departmentId }),
   createDepartment: (name: string) =>
@@ -114,8 +112,8 @@ export const dictionariesApi = {
   updateDepartment: (id: string, name: string) =>
     api.put(`/departments/${id}`, { departmentId: id, name }),
 
-  updateTeacher: (id: string, fullName: string, departmentId: string) =>
-    api.put(`/teachers/${id}`, { fullName, departmentId }),
+  updateTeacher: (id: string, fullName: string) =>
+    api.put(`/teachers/${id}`, { fullName }),
 
   updateDiscipline: (id: string, name: string, departmentId: string) =>
     api.put(`/disciplines/${id}`, { name, departmentId }),

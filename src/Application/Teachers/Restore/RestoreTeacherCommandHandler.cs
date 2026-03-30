@@ -20,14 +20,6 @@ internal sealed class RestoreTeacherCommandHandler(IApplicationDbContext context
             return Result.Failure(TeacherErrors.NotFound(command.TeacherId));
         }
 
-        bool departmentExists = await context.Departments
-            .AnyAsync(d => d.Id == teacher.DepartmentId, cancellationToken);
-
-        if (!departmentExists)
-        {
-            return Result.Failure(TeacherErrors.DepartmentDeleted(teacher.DepartmentId));
-        }
-
         teacher.IsDeleted = false;
         await context.SaveChangesAsync(cancellationToken);
 

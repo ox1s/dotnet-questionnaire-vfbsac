@@ -1,5 +1,4 @@
 using SharedKernel;
-using Throw;
 
 namespace Domain.College.Teachers;
 
@@ -8,20 +7,17 @@ public sealed class Teacher : Entity, ISoftDeletable
     public string FullName { get; private set; }
     public bool IsDeleted { get; set; }
 
-    public Guid DepartmentId { get; private set; }
-
     private Teacher() { } // EF Core
-    private Teacher(Guid id, string fullName, Guid departmentId) : base(id)
+    private Teacher(Guid id, string fullName) : base(id)
     {
         FullName = fullName;
-        DepartmentId = departmentId;
     }
 
-    public static Result<Teacher> Create(string fullName, Guid departmentId)
+    public static Result<Teacher> Create(string fullName)
     {
         return string.IsNullOrWhiteSpace(fullName)
             ? Result.Failure<Teacher>(Error.NullValue)
-            : new Teacher(Guid.NewGuid(), fullName.Trim(), departmentId);
+            : new Teacher(Guid.NewGuid(), fullName.Trim());
     }
 
     public Result UpdateFullName(string fullName)
@@ -33,11 +29,5 @@ public sealed class Teacher : Entity, ISoftDeletable
 
         FullName = fullName.Trim();
         return Result.Success();
-    }
-
-    public void ChangeDepartment(Guid departmentId)
-    {
-        departmentId.ThrowIfNull();
-        DepartmentId = departmentId;
     }
 }

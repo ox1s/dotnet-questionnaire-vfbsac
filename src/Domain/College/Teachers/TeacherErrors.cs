@@ -11,8 +11,4 @@ public static class TeacherErrors
     public static Error HasUsers() => Error.Conflict(
         "Teachers.HasUsers",
         "К преподавателю привязаны пользователи, поэтому сначала уберите их.");
-
-    public static Error DepartmentDeleted(Guid departmentId) => Error.Conflict(
-        "Teachers.DepartmentDeleted",
-        $"Нельзя восстановить преподавателя, пока кафедра '{departmentId}' удалена.");
 }

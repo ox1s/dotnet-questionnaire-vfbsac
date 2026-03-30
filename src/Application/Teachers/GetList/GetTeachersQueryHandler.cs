@@ -15,7 +15,7 @@ internal sealed class GetTeachersQueryHandler(IApplicationDbContext context)
             .AsNoTracking()
             .OrderBy(t => t.IsDeleted)
             .ThenBy(t => t.FullName)
-            .Select(t => new TeacherResponse(t.Id, t.FullName, t.DepartmentId, t.IsDeleted))
+            .Select(t => new TeacherResponse(t.Id, t.FullName, t.IsDeleted))
             .ToListAsync(cancellationToken);
 
         return teachers;

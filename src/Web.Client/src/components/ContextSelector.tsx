@@ -17,6 +17,7 @@ export const ContextSelector: React.FC<Props> = ({
   requiredFilters,
   onChange,
 }) => {
+  const [departments, setDepartments] = useState<DictionaryItem[]>([]);
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [disciplines, setDisciplines] = useState<DictionaryItem[]>([]);
 
@@ -32,13 +33,17 @@ export const ContextSelector: React.FC<Props> = ({
 
       try {
         // Загружаем только то, что нужно анкете
+        if (requiredFilters.includes("Department")) {
+          const res = await dictionariesApi.getDepartments();
+          setDepartments(res.data.filter((item) => !item.isDeleted));
+        }
         if (requiredFilters.includes("Teacher")) {
           const res = await dictionariesApi.getTeachers();
-          setTeachers(res.data);
+          setTeachers(res.data.filter((item) => !item.isDeleted));
         }
         if (requiredFilters.includes("Discipline")) {
           const res = await dictionariesApi.getDisciplines();
-          setDisciplines(res.data);
+          setDisciplines(res.data.filter((item) => !item.isDeleted));
         }
       } catch (e) {
         console.error("Ошибка загрузки справочников", e);
@@ -53,8 +58,36 @@ export const ContextSelector: React.FC<Props> = ({
   }, [context, onChange]);
 
   const handleChange = (field: keyof SubmissionContext, value: string) => {
-    setContext((prev) => ({ ...prev, [field]: value }));
+    setContext((prev) => {
+      if (field === "departmentId") {
+        const nextDepartmentId = value || undefined;
+        const nextDisciplineId =
+          prev.disciplineId &&
+          disciplines.some(
+            (discipline) =>
+              discipline.id === prev.disciplineId &&
+              discipline.departmentId === nextDepartmentId,
+          )
+            ? prev.disciplineId
+            : undefined;
+
+        return {
+          ...prev,
+          departmentId: nextDepartmentId,
+          disciplineId: nextDisciplineId,
+        };
+      }
+
+      return { ...prev, [field]: value || undefined };
+    });
   };
+
+  const filteredDisciplines =
+    requiredFilters?.includes("Department") && context.departmentId
+      ? disciplines.filter(
+          (discipline) => discipline.departmentId === context.departmentId,
+        )
+      : disciplines;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-blue-100 mb-6">
@@ -75,6 +108,26 @@ export const ContextSelector: React.FC<Props> = ({
           </select>
         </div>
 
+        {requiredFilters?.includes("Department") && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Кафедра
+            </label>
+            <select
+              className="input-field"
+              value={context.departmentId || ""}
+              onChange={(e) => handleChange("departmentId", e.target.value)}
+            >
+              <option value="">-- Выберите кафедру --</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Дисциплина (если требуется) */}
         {requiredFilters?.includes("Discipline") && (
           <div>
@@ -85,9 +138,12 @@ export const ContextSelector: React.FC<Props> = ({
               className="input-field"
               value={context.disciplineId || ""}
               onChange={(e) => handleChange("disciplineId", e.target.value)}
+              disabled={
+                requiredFilters.includes("Department") && !context.departmentId
+              }
             >
               <option value="">-- Выберите дисциплину --</option>
-              {disciplines.map((d) => (
+              {filteredDisciplines.map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name}
                 </option>

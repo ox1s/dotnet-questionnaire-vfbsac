@@ -3,30 +3,23 @@ import {
   dictionariesApi,
   getApiErrorMessage,
   type TeacherItem,
-  type DictionaryItem,
 } from "../api";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { Plus, Search, Edit2, Trash2, RotateCcw } from "lucide-react";
 
 export const AdminTeachersPage = () => {
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
-  const [departments, setDepartments] = useState<DictionaryItem[]>([]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [newName, setNewName] = useState("");
-  const [selectedDept, setSelectedDept] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadData = async () => {
     try {
-      const [teachersRes, deptsRes] = await Promise.all([
-        dictionariesApi.getTeachers(),
-        dictionariesApi.getDepartments(),
-      ]);
+      const teachersRes = await dictionariesApi.getTeachers();
       setTeachers(teachersRes.data);
-      setDepartments(deptsRes.data);
     } catch (e) {
       console.error(e);
     }
@@ -40,20 +33,15 @@ export const AdminTeachersPage = () => {
     t.fullName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const getDeptName = (id: string) =>
-    departments.find((d) => d.id === id)?.name || "-";
-
   const openCreateModal = () => {
     setEditingId(null);
     setNewName("");
-    setSelectedDept("");
     setIsFormOpen(true);
   };
 
   const openEditModal = (t: TeacherItem) => {
     setEditingId(t.id);
     setNewName(t.fullName);
-    setSelectedDept(t.departmentId);
     setIsFormOpen(true);
   };
 
@@ -80,14 +68,13 @@ export const AdminTeachersPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (editingId)
-        await dictionariesApi.updateTeacher(editingId, newName, selectedDept);
-      else await dictionariesApi.createTeacher(newName, selectedDept);
+      if (editingId) await dictionariesApi.updateTeacher(editingId, newName);
+      else await dictionariesApi.createTeacher(newName);
 
       setIsFormOpen(false);
       loadData();
     } catch (e) {
-      alert("Ошибка сохранения");
+      alert(getApiErrorMessage(e, "Ошибка сохранения"));
     }
   };
 
@@ -102,7 +89,7 @@ export const AdminTeachersPage = () => {
   return (
     <AdminLayout
       title="Преподаватели"
-      subtitle="Управление списком преподавателей и их привязкой к кафедрам."
+      subtitle="Управление списком преподавателей."
       actions={
         <button
           onClick={openCreateModal}
@@ -135,9 +122,6 @@ export const AdminTeachersPage = () => {
               <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
                 ФИО
               </th>
-              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Кафедра
-              </th>
               <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider text-right w-12 md:w-24"></th>
             </tr>
           </thead>
@@ -146,9 +130,7 @@ export const AdminTeachersPage = () => {
               <tr
                 key={t.id}
                 className={`group transition-colors ${
-                  t.isDeleted
-                    ? "bg-slate-50/70 text-slate-400"
-                    : "hover:bg-slate-50"
+                  t.isDeleted ? "bg-slate-50/70 text-slate-400" : "hover:bg-slate-50"
                 }`}
               >
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top">
@@ -171,11 +153,6 @@ export const AdminTeachersPage = () => {
                       </span>
                     )}
                   </div>
-                </td>
-                <td className="py-3 px-3 md:py-4 md:px-6 align-top">
-                  <span className="inline-block px-2 py-1 rounded text-[10px] md:text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 line-clamp-3 leading-tight">
-                    {getDeptName(t.departmentId)}
-                  </span>
                 </td>
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top text-right">
                   <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
@@ -218,7 +195,7 @@ export const AdminTeachersPage = () => {
             {filteredTeachers.length === 0 && (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={2}
                   className="p-8 text-center text-slate-400 text-sm"
                 >
                   Ничего не найдено
@@ -250,25 +227,6 @@ export const AdminTeachersPage = () => {
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Например: Иванов И.И."
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
-                  Кафедра
-                </label>
-                <select
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none"
-                  value={selectedDept}
-                  onChange={(e) => setSelectedDept(e.target.value)}
-                >
-                  <option value="">Выберите кафедру...</option>
-                  {departments
-                    .filter((d) => !d.isDeleted)
-                    .map((d) => (
-                      <option key={d.id} value={d.id}>
-                        {d.name}
-                      </option>
-                    ))}
-                </select>
               </div>
               <div className="flex gap-3 pt-4">
                 <button

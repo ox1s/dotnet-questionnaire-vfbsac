@@ -7,7 +7,7 @@ public sealed class Form : Entity, ISoftDeletable
     public string Title { get; private set; }
     public bool IsActive { get; private set; }
     public bool IsDeleted { get; set; }
-    
+
     public List<FilterField>? RequiredFilters { get; private set; }
     private readonly List<Question> _questions = [];
     public IReadOnlyList<Question> Questions => _questions.AsReadOnly();

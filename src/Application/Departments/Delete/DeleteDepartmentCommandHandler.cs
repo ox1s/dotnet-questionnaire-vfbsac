@@ -20,14 +20,6 @@ internal sealed class DeleteDepartmentCommandHandler(IApplicationDbContext conte
             return Result.Failure(DepartmentErrors.NotFound(command.DepartmentId));
         }
 
-        bool hasTeachers = await context.Teachers
-            .AnyAsync(t => t.DepartmentId == command.DepartmentId, cancellationToken);
-
-        if (hasTeachers)
-        {
-            return Result.Failure(DepartmentErrors.HasTeachers());
-        }
-
         bool hasDisciplines = await context.Disciplines
             .AnyAsync(d => d.DepartmentId == command.DepartmentId, cancellationToken);
 

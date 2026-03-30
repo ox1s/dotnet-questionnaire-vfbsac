@@ -35,6 +35,10 @@ export const SurveyPage = () => {
       alert("Пожалуйста, выберите преподавателя!");
       return;
     }
+    if (form.requiredFilters?.includes("Department") && !context.departmentId) {
+      alert("Пожалуйста, выберите кафедру!");
+      return;
+    }
     if (form.requiredFilters?.includes("Discipline") && !context.disciplineId) {
       alert("Пожалуйста, выберите дисциплину!");
       return;
@@ -65,6 +69,7 @@ export const SurveyPage = () => {
         deviceId: getDeviceId(),
         educationForm: context.educationForm,
         teacherId: context.teacherId || null,
+        departmentId: context.departmentId || null,
         disciplineId: context.disciplineId || null,
         answers: answersPayload,
       });

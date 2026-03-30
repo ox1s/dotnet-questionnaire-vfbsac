@@ -17,7 +17,7 @@ internal sealed class Update : IEndpoint
             ICommandHandler<UpdateTeacherCommand> handler,
             CancellationToken cancellationToken) =>
         {
-            var command = new UpdateTeacherCommand(teacherId, request.FullName, request.DepartmentId);
+            var command = new UpdateTeacherCommand(teacherId, request.FullName);
             Result result = await handler.Handle(command, cancellationToken);
             return result.Match(Results.NoContent, CustomResults.Problem);
         })
@@ -26,5 +26,5 @@ internal sealed class Update : IEndpoint
 
     }
 
-    public sealed record UpdateTeacherRequest(string FullName, Guid DepartmentId);
+    public sealed record UpdateTeacherRequest(string FullName);
 }

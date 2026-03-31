@@ -11,8 +11,7 @@ internal static class ServiceCollectionExtensions
         services.AddSwaggerGen(o =>
         {
             o.CustomSchemaIds(id => id.FullName!.Replace('+', '-'));
-
-            // 1. Definition остается почти таким же
+            
             var securityScheme = new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -23,15 +22,13 @@ internal static class ServiceCollectionExtensions
                 BearerFormat = "JWT"
             };
 
-            o.AddSecurityDefinition("Bearer", securityScheme); // Используем имя "Bearer"
-
-            // 2. Requirement теперь требует функцию (doc => ...) и OpenApiSecuritySchemeReference
+            o.AddSecurityDefinition("Bearer", securityScheme); 
+            
             o.AddSecurityRequirement(document =>
             {
                 var requirement = new OpenApiSecurityRequirement
                 {
-                    // В v2 используем OpenApiSecuritySchemeReference для связи с Definition
-                    [new OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
                 };
 
                 return requirement;

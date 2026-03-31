@@ -1,12 +1,11 @@
-using Domain.Questionnaires.Submissions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.Questionnaires.SubmissionAggregate;
+namespace Infrastructure.Questionnaires.Submission;
 
-internal sealed class SubmissionConfiguration : IEntityTypeConfiguration<Submission>
+internal sealed class SubmissionConfiguration : IEntityTypeConfiguration<Domain.Questionnaires.Submissions.Submission>
 {
-    public void Configure(EntityTypeBuilder<Submission> builder)
+    public void Configure(EntityTypeBuilder<Domain.Questionnaires.Submissions.Submission> builder)
     {
         builder.HasKey(s => s.Id);
 

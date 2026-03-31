@@ -2,7 +2,7 @@ using Domain.Questionnaires.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.Questionnaires.FormAggregate;
+namespace Infrastructure.Questionnaires.Form;
 
 internal sealed class QuestionConfiguration : IEntityTypeConfiguration<Question>
 {

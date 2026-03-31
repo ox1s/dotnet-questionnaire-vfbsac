@@ -2,7 +2,7 @@ using Domain.Questionnaires.Submissions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Infrastructure.Questionnaires.SubmissionAggregate;
+namespace Infrastructure.Questionnaires.Submission;
 
 internal sealed class AnswerConfiguration : IEntityTypeConfiguration<Answer>
 {

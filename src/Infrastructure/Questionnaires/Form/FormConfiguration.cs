@@ -1,14 +1,14 @@
+using System.Text.Json;
+using Domain.Questionnaires.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System.Text.Json;
-using Domain.Questionnaires.Forms;
 
-namespace Infrastructure.Questionnaires.FormAggregate;
+namespace Infrastructure.Questionnaires.Form;
 
-internal sealed class FormConfiguration : IEntityTypeConfiguration<Form>
+internal sealed class FormConfiguration : IEntityTypeConfiguration<Domain.Questionnaires.Forms.Form>
 {
-    public void Configure(EntityTypeBuilder<Form> builder)
+    public void Configure(EntityTypeBuilder<Domain.Questionnaires.Forms.Form> builder)
     {
         builder.HasKey(f => f.Id);
 

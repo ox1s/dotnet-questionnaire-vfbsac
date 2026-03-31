@@ -19,6 +19,7 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
         CancellationToken cancellationToken)
     {
         Form? form = await context.Forms
+            .AsNoTracking()
             .Include(f => f.Questions)
             .FirstOrDefaultAsync(f => f.Id == query.FormId, cancellationToken);
 
@@ -29,6 +30,7 @@ internal sealed class GetSubmissionStatisticsQueryHandler(
         }
 
         IQueryable<Submission> submissionsQuery = context.Submissions
+            .AsNoTracking()
             .Where(s => s.FormId == query.FormId);
 
         if (query.DisciplineId.HasValue)

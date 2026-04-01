@@ -45,6 +45,12 @@ internal sealed class SubmissionConfiguration : IEntityTypeConfiguration<Domain.
             contextBuilder.Property(c => c.Position)
                 .HasColumnName("context_position")
                 .HasMaxLength(255); // Должность
+
+            contextBuilder.HasIndex(c => c.TeacherId);
+            contextBuilder.HasIndex(c => c.DisciplineId);
+            contextBuilder.HasIndex(c => c.DepartmentId);
+            contextBuilder.HasIndex(c => c.SpecialityId);
+            contextBuilder.HasIndex(c => c.SpecializationId);
         });
 
         builder.HasMany(s => s.Answers)

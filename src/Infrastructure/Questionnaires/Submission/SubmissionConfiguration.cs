@@ -19,6 +19,9 @@ internal sealed class SubmissionConfiguration : IEntityTypeConfiguration<Domain.
             .IsRequired()
             .HasConversion(d => DateTime.SpecifyKind(d, DateTimeKind.Utc), v => v);
 
+        builder.HasIndex(s => s.FormId);
+        builder.HasIndex(s => new { s.FormId, s.SubmittedAt });
+
         builder.OwnsOne(s => s.Context, contextBuilder =>
         {
             contextBuilder.Property(c => c.TeacherId).HasColumnName("teacher_id");

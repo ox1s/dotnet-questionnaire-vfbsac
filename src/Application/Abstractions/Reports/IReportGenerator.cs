@@ -1,8 +1,8 @@
-using Application.Submissions.GetStatistics;
+using Application.Reports.Queries.GetAnalytics;
 
 namespace Application.Abstractions.Reports;
 
 public interface IReportGenerator
 {
-    byte[] GenerateFormReport(string formTitle, SubmissionStatisticsResponse stats);
+    byte[] GenerateAnalyticsReport(AnalyticsReportResponse analyticsReport);
 }

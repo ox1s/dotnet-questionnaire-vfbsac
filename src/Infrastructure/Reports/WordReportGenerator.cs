@@ -1,6 +1,6 @@
 using System.Globalization;
 using Application.Abstractions.Reports;
-using Application.Submissions.GetStatistics;
+using Application.Reports.Queries.GetAnalytics;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -8,9 +8,9 @@ using A = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Infrastructure.Reports;
 
-public class WordReportGenerator : IReportGenerator
+public sealed class WordReportGenerator : IReportGenerator
 {
-    public byte[] GenerateFormReport(string formTitle, SubmissionStatisticsResponse stats)
+    public byte[] GenerateAnalyticsReport(AnalyticsReportResponse analyticsReport)
     {
         using MemoryStream stream = new();
 
@@ -20,9 +20,8 @@ public class WordReportGenerator : IReportGenerator
             mainPart.Document = new A.Document();
             Body body = mainPart.Document.AppendChild(new Body());
 
-            // 1. Заголовок
             Run titleRun = new();
-            titleRun.AppendChild(new A.Text($"Отчет по форме: {formTitle}"));
+            titleRun.AppendChild(new A.Text($"Отчет по форме: {analyticsReport.FormTitle}"));
 
             RunProperties titleProps = new();
             titleProps.AppendChild(new Bold());
@@ -34,17 +33,34 @@ public class WordReportGenerator : IReportGenerator
             titlePara.AppendChild(titleRun);
             body.AppendChild(titlePara);
 
-            // 2. Общая статистика
-            AddParagraph(body, $"Всего анкет: {stats.TotalSubmissions}");
-            AddParagraph(body, $"Средний балл (общий): {stats.OverallAverage.ToString("F2", CultureInfo.InvariantCulture)}");
-            AddParagraph(body, $"Отклонение: {stats.OverallStandardDeviation.ToString("F2", CultureInfo.InvariantCulture)}");
-
+            AddParagraph(body, $"Количество срезов: {analyticsReport.Slices.Count}");
             body.AppendChild(new Paragraph());
 
-            // 3. Таблица
+            foreach (AnalyticsSliceResponse slice in analyticsReport.Slices)
+            {
+                AddParagraph(body, $"Срез: {slice.Label}");
+                AddParagraph(
+                    body,
+                    $"Период: {slice.DateFrom:yyyy-MM-dd} - {slice.DateTo:yyyy-MM-dd}");
+                AddParagraph(body, $"Всего анкет: {slice.TotalSubmissions}");
+                AddParagraph(
+                    body,
+                    $"Средний балл (общий): {slice.OverallAverage.ToString("F2", CultureInfo.InvariantCulture)}");
+                AddParagraph(
+                    body,
+                    $"Отклонение: {slice.OverallStandardDeviation.ToString("F2", CultureInfo.InvariantCulture)}");
+
+                string filtersLine = BuildFiltersLine(slice.Filters);
+                if (!string.IsNullOrWhiteSpace(filtersLine))
+                {
+                    AddParagraph(body, $"Фильтры: {filtersLine}");
+                }
+
+                body.AppendChild(new Paragraph());
+            }
+
             A.Table table = new();
 
-            // Стили таблицы
             TableProperties tblProps = new();
             TableBorders borders = new();
 
@@ -63,28 +79,37 @@ public class WordReportGenerator : IReportGenerator
 
             table.AppendChild(tblProps);
 
-            // Шапка таблицы
             TableRow trHeader = new();
             trHeader.AppendChild(CreateCell("№", true));
             trHeader.AppendChild(CreateCell("Вопрос", true));
-            trHeader.AppendChild(CreateCell("Оценка", true));
-            trHeader.AppendChild(CreateCell("Откл.", true));
+            foreach (AnalyticsSliceResponse slice in analyticsReport.Slices)
+            {
+                trHeader.AppendChild(CreateCell($"{slice.Label} (итог)", true));
+                trHeader.AppendChild(CreateCell($"{slice.Label} (ср.)", true));
+                trHeader.AppendChild(CreateCell($"{slice.Label} (sigma)", true));
+            }
+
             table.AppendChild(trHeader);
 
-            // Данные
-            for (int i = 0; i < stats.ResultScores.Count; i++)
+            var orderedQuestions = analyticsReport.Questions
+                .OrderBy(question => question.Order)
+                .ToList();
+
+            for (int i = 0; i < orderedQuestions.Count; i++)
             {
+                AnalyticsQuestionResponse question = orderedQuestions[i];
                 TableRow tr = new();
 
                 tr.AppendChild(CreateCell((i + 1).ToString(CultureInfo.InvariantCulture)));
-                tr.AppendChild(CreateCell($"Вопрос {i + 1}"));
-                tr.AppendChild(CreateCell(stats.ResultScores[i].ToString("F2", CultureInfo.InvariantCulture)));
+                tr.AppendChild(CreateCell(question.QuestionText));
 
-                string dev = i < stats.StandardDeviations.Count
-                    ? stats.StandardDeviations[i].ToString("F2", CultureInfo.InvariantCulture)
-                    : "-";
+                foreach (AnalyticsQuestionSliceMetricResponse metric in question.SliceMetrics)
+                {
+                    tr.AppendChild(CreateCell(metric.ResultScore.ToString("F2", CultureInfo.InvariantCulture)));
+                    tr.AppendChild(CreateCell(metric.AverageScore.ToString("F2", CultureInfo.InvariantCulture)));
+                    tr.AppendChild(CreateCell(metric.StandardDeviation.ToString("F2", CultureInfo.InvariantCulture)));
+                }
 
-                tr.AppendChild(CreateCell(dev));
                 table.AppendChild(tr);
             }
 
@@ -93,6 +118,43 @@ public class WordReportGenerator : IReportGenerator
         }
 
         return stream.ToArray();
+    }
+
+    private static string BuildFiltersLine(AnalyticsFilterSet filters)
+    {
+        List<string> parts = [];
+
+        if (filters.TeacherId.HasValue)
+        {
+            parts.Add($"TeacherId={filters.TeacherId.Value}");
+        }
+
+        if (filters.DisciplineId.HasValue)
+        {
+            parts.Add($"DisciplineId={filters.DisciplineId.Value}");
+        }
+
+        if (filters.DepartmentId.HasValue)
+        {
+            parts.Add($"DepartmentId={filters.DepartmentId.Value}");
+        }
+
+        if (filters.SpecialityId.HasValue)
+        {
+            parts.Add($"SpecialityId={filters.SpecialityId.Value}");
+        }
+
+        if (filters.SpecializationId.HasValue)
+        {
+            parts.Add($"SpecializationId={filters.SpecializationId.Value}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(filters.OrganizationName))
+        {
+            parts.Add($"Organization={filters.OrganizationName}");
+        }
+
+        return string.Join(", ", parts);
     }
 
     private static void AddParagraph(Body body, string text)

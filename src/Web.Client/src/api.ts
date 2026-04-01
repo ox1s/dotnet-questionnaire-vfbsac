@@ -157,16 +157,6 @@ export interface FormDetail extends Form {
     questions: Question[];
 }
 
-export interface Statistics {
-    formId: string;
-    totalSubmissions: number;
-    averageScores: number[]; // Среднее арифметическое
-    resultScores: number[]; // Взвешенная оценка (Итоговая)
-    standardDeviations: number[]; // Отклонение
-    overallAverage: number;
-    overallStandardDeviation: number;
-}
-
 export interface StatisticsFilters {
     disciplineId?: string;
     teacherId?: string;
@@ -176,31 +166,56 @@ export interface StatisticsFilters {
     organizationName?: string;
 }
 
+export interface AnalyticsSliceRequest extends StatisticsFilters {
+    label: string;
+    dateFrom: string;
+    dateTo: string;
+}
+
+export interface AnalyticsReportRequest {
+    formId: string;
+    slices: AnalyticsSliceRequest[];
+}
+
+export interface AnalyticsSlice {
+    label: string;
+    dateFrom: string;
+    dateTo: string;
+    totalSubmissions: number;
+    overallAverage: number;
+    overallStandardDeviation: number;
+    filters: StatisticsFilters;
+}
+
+export interface AnalyticsQuestionSliceMetric {
+    sliceLabel: string;
+    averageScore: number;
+    resultScore: number;
+    standardDeviation: number;
+    submissionCount: number;
+}
+
+export interface AnalyticsQuestion {
+    questionId: string;
+    questionText: string;
+    questionType: string;
+    order: number;
+    sliceMetrics: AnalyticsQuestionSliceMetric[];
+}
+
+export interface AnalyticsReport {
+    formId: string;
+    formTitle: string;
+    slices: AnalyticsSlice[];
+    questions: AnalyticsQuestion[];
+}
+
 export const reportsApi = {
-    getStatistics: (formId: string, filters?: StatisticsFilters) => {
-        const params = new URLSearchParams({formId});
+    getAnalytics: (payload: AnalyticsReportRequest) =>
+        api.post<AnalyticsReport>("/reports/analytics", payload),
 
-        if (filters) {
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value) params.append(key, value);
-            });
-        }
-
-        return api.get<Statistics>(`/submissions/statistics?${params.toString()}`);
-    },
-
-    downloadWordReport: (formId: string, filters?: StatisticsFilters) => {
-        const params = new URLSearchParams();
-
-        if (filters) {
-            Object.entries(filters).forEach(([key, value]) => {
-                if (value) params.append(key, value);
-            });
-        }
-
-        const queryString = params.toString() ? `?${params.toString()}` : '';
-        return api.get(`/reports/word/${formId}${queryString}`, {responseType: "blob"});
-    },
+    downloadAnalyticsWord: (payload: AnalyticsReportRequest) =>
+        api.post("/reports/word", payload, {responseType: "blob"}),
 };
 
 export const getApiErrorMessage = (

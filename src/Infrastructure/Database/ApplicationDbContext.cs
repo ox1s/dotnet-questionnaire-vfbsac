@@ -44,6 +44,7 @@ public sealed class ApplicationDbContext(
         modelBuilder.Entity<Speciality>().HasQueryFilter(s => !s.IsDeleted);
         modelBuilder.Entity<Specialization>().HasQueryFilter(s => !s.IsDeleted);
         modelBuilder.Entity<Form>().HasQueryFilter(f => !f.IsDeleted);
+        modelBuilder.Entity<Answer>().HasQueryFilter(a => !a.IsDeleted);
         modelBuilder.Entity<Submission>().HasQueryFilter(s => !s.IsDeleted);
         modelBuilder.Entity<Teacher>().HasQueryFilter(t => !t.IsDeleted);
         modelBuilder.Entity<User>().HasQueryFilter(u => !u.IsDeleted);

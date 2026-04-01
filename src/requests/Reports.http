@@ -3,17 +3,39 @@
 @formId = fad60f17-2cd8-490e-b4f8-3bd589ff0c60
 
 # ==========================================
-# 1. Получить JSON статистику (для графиков на фронте)
+# 1. Получить unified analytics report
 # ==========================================
-GET {{host}}/submissions/statistics?formId={{formId}}
+POST {{host}}/reports/analytics
 Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "formId": "{{formId}}",
+  "slices": [
+    {
+      "label": "Текущий семестр",
+      "dateFrom": "2026-01-01",
+      "dateTo": "2026-04-01"
+    }
+  ]
+}
 
 ###
 
 # ==========================================
 # 2. Скачать Word отчет (.docx)
 # ==========================================
-# В VS Code REST Client кнопка "Send Request" просто покажет бинарные данные.
-# В браузере этот URL начнет скачивание файла.
-GET {{host}}/reports/word/{{formId}}
+POST {{host}}/reports/word
 Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "formId": "{{formId}}",
+  "slices": [
+    {
+      "label": "Текущий семестр",
+      "dateFrom": "2026-01-01",
+      "dateTo": "2026-04-01"
+    }
+  ]
+}

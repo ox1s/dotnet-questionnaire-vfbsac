@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { TableCell } from "@/components/ui/table";
 import { toast } from "sonner";
 import {
-  AdminLayout,
   AdminModal,
   AdminTable,
   AdminTableActions,
@@ -18,6 +17,7 @@ import {
   AdminTableRow,
 } from "@/components/AdminShared";
 import { Label } from "@/components/ui/label";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 
 export const AdminDepartmentsPage = () => {
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
@@ -37,6 +37,16 @@ export const AdminDepartmentsPage = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useAdminPageConfig({
+    title: "Кафедры",
+    subtitle: "Управление списком кафедр учебного заведения.",
+    actions: (
+      <Button onClick={() => openModal()}>
+        <Plus size={18} className="mr-2" /> Добавить
+      </Button>
+    ),
+  });
 
   const openModal = (d?: DictionaryItem) => {
     if (d) {
@@ -80,15 +90,7 @@ export const AdminDepartmentsPage = () => {
   };
 
   return (
-    <AdminLayout
-      title="Кафедры"
-      subtitle="Управление списком кафедр учебного заведения."
-      actions={
-        <Button onClick={() => openModal()}>
-          <Plus size={18} className="mr-2" /> Добавить
-        </Button>
-      }
-    >
+    <>
       <AdminTable
         data={departments}
         columns={[
@@ -133,6 +135,6 @@ export const AdminDepartmentsPage = () => {
           />
         </div>
       </AdminModal>
-    </AdminLayout>
+    </>
   );
 };

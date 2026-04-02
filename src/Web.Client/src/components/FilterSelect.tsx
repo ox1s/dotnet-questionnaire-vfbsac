@@ -28,10 +28,10 @@ export function FilterSelect({
       disabled={disabled}
       onValueChange={(val) => onChange(val === "all" ? "" : val)}
     >
-      <SelectTrigger className="w-full bg-slate-50 border-slate-200 text-sm h-9.5">
+      <SelectTrigger className="w-full bg-slate-50 border-slate-200 text-sm ">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
-      <SelectContent>
+      <SelectContent position="popper">
         <SelectGroup>
           <SelectItem value="all">{placeholder}</SelectItem>
           {options.map((item) => (

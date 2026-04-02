@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import {
   AdminLayout,
+  AdminModal,
   AdminTable,
   AdminTableActions,
   AdminTableIconCell,
@@ -24,6 +25,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { Label } from "@/components/ui/label";
 
 export const AdminSpecialitiesPage = () => {
   const [specialities, setSpecialities] = useState<DictionaryItem[]>([]);
@@ -50,6 +53,16 @@ export const AdminSpecialitiesPage = () => {
   );
   const getSpecialityName = (id?: string) =>
     specialities.find((s) => s.id === id)?.name || "-";
+
+  useAdminPageConfig({
+    title: "Специальности",
+    subtitle: "Управление перечнем образовательных специальностей.",
+    actions: (
+      <Button onClick={() => openModal()}>
+        <Plus size={18} /> Добавить
+      </Button>
+    ),
+  });
 
   const openModal = (speciality?: DictionaryItem) => {
     if (speciality) {
@@ -101,15 +114,7 @@ export const AdminSpecialitiesPage = () => {
   };
 
   return (
-    <AdminLayout
-      title="Специальности"
-      subtitle="Управление перечнем образовательных специальностей."
-      actions={
-        <Button onClick={() => openModal()}>
-          <Plus size={18} /> Добавить
-        </Button>
-      }
-    >
+    <>
       <AdminTable
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -142,48 +147,21 @@ export const AdminSpecialitiesPage = () => {
           </AdminTableRow>
         )}
       />
-
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            onClick={() => setIsFormOpen(false)}
-          ></div>
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">
-              {editingId ? "Редактирование" : "Новая специальность"}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
-                  Название
-                </label>
-                <input
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-sm"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="Например: Программное обеспечение информационных технологий"
-                />
-              </div>
-              <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="flex-1 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-bold text-sm"
-                >
-                  Отмена
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-lg bg-slate-800 text-white font-bold text-sm"
-                >
-                  Сохранить
-                </button>
-              </div>
-            </form>
-          </div>
+      <AdminModal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingId ? "Редактирование" : "Новая специальность"}
+        onSubmit={handleSubmit}
+      >
+        <div className="space-y-2">
+          <Label>Название</Label>
+          <Input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Введите название специальности..."
+          />
         </div>
-      )}
-    </AdminLayout>
+      </AdminModal>
+    </>
   );
 };

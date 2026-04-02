@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
@@ -27,10 +27,17 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -52,28 +59,12 @@ import api, {
 } from "../api";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { AppSidebar } from "@/components/app-sidebar";
-import { Separator } from "@/components/ui/separator";
-import { ModeToggle } from "@/components/mode-toggle";
+import { AdminLayout } from "@/components/AdminShared";
 
 type Mode = "single" | "periods" | "groups";
 type CompareField =
@@ -322,6 +313,13 @@ export const AdminStatsPage = () => {
       color: "#60a5fa",
     },
   } satisfies ChartConfig;
+  const compareFieldOptions: { value: CompareField; label: string }[] = [
+    { value: "departmentId", label: "Кафедры" },
+    { value: "specialityId", label: "Специальности" },
+    { value: "specializationId", label: "Специализации" },
+    { value: "disciplineId", label: "Дисциплины" },
+    { value: "teacherId", label: "Преподаватели" },
+  ];
 
   const renderCards = () =>
     report?.slices.length === 1 ? (
@@ -370,91 +368,67 @@ export const AdminStatsPage = () => {
     );
 
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-100 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-white">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
-            <Separator
-              orientation="vertical"
-              className="mr-2 data-[orientation=vertical]:h-4"
-            />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbPage className="font-medium text-slate-500">
-                    Аналитика
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="font-bold text-slate-900">
-                    {loading
-                      ? "Загрузка..."
-                      : form
-                        ? `Отчет по форме: ${form.title}`
-                        : "Форма не найдена"}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+    <AdminLayout
+      title={
+        loading
+          ? "Загрузка..."
+          : form
+            ? `Отчет по форме: ${form.title}`
+            : "Форма не найдена"
+      }
+      subtitle="Просмотр аналитики по анкете, периодам и выбранным срезам."
+      actions={
+        !loading && form ? (
+          <Button onClick={exportReport}>
+            <Download size={16} className="mr-2" />
+            <span className="hidden md:inline">Экспорт в Word</span>
+          </Button>
+        ) : undefined
+      }
+    >
+      <div className="flex flex-1 flex-col gap-4 bg-slate-50/50">
+        {loading ? (
+          <div className="flex items-center justify-center h-full min-h-[50vh] text-slate-400">
+            <RefreshCw className="animate-spin mr-2" size={24} /> Загрузка...
           </div>
+        ) : (
+          <>
+            <div className="bg-white border border-slate-200 p-6 shadow-sm mb-6">
+              <div className="mb-5 flex items-center gap-2 text-slate-800 font-bold">
+                <Filter size={18} />
+                <h4>Режим аналитики</h4>
+              </div>
+              <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                <Button
+                  variant={mode === "single" ? "default" : "outline"}
+                  onClick={() => setMode("single")}
+                  size="lg"
+                >
+                  Статистика за период
+                </Button>
+                <Button
+                  variant={mode === "periods" ? "default" : "outline"}
+                  onClick={() => setMode("periods")}
+                  size="lg"
+                >
+                  Сравнение периодов
+                </Button>
+                <Button
+                  variant={mode === "groups" ? "default" : "outline"}
+                  onClick={() => setMode("groups")}
+                  size="lg"
+                >
+                  Сравнение групп
+                </Button>
+              </div>
 
-          {!loading && form && (
-            <div className="flex items-center">
-              <button
-                onClick={exportReport}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 font-bold shadow-sm text-sm transition-all whitespace-nowrap"
-              >
-                <Download size={16} />{" "}
-                <span className="hidden md:inline">Экспорт в Word</span>
-              </button>
-            </div>
-          )}
-        </header>
-
-        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 lg:p-8 bg-slate-50/50">
-          {loading ? (
-            <div className="flex items-center justify-center h-full min-h-[50vh] text-slate-400">
-              <RefreshCw className="animate-spin mr-2" size={24} /> Загрузка...
-            </div>
-          ) : (
-            <>
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
-                <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold">
-                  <Filter size={18} />
-                  <h4>Режим аналитики</h4>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-                  <Button
-                    variant={mode === "single" ? "default" : "outline"}
-                    onClick={() => setMode("single")}
-                    size="lg"
-                  >
-                    Статистика за период
-                  </Button>
-                  <Button
-                    variant={mode === "periods" ? "default" : "outline"}
-                    onClick={() => setMode("periods")}
-                    size="lg"
-                  >
-                    Сравнение периодов
-                  </Button>
-                  <Button
-                    variant={mode === "groups" ? "default" : "outline"}
-                    onClick={() => setMode("groups")}
-                    size="lg"
-                  >
-                    Сравнение групп
-                  </Button>
-                </div>
-
-                {mode === "single" || mode === "groups" ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <input
-                      className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+              {mode === "single" || mode === "groups" ? (
+                <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+                  <AnalyticsField label="Название периода">
+                    <Input
+                      className="w-full bg-slate-50 border-slate-200 text-sm"
                       value={singleRange.label}
+                      placeholder="Название периода"
                       onChange={(event) =>
                         setSingleRange((previous) => ({
                           ...previous,
@@ -462,6 +436,8 @@ export const AdminStatsPage = () => {
                         }))
                       }
                     />
+                  </AnalyticsField>
+                  <AnalyticsField label="Дата начала">
                     <DatePickerInput
                       value={singleRange.dateFrom}
                       onChange={(val) =>
@@ -471,6 +447,8 @@ export const AdminStatsPage = () => {
                         }))
                       }
                     />
+                  </AnalyticsField>
+                  <AnalyticsField label="Дата окончания">
                     <DatePickerInput
                       value={singleRange.dateTo}
                       onChange={(val) =>
@@ -480,32 +458,42 @@ export const AdminStatsPage = () => {
                         }))
                       }
                     />
-                  </div>
-                ) : (
-                  <div className="space-y-4 mb-6">
-                    {periods.map((item, index) => (
-                      <div
-                        key={`${item.label}-${index}`}
-                        className="grid grid-cols-1 md:grid-cols-4 gap-4"
-                      >
-                        <input
-                          className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+                  </AnalyticsField>
+                </div>
+              ) : (
+                <div className="mb-6 space-y-4">
+                  {periods.map((item, index) => (
+                    <div
+                      key={`${item.label}-${index}`}
+                      className="grid grid-cols-1 gap-4 md:grid-cols-4"
+                    >
+                      <AnalyticsField label="Название периода">
+                        <Input
+                          className="bg-slate-50"
                           value={item.label}
+                          placeholder={`Период ${index + 1}`}
                           onChange={(event) =>
                             updatePeriod(index, "label", event.target.value)
                           }
                         />
+                      </AnalyticsField>
+                      <AnalyticsField label="Дата начала">
                         <DatePickerInput
                           value={item.dateFrom}
                           onChange={(val) =>
                             updatePeriod(index, "dateFrom", val)
                           }
                         />
+                      </AnalyticsField>
+                      <AnalyticsField label="Дата окончания">
                         <DatePickerInput
                           value={item.dateTo}
                           onChange={(val) => updatePeriod(index, "dateTo", val)}
                         />
-                        <button
+                      </AnalyticsField>
+                      <AnalyticsField label="Действие">
+                        <Button
+                          variant="outline"
                           onClick={() =>
                             setPeriods((previous) =>
                               previous.length > 1
@@ -515,31 +503,34 @@ export const AdminStatsPage = () => {
                                 : previous,
                             )
                           }
-                          className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-red-600 transition-colors"
+                          className="w-full justify-center"
                         >
                           Удалить
-                        </button>
-                      </div>
-                    ))}
-                    <button
-                      onClick={() =>
-                        setPeriods((previous) => [
-                          ...previous,
-                          {
-                            label: `Период ${previous.length + 1}`,
-                            dateFrom: singleRange.dateFrom,
-                            dateTo: singleRange.dateTo,
-                          },
-                        ])
-                      }
-                      className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-sm font-medium transition-colors"
-                    >
-                      Добавить период
-                    </button>
-                  </div>
-                )}
+                        </Button>
+                      </AnalyticsField>
+                    </div>
+                  ))}
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto"
+                    onClick={() =>
+                      setPeriods((previous) => [
+                        ...previous,
+                        {
+                          label: `Период ${previous.length + 1}`,
+                          dateFrom: singleRange.dateFrom,
+                          dateTo: singleRange.dateTo,
+                        },
+                      ])
+                    }
+                  >
+                    Добавить период
+                  </Button>
+                </div>
+              )}
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                <AnalyticsField label="Преподаватель">
                   <FilterSelect
                     value={filters.teacherId}
                     onChange={(val) => updateFilter("teacherId", val)}
@@ -550,7 +541,9 @@ export const AdminStatsPage = () => {
                       label: t.fullName,
                     }))}
                   />
+                </AnalyticsField>
 
+                <AnalyticsField label="Дисциплина">
                   <FilterSelect
                     value={filters.disciplineId}
                     onChange={(val) => updateFilter("disciplineId", val)}
@@ -563,7 +556,9 @@ export const AdminStatsPage = () => {
                       label: d.name,
                     }))}
                   />
+                </AnalyticsField>
 
+                <AnalyticsField label="Кафедра">
                   <FilterSelect
                     value={filters.departmentId}
                     onChange={(val) => updateFilter("departmentId", val)}
@@ -576,7 +571,9 @@ export const AdminStatsPage = () => {
                       label: d.name,
                     }))}
                   />
+                </AnalyticsField>
 
+                <AnalyticsField label="Специальность">
                   <FilterSelect
                     value={filters.specialityId}
                     onChange={(val) => updateFilter("specialityId", val)}
@@ -589,7 +586,9 @@ export const AdminStatsPage = () => {
                       label: s.name,
                     }))}
                   />
+                </AnalyticsField>
 
+                <AnalyticsField label="Специализация">
                   <FilterSelect
                     value={filters.specializationId}
                     onChange={(val) => updateFilter("specializationId", val)}
@@ -602,150 +601,177 @@ export const AdminStatsPage = () => {
                       label: s.name,
                     }))}
                   />
+                </AnalyticsField>
 
+                <AnalyticsField label="Организация">
                   <Input
                     type="text"
+                    className="w-full bg-slate-50 border-slate-200 text-sm"
                     placeholder="Название организации..."
                     value={filters.organizationName || ""}
                     onChange={(event) =>
                       updateFilter("organizationName", event.target.value)
                     }
                   />
-                </div>
+                </AnalyticsField>
+              </div>
 
-                {mode === "groups" ? (
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-                    <select
-                      className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+              {mode === "groups" ? (
+                <div className="mb-6 grid grid-cols-1 gap-4 xl:grid-cols-3">
+                  <AnalyticsField
+                    label="Поле сравнения"
+                    className="xl:col-span-1"
+                  >
+                    <Select
                       value={compareField}
-                      onChange={(event) => {
-                        setCompareField(event.target.value as CompareField);
+                      onValueChange={(value) => {
+                        setCompareField(value as CompareField);
                         setSelectedIds([]);
                       }}
                     >
-                      {[
-                        { value: "departmentId", label: "Кафедры" },
-                        { value: "specialityId", label: "Специальности" },
-                        { value: "specializationId", label: "Специализации" },
-                        { value: "disciplineId", label: "Дисциплины" },
-                        { value: "teacherId", label: "Преподаватели" },
-                      ].map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
-                    <select
-                      multiple
-                      className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 min-h-36"
-                      value={selectedIds}
-                      onChange={(event) =>
-                        setSelectedIds(
-                          Array.from(event.target.selectedOptions).map(
-                            (item) => item.value,
-                          ),
-                        )
-                      }
-                    >
-                      {optionsFor().map((item) => (
-                        <option key={item.value} value={item.value}>
-                          {item.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ) : null}
+                      <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+                        <SelectValue placeholder="Выберите поле" />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        {compareFieldOptions.map((item) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </AnalyticsField>
 
-                <div className="flex justify-end">
-                  <Button
-                    onClick={() => void loadReport()}
-                    disabled={refreshing}
-                    size="lg"
-                    variant="default"
+                  <AnalyticsField
+                    label="Сравниваемые значения"
+                    className="xl:col-span-2"
                   >
-                    {refreshing ? (
-                      <RefreshCw className="animate-spin mr-2" size={16} />
-                    ) : null}{" "}
-                    Обновить аналитику
-                  </Button>
+                    <Card className="gap-3 border border-slate-200 bg-slate-50 py-3">
+                      <CardContent className="space-y-2">
+                        {optionsFor().length > 0 ? (
+                          optionsFor().map((item) => {
+                            const selected = selectedIds.includes(item.value);
+
+                            return (
+                              <Button
+                                key={item.value}
+                                type="button"
+                                variant={selected ? "default" : "outline"}
+                                className="w-full justify-start"
+                                onClick={() =>
+                                  setSelectedIds((previous) =>
+                                    previous.includes(item.value)
+                                      ? previous.filter(
+                                          (current) => current !== item.value,
+                                        )
+                                      : [...previous, item.value],
+                                  )
+                                }
+                              >
+                                {item.label}
+                              </Button>
+                            );
+                          })
+                        ) : (
+                          <p className="text-xs text-muted-foreground">
+                            Нет доступных значений для выбранного поля.
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </AnalyticsField>
                 </div>
+              ) : null}
+
+              <div className="flex justify-end pt-2">
+                <Button
+                  onClick={() => void loadReport()}
+                  disabled={refreshing}
+                  size="lg"
+                  variant="default"
+                >
+                  {refreshing ? (
+                    <RefreshCw className="animate-spin mr-2" size={16} />
+                  ) : null}{" "}
+                  Обновить аналитику
+                </Button>
               </div>
+            </div>
 
-              {refreshing ? (
-                <div className="flex justify-center p-10 text-slate-400">
-                  <RefreshCw className="animate-spin" size={24} />
-                </div>
-              ) : null}
-              {report ? (
-                renderCards()
-              ) : (
-                <div className="p-10 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
-                  Настройте период и срезы для аналитики.
-                </div>
-              )}
+            {refreshing ? (
+              <div className="flex justify-center p-10 text-slate-400">
+                <RefreshCw className="animate-spin" size={24} />
+              </div>
+            ) : null}
+            {report ? (
+              renderCards()
+            ) : (
+              <div className="p-10 text-center text-slate-400 bg-white border border-slate-200">
+                Настройте период и срезы для аналитики.
+              </div>
+            )}
 
-              {report && chartData.length > 0 ? (
-                <div>
-                  <ChartContainer config={chartConfig} className="h-50 w-full">
-                    <BarChart
-                      data={chartData}
-                      margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
-                    >
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                        stroke="#e2e8f0"
-                      />
-                      <XAxis
-                        dataKey="name"
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: "#64748b", fontSize: 10 }}
-                        dy={10}
-                      />
-                      <YAxis
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: "#64748b", fontSize: 10 }}
-                        domain={[0, 10]}
-                        ticks={[0, 2, 4, 6, 8, 10]}
-                      />
-                      <ChartTooltip
-                        cursor={true}
-                        content={
-                          <ChartTooltipContent
-                            labelKey="fullName"
-                            formatter={(value, name) => [
-                              <b>{name}</b>,
-                              " ",
-                              Number(value ?? 0).toFixed(2),
-                            ]}
-                          />
-                        }
-                      />
-                      {report.slices.map((slice, index) => (
-                        <Bar
-                          key={`${slice.label}-${index}`}
-                          dataKey={`slice_${index}`}
-                          name={slice.label}
-                          fill={colors[index % colors.length]}
-                          radius={[4, 4, 0, 0]}
-                          maxBarSize={40}
+            {report && chartData.length > 0 ? (
+              <div>
+                <ChartContainer config={chartConfig} className="h-50 w-full">
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#e2e8f0"
+                    />
+                    <XAxis
+                      dataKey="name"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: "#64748b", fontSize: 10 }}
+                      dy={10}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: "#64748b", fontSize: 10 }}
+                      domain={[0, 10]}
+                      ticks={[0, 2, 4, 6, 8, 10]}
+                    />
+                    <ChartTooltip
+                      cursor={true}
+                      content={
+                        <ChartTooltipContent
+                          labelKey="fullName"
+                          formatter={(value, name) => [
+                            <b>{name}</b>,
+                            " ",
+                            Number(value ?? 0).toFixed(2),
+                          ]}
                         />
-                      ))}
-                    </BarChart>
-                  </ChartContainer>
-                </div>
-              ) : null}
+                      }
+                    />
+                    {report.slices.map((slice, index) => (
+                      <Bar
+                        key={`${slice.label}-${index}`}
+                        dataKey={`slice_${index}`}
+                        name={slice.label}
+                        fill={colors[index % colors.length]}
+                        radius={[4, 4, 0, 0]}
+                        maxBarSize={40}
+                      />
+                    ))}
+                  </BarChart>
+                </ChartContainer>
+              </div>
+            ) : null}
 
-              {report ? (
-                <QuestionsTable questions={questions} slices={report.slices} />
-              ) : null}
-            </>
-          )}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+            {report ? (
+              <QuestionsTable questions={questions} slices={report.slices} />
+            ) : null}
+          </>
+        )}
+      </div>
+    </AdminLayout>
   );
 };
 
@@ -764,7 +790,7 @@ function DatePickerInput({
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-start text-left font-normal bg-slate-50 border-slate-200 h-[38px]",
+            "w-full justify-start text-left font-normal bg-slate-50 border-slate-200",
             !date && "text-muted-foreground",
           )}
         >
@@ -788,46 +814,19 @@ function DatePickerInput({
   );
 }
 
-function ModeButton({
-  active,
-  onClick,
-  icon,
+function AnalyticsField({
   label,
+  className,
+  children,
 }: {
-  active: boolean;
-  onClick: () => void;
-  icon: ReactNode;
   label: string;
+  className?: string;
+  children: React.ReactNode;
 }) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-4 py-3 rounded-xl text-sm font-bold border transition-colors flex items-center justify-center gap-2 ${active ? "bg-primary text-white border-primary" : "bg-slate-50 text-slate-700 border-slate-200"}`}
-    >
-      {icon}
-      {label}
-    </button>
-  );
-}
-
-function MetricCard({
-  title,
-  value,
-  subtitle,
-}: {
-  title: string;
-  value: string;
-  subtitle?: string;
-}) {
-  return (
-    <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-      <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-        {title}
-      </p>
-      <p className="text-3xl font-bold text-slate-900">{value}</p>
-      {subtitle ? (
-        <p className="text-xs text-slate-400 mt-2">{subtitle}</p>
-      ) : null}
+    <div className={cn("space-y-2", className)}>
+      <Label className="text-xs text-slate-600">{label}</Label>
+      {children}
     </div>
   );
 }

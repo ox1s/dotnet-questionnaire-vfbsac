@@ -118,7 +118,7 @@ export const SurveyPage = () => {
             <CardContent className="p-6 space-y-4">
               {/* Question header */}
               <div className="flex gap-3">
-                <div className="flex items-center justify-center size-8 rounded-full bg-muted text-sm font-medium">
+                <div className="flex size-8 items-center justify-center bg-muted text-sm font-medium">
                   {idx + 1}
                 </div>
 

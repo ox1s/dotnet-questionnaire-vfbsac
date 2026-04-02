@@ -14,11 +14,11 @@ import {
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { AdminLayout } from "@/components/AdminShared";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 
 const QuestionType = {
   Text: 1,
@@ -127,175 +127,175 @@ export const CreateFormPage = () => {
     }
   };
 
+  useAdminPageConfig({
+    title: "Конструктор анкет",
+    subtitle: "Создание новой формы опроса.",
+    actions: (
+      <Button onClick={handleSave}>
+        <Save size={16} className="mr-2" /> Сохранить анкету
+      </Button>
+    ),
+  });
+
   return (
-    <AdminLayout
-      title="Конструктор анкет"
-      subtitle="Создание новой формы опроса."
-      actions={
-        <Button onClick={handleSave}>
-          <Save size={16} className="mr-2" /> Сохранить анкету
-        </Button>
-      }
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-1 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">
-                Настройки
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="space-y-6 lg:col-span-1">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">
+              Настройки
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label>Название анкеты</Label>
+              <Textarea
+                rows={3}
+                placeholder="Например: Удовлетворенность качеством преподавания..."
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="bg-muted/50"
+              />
+            </div>
+            <div className="space-y-3">
+              <div>
+                <Label>Контекст (Фильтры)</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Что выбирает студент перед началом?
+                </p>
+              </div>
               <div className="space-y-2">
-                <Label>Название анкеты</Label>
-                <Textarea
-                  rows={3}
-                  placeholder="Например: Удовлетворенность качеством преподавания..."
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="bg-muted/50"
-                />
-              </div>
-              <div className="space-y-3">
-                <div>
-                  <Label>Контекст (Фильтры)</Label>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Что выбирает студент перед началом?
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  {FILTER_OPTIONS.map((opt) => {
-                    const active = selectedFilters.includes(opt.key);
-                    return (
-                      <button
-                        key={opt.key}
-                        onClick={() => toggleFilter(opt.key)}
-                        className={`flex w-full items-center justify-between px-4 py-3 rounded-lg border transition-all text-sm font-medium ${
-                          active
-                            ? "bg-primary border-primary text-primary-foreground shadow-sm"
-                            : "bg-background border-border text-foreground hover:bg-muted"
-                        }`}
-                      >
-                        {opt.label}
-                        {active && <CheckCircle2 size={16} />}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">
-                Новый вопрос
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-4">
-                <Input
-                  placeholder="Введите текст вопроса..."
-                  value={newQText}
-                  onChange={(e) => setNewQText(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && addQuestion()}
-                  className="bg-muted/50"
-                />
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:flex-1"
-                    value={newQType}
-                    onChange={(e) =>
-                      setNewQType(Number(e.target.value) as QuestionType)
-                    }
-                  >
-                    {QUESTION_TYPES.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
-                    ))}
-                  </select>
-                  <Button onClick={addQuestion} className="w-full sm:w-auto">
-                    <Plus size={16} className="mr-2" /> Добавить
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-3">
-            {questions.map((q, idx) => (
-              <div
-                key={q.order}
-                draggable
-                onDragStart={() => handleDragStart(idx)}
-                onDragEnter={() => handleDragEnter(idx)}
-                onDragEnd={handleDragEnd}
-                onDragOver={(e) => e.preventDefault()}
-                className={`group flex items-center gap-3 p-4 bg-card border border-border rounded-lg transition-all ${
-                  draggedIdx === idx ? "opacity-40 shadow-inner bg-muted" : ""
-                } hover:border-primary/30 hover:shadow-sm cursor-grab`}
-              >
-                <div className="hidden sm:block text-muted-foreground hover:text-foreground">
-                  <GripVertical size={20} />
-                </div>
-                <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
-                  {q.order}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground truncate">
-                    {q.text}
-                  </p>
-                  <Badge
-                    variant="secondary"
-                    className="mt-1 text-[10px] uppercase"
-                  >
-                    {QUESTION_TYPES.find((t) => t.value === q.type)?.label ||
-                      "Вопрос"}
-                  </Badge>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-2">
-                  <div className="flex flex-col sm:flex-row">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => moveQuestion(idx, "up")}
-                      disabled={idx === 0}
-                      className="h-8 w-8 text-muted-foreground"
+                {FILTER_OPTIONS.map((opt) => {
+                  const active = selectedFilters.includes(opt.key);
+                  return (
+                    <button
+                      key={opt.key}
+                      onClick={() => toggleFilter(opt.key)}
+                      className={`flex w-full items-center justify-between border px-4 py-3 text-sm font-medium transition-all ${
+                        active
+                          ? "bg-primary border-primary text-primary-foreground shadow-sm"
+                          : "bg-background border-border text-foreground hover:bg-muted"
+                      }`}
                     >
-                      <ChevronUp size={16} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => moveQuestion(idx, "down")}
-                      disabled={idx === questions.length - 1}
-                      className="h-8 w-8 text-muted-foreground"
-                    >
-                      <ChevronDown size={16} />
-                    </Button>
-                  </div>
+                      {opt.label}
+                      {active && <CheckCircle2 size={16} />}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="space-y-6 lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">
+              Новый вопрос
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              <Input
+                placeholder="Введите текст вопроса..."
+                value={newQText}
+                onChange={(e) => setNewQText(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && addQuestion()}
+                className="bg-muted/50"
+              />
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <select
+                  className="flex h-10 w-full border border-input bg-muted/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:flex-1"
+                  value={newQType}
+                  onChange={(e) =>
+                    setNewQType(Number(e.target.value) as QuestionType)
+                  }
+                >
+                  {QUESTION_TYPES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.label}
+                    </option>
+                  ))}
+                </select>
+                <Button onClick={addQuestion} className="w-full sm:w-auto">
+                  <Plus size={16} className="mr-2" /> Добавить
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="space-y-3">
+          {questions.map((q, idx) => (
+            <div
+              key={q.order}
+              draggable
+              onDragStart={() => handleDragStart(idx)}
+              onDragEnter={() => handleDragEnter(idx)}
+              onDragEnd={handleDragEnd}
+              onDragOver={(e) => e.preventDefault()}
+              className={`group flex cursor-grab items-center gap-3 border border-border bg-card p-4 transition-all ${
+                draggedIdx === idx ? "opacity-40 shadow-inner bg-muted" : ""
+              } hover:border-primary/30 hover:shadow-sm`}
+            >
+              <div className="hidden text-muted-foreground hover:text-foreground sm:block">
+                <GripVertical size={20} />
+              </div>
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center bg-muted text-xs font-bold text-muted-foreground">
+                {q.order}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-bold text-foreground">
+                  {q.text}
+                </p>
+                <Badge
+                  variant="secondary"
+                  className="mt-1 text-[10px] uppercase"
+                >
+                  {QUESTION_TYPES.find((t) => t.value === q.type)?.label ||
+                    "Вопрос"}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="flex flex-col sm:flex-row">
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => removeQuestion(idx)}
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-1"
+                    onClick={() => moveQuestion(idx, "up")}
+                    disabled={idx === 0}
+                    className="h-8 w-8 text-muted-foreground"
                   >
-                    <Trash2 size={16} />
+                    <ChevronUp size={16} />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => moveQuestion(idx, "down")}
+                    disabled={idx === questions.length - 1}
+                    className="h-8 w-8 text-muted-foreground"
+                  >
+                    <ChevronDown size={16} />
                   </Button>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeQuestion(idx)}
+                  className="ml-1 h-8 w-8 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 size={16} />
+                </Button>
               </div>
-            ))}
-            {questions.length === 0 && (
-              <div className="p-10 text-center border-2 border-dashed border-border rounded-lg text-muted-foreground text-sm font-medium bg-card">
-                Список вопросов пуст. Добавьте первый вопрос выше.
-              </div>
-            )}
-          </div>
+            </div>
+          ))}
+          {questions.length === 0 && (
+            <div className="border-2 border-dashed border-border bg-card p-10 text-center text-sm font-medium text-muted-foreground">
+              Список вопросов пуст. Добавьте первый вопрос выше.
+            </div>
+          )}
         </div>
       </div>
-    </AdminLayout>
+    </div>
   );
 };

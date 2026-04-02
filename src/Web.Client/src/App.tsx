@@ -15,6 +15,7 @@ import { AdminSpecialitiesPage } from "./pages/AdminSpecialitiesPage";
 import { AdminSpecializationsPage } from "./pages/AdminSpecializationsPage";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AdminLayout } from "./components/AdminShared";
 
 function App() {
   return (
@@ -40,26 +41,28 @@ function App() {
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
-              <Route path="/admin/create-form" element={<CreateFormPage />} />
-              <Route path="/admin/teachers" element={<AdminTeachersPage />} />
-              <Route
-                path="/admin/disciplines"
-                element={<AdminDisciplinesPage />}
-              />
-              <Route
-                path="/admin/departments"
-                element={<AdminDepartmentsPage />}
-              />
-              <Route
-                path="/admin/specialities"
-                element={<AdminSpecialitiesPage />}
-              />
-              <Route
-                path="/admin/specializations"
-                element={<AdminSpecializationsPage />}
-              />
-              <Route path="/admin/groups" element={<AdminGroupsPage />} />
-              <Route path="/admin/settings" element={<AdminSettingsPage />} />
+              <Route element={<AdminLayout />}>
+                <Route path="/admin/create-form" element={<CreateFormPage />} />
+                <Route path="/admin/teachers" element={<AdminTeachersPage />} />
+                <Route
+                  path="/admin/disciplines"
+                  element={<AdminDisciplinesPage />}
+                />
+                <Route
+                  path="/admin/departments"
+                  element={<AdminDepartmentsPage />}
+                />
+                <Route
+                  path="/admin/specialities"
+                  element={<AdminSpecialitiesPage />}
+                />
+                <Route
+                  path="/admin/specializations"
+                  element={<AdminSpecializationsPage />}
+                />
+                <Route path="/admin/groups" element={<AdminGroupsPage />} />
+                <Route path="/admin/settings" element={<AdminSettingsPage />} />
+              </Route>
             </Route>
           </Routes>
         </TooltipProvider>

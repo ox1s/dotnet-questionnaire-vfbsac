@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { usersApi, type GroupUser } from "../api";
+import { getApiErrorMessage, usersApi, type GroupUser } from "../api";
 import {
-  AdminLayout,
+  AdminModal,
   AdminTable,
   AdminTableActions,
 } from "@/components/AdminShared";
 import { Button } from "@/components/ui/button";
-import { TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-
-import { Plus, Users, Key, X } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { toast } from "sonner";
+import { Plus, Users, Key, X, RefreshCw } from "lucide-react";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 
 export const AdminGroupsPage = () => {
   const [groups, setGroups] = useState<GroupUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -49,7 +52,7 @@ export const AdminGroupsPage = () => {
   const openCreate = () => {
     setEditingId(null);
     setGroupName("");
-    setPassword("");
+    setPassword(Math.floor(10000000 + Math.random() * 90000000).toString());
     setIsFormOpen(true);
   };
 
@@ -60,34 +63,55 @@ export const AdminGroupsPage = () => {
     setIsFormOpen(true);
   };
 
+  useAdminPageConfig({
+    title: "Группы",
+    subtitle: "Управление списком групп учебного заведения.",
+    actions: (
+      <Button onClick={openCreate}>
+        <Plus size={18} className="mr-2" /> Добавить
+      </Button>
+    ),
+  });
+
   const handleDelete = async (id: string, name: string) => {
     if (!window.confirm(`Вы уверены, что хотите удалить группу "${name}"?`))
       return;
     try {
       await usersApi.deleteUser(id);
+      toast.success("Группа удалена");
       loadData();
     } catch (e) {
-      alert("Ошибка при удалении");
+      toast.error(getApiErrorMessage(e, "Ошибка при удалении"));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      if (editingId) {
-        await usersApi.updateUser(editingId, groupName, groupName);
 
-        if (password) {
-          await usersApi.setPassword(editingId, password);
+    if (!groupName.trim()) {
+      toast.error("Введите логин группы");
+      return;
+    }
+
+    if (!editingId && !password.trim()) {
+      toast.error("Пароль обязателен при создании");
+      return;
+    }
+
+    try {
+      setIsSubmitting(true);
+
+      if (editingId) {
+        await usersApi.updateUser(editingId, groupName.trim(), groupName.trim());
+
+        if (password.trim()) {
+          await usersApi.setPassword(editingId, password.trim());
         }
-        alert("Группа обновлена");
+        toast.success("Группа обновлена");
       } else {
-        if (!password) {
-          alert("Пароль обязателен при создании");
-          return;
-        }
-        await usersApi.createGroup(groupName, password);
-        setLastCreated({ name: groupName, pass: password });
+        await usersApi.createGroup(groupName.trim(), password.trim());
+        setLastCreated({ name: groupName.trim(), pass: password.trim() });
+        toast.success("Группа создана");
       }
 
       setIsFormOpen(false);
@@ -95,23 +119,19 @@ export const AdminGroupsPage = () => {
       setPassword("");
       loadData();
     } catch (e) {
-      alert("Ошибка. Возможно, имя занято или недопустимо.");
+      toast.error(
+        getApiErrorMessage(
+          e,
+          "Ошибка. Возможно, имя занято или содержит недопустимые символы.",
+        ),
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <AdminLayout
-      title="Студенческие группы"
-      subtitle="Управление учетными записями групп."
-      actions={
-        <Button
-          onClick={openCreate}
-          className="gap-2 bg-slate-800 hover:bg-slate-900"
-        >
-          <Plus size={18} /> Создать группу
-        </Button>
-      }
-    >
+    <>
       {loading ? (
         <div className="p-8 text-center text-slate-500">Загрузка данных...</div>
       ) : (
@@ -179,7 +199,56 @@ export const AdminGroupsPage = () => {
         />
       )}
 
-      {/* Модалка */}
-    </AdminLayout>
+      <AdminModal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingId ? "Редактирование группы" : "Новая группа"}
+        onSubmit={handleSubmit}
+        submitText={isSubmitting ? "Сохранение..." : "Сохранить"}
+      >
+        <div className="space-y-2">
+          <Label htmlFor="group-login">Логин группы</Label>
+          <Input
+            id="group-login"
+            value={groupName}
+            onChange={(e) => setGroupName(e.target.value)}
+            placeholder="Например: ИС-21"
+            autoFocus
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="group-password">
+              {editingId ? "Новый пароль" : "Пароль"}
+            </Label>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={generatePassword}
+              className="h-8 px-3"
+            >
+              <RefreshCw size={14} className="mr-2" />
+              Сгенерировать
+            </Button>
+          </div>
+          <Input
+            id="group-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={
+              editingId
+                ? "Оставьте пустым, чтобы не менять пароль"
+                : "Введите или сгенерируйте пароль"
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            {editingId
+              ? "Если поле пустое, пароль группы останется прежним."
+              : "При создании пароль обязателен."}
+          </p>
+        </div>
+      </AdminModal>
+    </>
   );
 };

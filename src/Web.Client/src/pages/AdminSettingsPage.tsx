@@ -14,12 +14,18 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 
 export const AdminSettingsPage = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+
+  useAdminPageConfig({
+    title: "Настройки",
+    subtitle: "Управление настройками.",
+  });
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,15 +66,12 @@ export const AdminSettingsPage = () => {
   };
 
   return (
-    <AdminLayout
-      title="Настройки системы"
-      subtitle="Управление безопасностью и глобальными параметрами."
-    >
+    <>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="p-2 bg-primary/15 text-primary rounded-lg">
+              <div className="bg-primary/15 p-2 text-primary">
                 <KeyRound size={20} />
               </div>
               Смена пароля
@@ -121,7 +124,7 @@ export const AdminSettingsPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="p-5 bg-destructive/5 border border-destructive/20 rounded-xl flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div className="flex flex-col items-start justify-between gap-4 border border-destructive/20 bg-destructive/5 p-5 sm:flex-row sm:items-center">
               <div>
                 <h4 className="font-bold text-foreground flex items-center gap-2">
                   <AlertTriangle size={18} className="text-destructive" />
@@ -145,6 +148,6 @@ export const AdminSettingsPage = () => {
           </CardContent>
         </Card>
       </div>
-    </AdminLayout>
+    </>
   );
 };

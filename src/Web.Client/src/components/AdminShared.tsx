@@ -1,17 +1,14 @@
 import React from "react";
-import {
-  Search,
-  Edit2,
-  Trash2,
-  RotateCcw,
-  SearchIcon,
-  Trash2Icon,
-} from "lucide-react";
+import { Outlet } from "react-router-dom";
+import { Edit2, Trash2, RotateCcw, SearchIcon, Trash2Icon } from "lucide-react";
+import { useAdminPage, AdminPageProvider } from "@/contexts/admin-page-context";
+
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,7 +16,9 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+
 import { Separator } from "@/components/ui/separator";
+
 import {
   Table,
   TableBody,
@@ -28,8 +27,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+
 import { Button } from "@/components/ui/button";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,10 +42,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+
 import { AppSidebar } from "@/components/app-sidebar";
+
 import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
+
 import { Badge } from "./ui/badge";
-import { ModeToggle } from "./mode-toggle";
+
 import {
   Card,
   CardContent,
@@ -54,63 +57,39 @@ import {
   CardTitle,
 } from "./ui/card";
 
-interface AdminLayoutProps {
+interface AdminTableIconCellProps {
+  icon?: React.ReactNode;
+  textIcon?: string;
+  iconColorClass?: string;
   title: string;
-  subtitle?: string;
-  actions?: React.ReactNode;
-  children: React.ReactNode;
+  isDeleted?: boolean;
+}
+interface AdminTableProps<T> {
+  searchQuery?: string;
+  onSearchChange?: (val: string) => void;
+  searchPlaceholder?: string;
+  columns: { header: string; className?: string }[];
+  data: T[];
+  renderRow: (item: T) => React.ReactNode;
+  emptyText?: string;
+  topContent?: React.ReactNode;
+}
+interface AdminTableActionsProps {
+  isDeleted?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onRestore?: () => void;
+  deleteTitle?: string;
+  deleteDescription?: string;
 }
 
-export const AdminLayout = ({
-  title,
-  subtitle,
-  actions,
-  children,
-}: AdminLayoutProps) => {
-  return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-100 bg-white">
-          <div className="flex items-center gap-2">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbPage className="font-medium text-slate-500">
-                    Справочники
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage className="font-bold text-slate-900">
-                    {title}
-                  </BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-          {actions && <div>{actions}</div>}
-        </header>
-
-        <main className="p-4 md:p-6 max-w-7xl mx-auto w-full">
-          {subtitle && (
-            <p className="text-sm text-slate-500 mb-6">{subtitle}</p>
-          )}
-          {children}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
-  );
+type AdminLayoutProps = {
+  title?: string;
+  subtitle?: string;
+  actions?: React.ReactNode;
+  children?: React.ReactNode;
 };
+
 export const AdminTableRow = ({
   isDeleted,
   children,
@@ -124,13 +103,7 @@ export const AdminTableRow = ({
     {children}
   </TableRow>
 );
-interface AdminTableIconCellProps {
-  icon?: React.ReactNode;
-  textIcon?: string;
-  iconColorClass?: string;
-  title: string;
-  isDeleted?: boolean;
-}
+
 export const AdminTableIconCell = ({
   icon,
   textIcon,
@@ -159,30 +132,86 @@ export const AdminTableIconCell = ({
     )}
   </div>
 );
+export const AdminLayout = ({
+  title,
+  subtitle,
+  actions,
+  children,
+}: AdminLayoutProps) => {
+  return (
+    <AdminPageProvider>
+      <AdminLayoutContent
+        title={title}
+        subtitle={subtitle}
+        actions={actions}
+      >
+        {children}
+      </AdminLayoutContent>
+    </AdminPageProvider>
+  );
+};
+
+const AdminLayoutContent = ({
+  title,
+  subtitle,
+  actions,
+  children,
+}: AdminLayoutProps) => {
+  const { config } = useAdminPage();
+  const resolvedTitle = title ?? config.title;
+  const resolvedSubtitle = subtitle ?? config.subtitle;
+  const resolvedActions = actions ?? config.actions;
+
+  return (
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" />
+
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-100 bg-white">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbPage className="font-medium text-slate-500">
+                    Справочники
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-bold text-slate-900">
+                    {resolvedTitle}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+          {resolvedActions && <div>{resolvedActions}</div>}
+        </header>
+
+        <main className="p-4 md:p-6 max-w-7xl mx-auto w-full">
+          {resolvedSubtitle && (
+            <p className="text-sm text-slate-500 mb-6">{resolvedSubtitle}</p>
+          )}
+          {children ?? <Outlet />}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+};
 export const AdminTableTextBadge = ({ text }: { text: string }) => (
   <span className="inline-block px-2 py-1 text-xs font-medium bg-muted text-muted-foreground border border-border">
     {text}
   </span>
 );
-
-interface AdminTableProps<T> {
-  searchQuery?: string;
-  onSearchChange?: (val: string) => void;
-  searchPlaceholder?: string;
-  columns: { header: string; className?: string }[];
-  data: T[];
-  renderRow: (item: T) => React.ReactNode;
-  emptyText?: string;
-  topContent?: React.ReactNode;
-}
-interface AdminTableActionsProps {
-  isDeleted?: boolean;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onRestore?: () => void;
-  deleteTitle?: string;
-  deleteDescription?: string;
-}
 
 export function AdminTable<T>({
   searchQuery,
@@ -269,7 +298,7 @@ export const AdminModal = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-sm transition-all"
+        className="absolute inset-0 bg-black/10 supports-backdrop-filter:backdrop-blur-xs transition-all"
         onClick={onClose}
       ></div>
 

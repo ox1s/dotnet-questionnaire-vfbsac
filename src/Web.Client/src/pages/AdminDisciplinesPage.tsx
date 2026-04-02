@@ -6,7 +6,6 @@ import {
 } from "../api";
 import { Plus, Book } from "lucide-react";
 import {
-  AdminLayout,
   AdminModal,
   AdminTable,
   AdminTableActions,
@@ -15,11 +14,19 @@ import {
   AdminTableTextBadge,
 } from "@/components/AdminShared";
 import { Button } from "@/components/ui/button";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const AdminDisciplinesPage = () => {
   const [disciplines, setDisciplines] = useState<DictionaryItem[]>([]);
@@ -48,6 +55,16 @@ export const AdminDisciplinesPage = () => {
   useEffect(() => {
     loadData();
   }, []);
+
+  useAdminPageConfig({
+    title: "Дисциплины",
+    subtitle: "Управление списком дисциплин учебного заведения.",
+    actions: (
+      <Button onClick={() => openModal()}>
+        <Plus size={18} className="mr-2" /> Добавить
+      </Button>
+    ),
+  });
 
   const filteredDisciplines = disciplines.filter((d) =>
     d.name.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -105,15 +122,7 @@ export const AdminDisciplinesPage = () => {
   };
 
   return (
-    <AdminLayout
-      title="Дисциплины"
-      subtitle="Управление списком учебных дисциплин."
-      actions={
-        <Button onClick={() => openModal()}>
-          <Plus size={18} /> Добавить
-        </Button>
-      }
-    >
+    <>
       <AdminTable
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -164,22 +173,27 @@ export const AdminDisciplinesPage = () => {
         </div>
         <div className="space-y-2">
           <Label>Кафедра</Label>
-          <select
-            className="flex h-10 w-full border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          <Select
             value={selectedDept}
-            onChange={(e) => setSelectedDept(e.target.value)}
+            onValueChange={(value) => setSelectedDept(value)}
           >
-            <option value="">Выберите...</option>
-            {departments
-              .filter((d) => !d.isDeleted)
-              .map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Выберите..." />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectGroup>
+                {departments
+                  .filter((d) => !d.isDeleted)
+                  .map((d) => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.name}
+                    </SelectItem>
+                  ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
         </div>
       </AdminModal>
-    </AdminLayout>
+    </>
   );
 };

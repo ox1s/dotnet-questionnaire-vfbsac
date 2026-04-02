@@ -4,6 +4,7 @@ import { dictionariesApi, getApiErrorMessage, type TeacherItem } from "../api";
 import { Plus, Search, Edit2, Trash2, RotateCcw, Book } from "lucide-react";
 import {
   AdminLayout,
+  AdminModal,
   AdminTable,
   AdminTableActions,
   AdminTableIconCell,
@@ -13,6 +14,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { Label } from "@/components/ui/label";
 
 export const AdminTeachersPage = () => {
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
@@ -36,6 +39,15 @@ export const AdminTeachersPage = () => {
   useEffect(() => {
     loadData();
   }, []);
+  useAdminPageConfig({
+    title: "Преподаватели",
+    subtitle: "Управление списком преподавателейц учебного заведения.",
+    actions: (
+      <Button onClick={() => openModal()}>
+        <Plus size={18} className="mr-2" /> Добавить
+      </Button>
+    ),
+  });
 
   const filteredTeachers = teachers.filter((t) =>
     t.fullName.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -99,15 +111,7 @@ export const AdminTeachersPage = () => {
   };
 
   return (
-    <AdminLayout
-      title="Преподаватели"
-      subtitle="Управление списком преподавателей."
-      actions={
-        <Button onClick={() => openModal()}>
-          <Plus size={18} /> Добавить
-        </Button>
-      }
-    >
+    <>
       <AdminTable
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -145,49 +149,21 @@ export const AdminTeachersPage = () => {
         )}
       />
 
-      {/* TODO: shadcn Dialog) */}
-      {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            onClick={() => setIsFormOpen(false)}
-          ></div>
-          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">
-              {editingId ? "Редактирование" : "Новый преподаватель"}
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
-                  ФИО
-                </label>
-                <Input
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="bg-slate-50"
-                />
-              </div>
-
-              <div className="flex gap-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsFormOpen(false)}
-                  className="flex-1"
-                >
-                  Отмена
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-slate-800 hover:bg-slate-900"
-                >
-                  Сохранить
-                </Button>
-              </div>
-            </form>
-          </div>
+      <AdminModal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingId ? "Редактирование" : "Новый преподаватель"}
+        onSubmit={handleSubmit}
+      >
+        <div className="space-y-2">
+          <Label>ФИО</Label>
+          <Input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Введите фио..."
+          />
         </div>
-      )}
-    </AdminLayout>
+      </AdminModal>
+    </>
   );
 };

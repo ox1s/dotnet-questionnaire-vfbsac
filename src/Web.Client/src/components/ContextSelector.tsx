@@ -90,7 +90,7 @@ export const ContextSelector: React.FC<Props> = ({
       : disciplines;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-blue-100 mb-6">
+    <div className="bg-white p-6 shadow-sm border border-blue-100 mb-6">
       <h3 className="font-semibold mb-4 text-blue-900">Данные для анкеты</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Форма обучения (всегда) */}

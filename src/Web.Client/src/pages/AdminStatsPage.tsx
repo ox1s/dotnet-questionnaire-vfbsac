@@ -18,8 +18,6 @@ import {
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
 
-import { AdminLayout } from "../layouts/AdminLayout";
-
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -371,19 +369,11 @@ export const AdminStatsPage = () => {
       </div>
     );
 
-  if (loading)
-    return (
-      <AdminLayout title="Аналитика" subtitle="Загрузка...">
-        <div className="p-10 text-center text-slate-400">Загрузка...</div>
-      </AdminLayout>
-    );
-
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-100 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-white">
-          <ModeToggle />
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <Separator

@@ -10,42 +10,20 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import {
-  GalleryVerticalEndIcon,
-  AudioLinesIcon,
-  TerminalIcon,
-  Settings2Icon,
-  BookIcon,
-  ChartAreaIcon,
-} from "lucide-react";
+import { Settings2Icon, BookIcon, ChartAreaIcon } from "lucide-react";
 import { isCancel } from "axios";
 
-// This is sample data.
 const data = {
   user: {
     name: "Администратор",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: <GalleryVerticalEndIcon />,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: <AudioLinesIcon />,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: <TerminalIcon />,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
       title: "Статистика",
@@ -54,7 +32,7 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "Дашборд",
+          title: "Анкеты",
           url: "/dashboard",
         },
         {
@@ -83,7 +61,7 @@ const data = {
         },
         {
           title: "Специальности",
-          url: "/admin/specialties",
+          url: "/admin/specialities",
         },
         {
           title: "Специализации",
@@ -98,19 +76,19 @@ const data = {
       items: [
         {
           title: "Общие",
-          url: "admin/settings",
+          url: "/admin/settings",
         },
         {
           title: "Группы",
-          url: "admin/groups",
+          url: "/admin/groups",
         },
         {
           title: "Преподаватели",
-          url: "admin/teachers",
+          url: "/admin/teachers",
         },
         {
           title: "Наниматели",
-          url: "admin/employers",
+          url: "/admin/employers",
         },
       ],
     },
@@ -121,7 +99,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              className="data-[slot=sidebar-menu-button]:p-1.5!"
+            >
+              <a href="#">
+                <img src="/logo.png" alt="Logo" className="size-5!" />
+                <span className="text-base font-semibold">ВФБГАС</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

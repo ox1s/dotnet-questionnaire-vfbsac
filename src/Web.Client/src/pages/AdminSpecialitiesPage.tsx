@@ -1,7 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { dictionariesApi, getApiErrorMessage, type DictionaryItem } from "../api";
-import { AdminLayout } from "../layouts/AdminLayout";
-import { Plus, Search, Edit2, Trash2, GraduationCap, RotateCcw } from "lucide-react";
+import {
+  dictionariesApi,
+  getApiErrorMessage,
+  type DictionaryItem,
+} from "../api";
+import {
+  Plus,
+  Search,
+  Edit2,
+  Trash2,
+  GraduationCap,
+  RotateCcw,
+  Book,
+} from "lucide-react";
+import {
+  AdminLayout,
+  AdminTable,
+  AdminTableActions,
+  AdminTableIconCell,
+  AdminTableRow,
+  AdminTableTextBadge,
+} from "@/components/AdminShared";
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 
 export const AdminSpecialitiesPage = () => {
   const [specialities, setSpecialities] = useState<DictionaryItem[]>([]);
@@ -26,6 +48,8 @@ export const AdminSpecialitiesPage = () => {
   const filteredSpecialities = specialities.filter((speciality) =>
     speciality.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+  const getSpecialityName = (id?: string) =>
+    specialities.find((s) => s.id === id)?.name || "-";
 
   const openModal = (speciality?: DictionaryItem) => {
     if (speciality) {
@@ -81,120 +105,43 @@ export const AdminSpecialitiesPage = () => {
       title="Специальности"
       subtitle="Управление перечнем образовательных специальностей."
       actions={
-        <button
-          onClick={() => openModal()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-white rounded-xl hover:bg-slate-900 font-bold shadow-lg shadow-slate-800/20 text-sm active:scale-95 transition-all"
-        >
+        <Button onClick={() => openModal()}>
           <Plus size={18} /> Добавить
-        </button>
+        </Button>
       }
     >
-      <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
-        <div className="relative w-full md:max-w-md">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            size={18}
-          />
-          <input
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-            placeholder="Поиск специальности..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-      </div>
+      <AdminTable
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Поиск специальности..."
+        data={filteredSpecialities}
+        columns={[
+          { header: "Название" },
+          { header: "", className: "text-right w-24" },
+        ]}
+        renderRow={(speciality) => (
+          <AdminTableRow key={speciality.id} isDeleted={speciality.isDeleted}>
+            <TableCell className="align-top">
+              <AdminTableIconCell
+                icon={<Book size={14} />}
+                iconColorClass="bg-chart-1/15 text-chart-1"
+                title={speciality.name}
+                isDeleted={speciality.isDeleted}
+              />
+            </TableCell>
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50/50 border-b border-slate-200">
-              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase">
-                Название
-              </th>
-              <th className="py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase text-right w-12 md:w-24"></th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {filteredSpecialities.map((speciality) => (
-              <tr
-                key={speciality.id}
-                className={`group transition-colors ${
-                  speciality.isDeleted
-                    ? "bg-slate-50/70 text-slate-400"
-                    : "hover:bg-slate-50"
-                }`}
-              >
-                <td className="py-3 px-3 md:py-4 md:px-6 align-top">
-                  <div className="flex items-start gap-2 md:gap-3">
-                    <div className="p-1.5 md:p-2 rounded-lg bg-emerald-50 text-emerald-600 shrink-0 mt-0.5">
-                      <GraduationCap
-                        size={14}
-                        className="md:w-[16px] md:h-[16px]"
-                      />
-                    </div>
-                    <span className={`text-xs md:text-sm font-bold line-clamp-3 leading-snug ${
-                      speciality.isDeleted ? "text-slate-500" : "text-slate-900"
-                    }`}>
-                      {speciality.name}
-                    </span>
-                    {speciality.isDeleted && (
-                      <span className="inline-flex items-center rounded-full bg-slate-200 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-slate-600">
-                        Удалено
-                      </span>
-                    )}
-                  </div>
-                </td>
-                <td className="py-3 px-3 md:py-4 md:px-6 align-top text-right">
-                  <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                    {speciality.isDeleted ? (
-                      <button
-                        onClick={() => handleRestore(speciality.id)}
-                        className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
-                      >
-                        <RotateCcw
-                          size={16}
-                          className="md:w-[18px] md:h-[18px]"
-                        />
-                      </button>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => openModal(speciality)}
-                          className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
-                        >
-                          <Edit2
-                            size={16}
-                            className="md:w-[18px] md:h-[18px]"
-                          />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(speciality.id)}
-                          className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-accent hover:bg-accent/10 transition-colors"
-                        >
-                          <Trash2
-                            size={16}
-                            className="md:w-[18px] md:h-[18px]"
-                          />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {filteredSpecialities.length === 0 && (
-              <tr>
-                <td
-                  colSpan={2}
-                  className="p-8 text-center text-slate-400 text-sm"
-                >
-                  Ничего не найдено
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            <TableCell className="align-top text-right">
+              <AdminTableActions
+                isDeleted={speciality.isDeleted}
+                onEdit={() => openModal(speciality)}
+                onDelete={() => handleDelete(speciality.id)}
+                onRestore={() => handleRestore(speciality.id)}
+                deleteDescription={`Вы уверены, что хотите удалить дисциплину "${speciality.name}"?`}
+              />
+            </TableCell>
+          </AdminTableRow>
+        )}
+      />
 
       {isFormOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">

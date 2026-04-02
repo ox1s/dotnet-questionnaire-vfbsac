@@ -1,5 +1,12 @@
 import React from "react";
-import { Search, Edit2, Trash2, RotateCcw } from "lucide-react";
+import {
+  Search,
+  Edit2,
+  Trash2,
+  RotateCcw,
+  SearchIcon,
+  Trash2Icon,
+} from "lucide-react";
 import {
   SidebarInset,
   SidebarProvider,
@@ -13,7 +20,39 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { AppSidebar } from "@/components/app-sidebar";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "./ui/input-group";
+import { Badge } from "./ui/badge";
+import { ModeToggle } from "./mode-toggle";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 interface AdminLayoutProps {
   title: string;
@@ -29,8 +68,15 @@ export const AdminLayout = ({
   children,
 }: AdminLayoutProps) => {
   return (
-    <SidebarProvider>
-      <AppSidebar />
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" />
       <SidebarInset>
         <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-100 bg-white">
           <div className="flex items-center gap-2">
@@ -65,6 +111,59 @@ export const AdminLayout = ({
     </SidebarProvider>
   );
 };
+export const AdminTableRow = ({
+  isDeleted,
+  children,
+}: {
+  isDeleted?: boolean;
+  children: React.ReactNode;
+}) => (
+  <TableRow
+    className={`group ${isDeleted ? "bg-muted/50 text-muted-foreground" : "hover:bg-muted/30"}`}
+  >
+    {children}
+  </TableRow>
+);
+interface AdminTableIconCellProps {
+  icon?: React.ReactNode;
+  textIcon?: string;
+  iconColorClass?: string;
+  title: string;
+  isDeleted?: boolean;
+}
+export const AdminTableIconCell = ({
+  icon,
+  textIcon,
+  iconColorClass = "bg-primary/15 text-primary",
+  title,
+  isDeleted,
+}: AdminTableIconCellProps) => (
+  <div className="flex items-start gap-3">
+    <div
+      className={`flex h-8 w-8 items-center justify-center shrink-0 mt-0.5 ${iconColorClass}`}
+    >
+      {icon ? icon : <span className="text-xs font-bold">{textIcon}</span>}
+    </div>
+    <span
+      className={`text-sm font-bold line-clamp-3 pt-1 ${isDeleted ? "text-muted-foreground" : "text-foreground"}`}
+    >
+      {title}
+    </span>
+    {isDeleted && (
+      <Badge
+        variant="secondary"
+        className="mt-0.5 text-[10px] uppercase tracking-wide"
+      >
+        Удалено
+      </Badge>
+    )}
+  </div>
+);
+export const AdminTableTextBadge = ({ text }: { text: string }) => (
+  <span className="inline-block px-2 py-1 text-xs font-medium bg-muted text-muted-foreground border border-border">
+    {text}
+  </span>
+);
 
 interface AdminTableProps<T> {
   searchQuery?: string;
@@ -72,10 +171,17 @@ interface AdminTableProps<T> {
   searchPlaceholder?: string;
   columns: { header: string; className?: string }[];
   data: T[];
-  keyExtractor: (item: T) => string;
   renderRow: (item: T) => React.ReactNode;
   emptyText?: string;
   topContent?: React.ReactNode;
+}
+interface AdminTableActionsProps {
+  isDeleted?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onRestore?: () => void;
+  deleteTitle?: string;
+  deleteDescription?: string;
 }
 
 export function AdminTable<T>({
@@ -84,7 +190,6 @@ export function AdminTable<T>({
   searchPlaceholder = "Поиск...",
   columns,
   data,
-  keyExtractor,
   renderRow,
   emptyText = "Ничего не найдено",
   topContent,
@@ -94,102 +199,163 @@ export function AdminTable<T>({
       {topContent}
 
       {onSearchChange && (
-        <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-          <div className="relative w-full md:max-w-md">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-            <input
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none"
-              placeholder={searchPlaceholder}
-              value={searchQuery || ""}
-              onChange={(e) => onSearchChange(e.target.value)}
-            />
+        <div>
+          <div>
+            <InputGroup>
+              <InputGroupInput
+                placeholder={searchPlaceholder}
+                value={searchQuery || ""}
+                onChange={(e) => onSearchChange(e.target.value)}
+              />
+              <InputGroupAddon>
+                <SearchIcon />
+              </InputGroupAddon>
+            </InputGroup>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50/50 border-b border-slate-200">
+      <div>
+        <Table>
+          <TableHeader className="bg-muted/50">
+            <TableRow>
               {columns.map((col, i) => (
-                <th
+                <TableHead
                   key={i}
-                  className={`py-3 px-3 md:py-4 md:px-6 text-[10px] md:text-xs font-bold text-slate-500 uppercase ${col.className || ""}`}
+                  className={`text-xs font-bold text-muted-foreground uppercase ${col.className || ""}`}
                 >
                   {col.header}
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {data.length > 0 ? (
-              data.map((item) => (
-                <React.Fragment key={keyExtractor(item)}>
-                  {renderRow(item)}
-                </React.Fragment>
-              ))
+              data.map((item) => renderRow(item))
             ) : (
-              <tr>
-                <td
+              <TableRow>
+                <TableCell
                   colSpan={columns.length}
-                  className="p-8 text-center text-slate-400 text-sm"
+                  className="h-24 text-center text-muted-foreground text-sm"
                 >
                   {emptyText}
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
 }
-
-interface AdminTableActionsProps {
-  isDeleted?: boolean;
-  onEdit?: () => void;
-  onDelete?: () => void;
-  onRestore?: () => void;
+interface AdminModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  onSubmit: (e: React.FormEvent) => void;
+  children: React.ReactNode;
+  submitText?: string;
 }
+export const AdminModal = ({
+  isOpen,
+  onClose,
+  title,
+  onSubmit,
+  children,
+  submitText = "Сохранить",
+}: AdminModalProps) => {
+  if (!isOpen) return null;
 
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-background/80 backdrop-blur-sm transition-all"
+        onClick={onClose}
+      ></div>
+
+      <Card className="relative w-full max-w-md shadow-lg animate-in fade-in zoom-in-95 duration-200">
+        <form onSubmit={onSubmit}>
+          <CardHeader>
+            <CardTitle className="text-lg">{title}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4 ">{children}</CardContent>
+          <CardFooter className="flex gap-3 pt-2 mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="flex-1"
+            >
+              Отмена
+            </Button>
+            <Button type="submit" className="flex-1">
+              {submitText}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+    </div>
+  );
+};
 export const AdminTableActions = ({
   isDeleted,
   onEdit,
   onDelete,
   onRestore,
+  deleteTitle = "Удалить?",
+  deleteDescription = "Вы уверены, что хотите удалить эту запись? Это действие нельзя будет отменить.",
 }: AdminTableActionsProps) => {
   return (
     <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
       {isDeleted ? (
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onRestore}
-          className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+          className="text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
           title="Восстановить"
         >
-          <RotateCcw size={16} className="md:w-[18px] md:h-[18px]" />
-        </button>
+          <RotateCcw size={16} />
+        </Button>
       ) : (
         <>
           {onEdit && (
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={onEdit}
-              className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
+              className="text-slate-400 hover:text-primary hover:bg-primary/10"
               title="Редактировать"
             >
-              <Edit2 size={16} className="md:w-[18px] md:h-[18px]" />
-            </button>
+              <Edit2 size={16} />
+            </Button>
           )}
+
           {onDelete && (
-            <button
-              onClick={onDelete}
-              className="p-1.5 md:p-2 rounded-md text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
-              title="Удалить"
-            >
-              <Trash2 size={16} className="md:w-[18px] md:h-[18px]" />
-            </button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="icon" title="Удалить">
+                  <Trash2 size={16} />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent size="sm">
+                <AlertDialogHeader>
+                  <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+                    <Trash2Icon />
+                  </AlertDialogMedia>
+                  <AlertDialogTitle>{deleteTitle}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {deleteDescription}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="sm:justify-center gap-2 mt-4">
+                  <AlertDialogCancel className="mt-0">Отмена</AlertDialogCancel>
+                  <AlertDialogAction variant="destructive" onClick={onDelete}>
+                    Удалить
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
         </>
       )}

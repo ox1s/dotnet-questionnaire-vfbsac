@@ -34,7 +34,7 @@ export const WeightedRatingInput: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-4 rounded-lg border bg-gray-50 border-gray-200">
+    <div className="flex flex-col gap-2 p-4 border bg-gray-50 border-gray-200">
       <div className="flex gap-4 items-start">
         <div className="flex-1">
           <label className="block text-xs font-medium text-gray-500 mb-1">

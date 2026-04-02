@@ -10,10 +10,15 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { AdminLayout } from "../layouts/AdminLayout";
+
 import { toast } from "sonner";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { AdminLayout } from "@/components/AdminShared";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const QuestionType = {
   Text: 1,
@@ -127,98 +132,98 @@ export const CreateFormPage = () => {
       title="Конструктор анкет"
       subtitle="Создание новой формы опроса."
       actions={
-        <Button size="lg" onClick={handleSave}>
-          <Save size={18} /> Сохранить анкету
+        <Button onClick={handleSave}>
+          <Save size={16} className="mr-2" /> Сохранить анкету
         </Button>
       }
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-1 space-y-6">
-          <div className="bg-surface-light p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
-              Настройки
-            </h3>
-
-            <div className="mb-6">
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                Название анкеты
-              </label>
-              <Textarea
-                rows={3}
-                placeholder="Например: Удовлетворенность качеством преподавания..."
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-bold text-slate-700 mb-3">
-                Контекст (Фильтры)
-                <span className="block text-xs font-normal text-slate-400 mt-1">
-                  Что выбирает студент перед началом?
-                </span>
-              </label>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">
+                Настройки
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <div className="space-y-2">
-                {FILTER_OPTIONS.map((opt) => {
-                  const active = selectedFilters.includes(opt.key);
-                  return (
-                    <button
-                      key={opt.key}
-                      onClick={() => toggleFilter(opt.key)}
-                      className={`flex w-full items-center justify-between px-4 py-3 rounded-xl border transition-all text-sm font-medium ${
-                        active
-                          ? "bg-primary border-primary text-white shadow-md shadow-primary/20"
-                          : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
-                      }`}
-                    >
-                      {opt.label}
-                      {active && (
-                        <CheckCircle2 size={16} className="text-white" />
-                      )}
-                    </button>
-                  );
-                })}
+                <Label>Название анкеты</Label>
+                <Textarea
+                  rows={3}
+                  placeholder="Например: Удовлетворенность качеством преподавания..."
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="bg-muted/50"
+                />
               </div>
-            </div>
-          </div>
+              <div className="space-y-3">
+                <div>
+                  <Label>Контекст (Фильтры)</Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Что выбирает студент перед началом?
+                  </p>
+                </div>
+                <div className="space-y-2">
+                  {FILTER_OPTIONS.map((opt) => {
+                    const active = selectedFilters.includes(opt.key);
+                    return (
+                      <button
+                        key={opt.key}
+                        onClick={() => toggleFilter(opt.key)}
+                        className={`flex w-full items-center justify-between px-4 py-3 rounded-lg border transition-all text-sm font-medium ${
+                          active
+                            ? "bg-primary border-primary text-primary-foreground shadow-sm"
+                            : "bg-background border-border text-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {opt.label}
+                        {active && <CheckCircle2 size={16} />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-surface-light p-6 rounded-2xl shadow-sm border border-slate-200">
-            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
-              Новый вопрос
-            </h3>
-            <div className="flex flex-col gap-4">
-              <input
-                type="text"
-                className="input-field bg-background-light"
-                placeholder="Введите текст вопроса..."
-                value={newQText}
-                onChange={(e) => setNewQText(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addQuestion()}
-              />
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <select
-                  className="input-field bg-background-light w-full sm:flex-1"
-                  value={newQType}
-                  onChange={(e) =>
-                    setNewQType(Number(e.target.value) as QuestionType)
-                  }
-                >
-                  {QUESTION_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-
-                <Button onClick={addQuestion} className="w-full sm:w-auto">
-                  <Plus size={18} /> Добавить
-                </Button>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm text-muted-foreground uppercase tracking-wider">
+                Новый вопрос
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">
+                <Input
+                  placeholder="Введите текст вопроса..."
+                  value={newQText}
+                  onChange={(e) => setNewQText(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && addQuestion()}
+                  className="bg-muted/50"
+                />
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:flex-1"
+                    value={newQType}
+                    onChange={(e) =>
+                      setNewQType(Number(e.target.value) as QuestionType)
+                    }
+                  >
+                    {QUESTION_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                  <Button onClick={addQuestion} className="w-full sm:w-auto">
+                    <Plus size={16} className="mr-2" /> Добавить
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
           <div className="space-y-3">
             {questions.map((q, idx) => (
@@ -229,59 +234,62 @@ export const CreateFormPage = () => {
                 onDragEnter={() => handleDragEnter(idx)}
                 onDragEnd={handleDragEnd}
                 onDragOver={(e) => e.preventDefault()}
-                className={`group flex items-center gap-3 p-4 bg-surface-light border border-slate-200 rounded-2xl transition-all ${
-                  draggedIdx === idx
-                    ? "opacity-40 shadow-inner bg-slate-50"
-                    : ""
-                } hover:border-slate-300 hover:shadow-md cursor-grab`}
+                className={`group flex items-center gap-3 p-4 bg-card border border-border rounded-lg transition-all ${
+                  draggedIdx === idx ? "opacity-40 shadow-inner bg-muted" : ""
+                } hover:border-primary/30 hover:shadow-sm cursor-grab`}
               >
-                <div className="hidden sm:block text-slate-300 hover:text-slate-500">
+                <div className="hidden sm:block text-muted-foreground hover:text-foreground">
                   <GripVertical size={20} />
                 </div>
-
-                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+                <div className="w-8 h-8 rounded-md bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground shrink-0">
                   {q.order}
                 </div>
-
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-slate-800 truncate">
+                  <p className="text-sm font-bold text-foreground truncate">
                     {q.text}
                   </p>
-                  <span className="inline-block mt-1 text-[10px] uppercase font-bold text-slate-400 bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                  <Badge
+                    variant="secondary"
+                    className="mt-1 text-[10px] uppercase"
+                  >
                     {QUESTION_TYPES.find((t) => t.value === q.type)?.label ||
                       "Вопрос"}
-                  </span>
+                  </Badge>
                 </div>
-
                 <div className="flex items-center gap-1 sm:gap-2">
                   <div className="flex flex-col sm:flex-row">
-                    <button
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => moveQuestion(idx, "up")}
                       disabled={idx === 0}
-                      className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
+                      className="h-8 w-8 text-muted-foreground"
                     >
-                      <ChevronUp size={20} />
-                    </button>
-                    <button
+                      <ChevronUp size={16} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => moveQuestion(idx, "down")}
                       disabled={idx === questions.length - 1}
-                      className="p-1 sm:p-2 text-slate-400 hover:text-primary disabled:opacity-20"
+                      className="h-8 w-8 text-muted-foreground"
                     >
-                      <ChevronDown size={20} />
-                    </button>
+                      <ChevronDown size={16} />
+                    </Button>
                   </div>
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => removeQuestion(idx)}
-                    className="p-2 text-slate-300 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors ml-1"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 ml-1"
                   >
-                    <Trash2 size={18} />
-                  </button>
+                    <Trash2 size={16} />
+                  </Button>
                 </div>
               </div>
             ))}
-
             {questions.length === 0 && (
-              <div className="p-10 text-center border-2 border-dashed border-slate-200 rounded-2xl text-slate-400 text-sm font-medium bg-surface-light">
+              <div className="p-10 text-center border-2 border-dashed border-border rounded-lg text-muted-foreground text-sm font-medium bg-card">
                 Список вопросов пуст. Добавьте первый вопрос выше.
               </div>
             )}

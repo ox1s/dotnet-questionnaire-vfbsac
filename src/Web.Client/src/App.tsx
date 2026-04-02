@@ -19,7 +19,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
         <TooltipProvider delayDuration={0}>
           <Toaster position="top-center" />
           <Routes>

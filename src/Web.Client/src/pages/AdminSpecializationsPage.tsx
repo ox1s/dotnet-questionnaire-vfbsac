@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { dictionariesApi, getApiErrorMessage, type DictionaryItem } from "../api";
-import { AdminLayout } from "../layouts/AdminLayout";
+import {
+  dictionariesApi,
+  getApiErrorMessage,
+  type DictionaryItem,
+} from "../api";
+
 import { Plus, Search, Edit2, Trash2, Layers3, RotateCcw } from "lucide-react";
 
 type SpecializationItem = DictionaryItem & {
@@ -157,9 +161,13 @@ export const AdminSpecializationsPage = () => {
                     <div className="p-1.5 md:p-2 rounded-lg bg-violet-50 text-violet-600 shrink-0 mt-0.5">
                       <Layers3 size={14} className="md:w-[16px] md:h-[16px]" />
                     </div>
-                    <span className={`text-xs md:text-sm font-bold line-clamp-3 leading-snug ${
-                      specialization.isDeleted ? "text-slate-500" : "text-slate-900"
-                    }`}>
+                    <span
+                      className={`text-xs md:text-sm font-bold line-clamp-3 leading-snug ${
+                        specialization.isDeleted
+                          ? "text-slate-500"
+                          : "text-slate-900"
+                      }`}
+                    >
                       {specialization.name}
                     </span>
                     {specialization.isDeleted && (
@@ -172,7 +180,8 @@ export const AdminSpecializationsPage = () => {
                 <td className="py-3 px-3 md:py-4 md:px-6 align-top">
                   <span className="inline-block px-2 py-1 rounded text-[10px] md:text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200 line-clamp-3 leading-tight">
                     {getSpecialityName(
-                      specialization.specialityId || specialization.departmentId,
+                      specialization.specialityId ||
+                        specialization.departmentId,
                     )}
                   </span>
                 </td>
@@ -263,10 +272,10 @@ export const AdminSpecializationsPage = () => {
                   {specialities
                     .filter((speciality) => !speciality.isDeleted)
                     .map((speciality) => (
-                    <option key={speciality.id} value={speciality.id}>
-                      {speciality.name}
-                    </option>
-                  ))}
+                      <option key={speciality.id} value={speciality.id}>
+                        {speciality.name}
+                      </option>
+                    ))}
                 </select>
               </div>
               <div className="flex gap-3 pt-4">

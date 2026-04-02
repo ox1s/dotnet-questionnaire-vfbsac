@@ -11,7 +11,9 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { AdminLayout } from "../layouts/AdminLayout";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 const QuestionType = {
   Text: 1,
@@ -125,12 +127,9 @@ export const CreateFormPage = () => {
       title="Конструктор анкет"
       subtitle="Создание новой формы опроса."
       actions={
-        <button
-          onClick={handleSave}
-          className="flex items-center justify-center gap-2 w-full md:w-auto px-6 py-2.5 bg-green-600 text-white rounded-xl hover:bg-green-700 font-bold shadow-lg shadow-green-600/20 active:scale-95 transition-all text-sm whitespace-nowrap"
-        >
+        <Button size="lg" onClick={handleSave}>
           <Save size={18} /> Сохранить анкету
-        </button>
+        </Button>
       }
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -144,9 +143,8 @@ export const CreateFormPage = () => {
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 Название анкеты
               </label>
-              <textarea
+              <Textarea
                 rows={3}
-                className="input-field resize-none bg-background-light"
                 placeholder="Например: Удовлетворенность качеством преподавания..."
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
@@ -215,12 +213,9 @@ export const CreateFormPage = () => {
                   ))}
                 </select>
 
-                <button
-                  onClick={addQuestion}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-slate-800 text-white rounded-xl font-bold text-sm hover:bg-slate-900 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
-                >
+                <Button onClick={addQuestion} className="w-full sm:w-auto">
                   <Plus size={18} /> Добавить
-                </button>
+                </Button>
               </div>
             </div>
           </div>

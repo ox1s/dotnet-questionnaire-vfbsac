@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "react-hot-toast";
-
+import { Toaster } from "@/components/ui/sonner";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { SurveyPage } from "./pages/SurveyPage";
@@ -18,7 +17,7 @@ import { AdminSpecializationsPage } from "./pages/AdminSpecializationsPage";
 function App() {
   return (
     <BrowserRouter>
-      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
+      <Toaster position="top-center" />
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

@@ -9,9 +9,22 @@ import {
   ArrowRight,
   Trash2,
 } from "lucide-react";
-
+import { Badge } from "@/components/ui/badge";
 import { isAdmin } from "../utils/auth";
 import { AdminLayout } from "../layouts/AdminLayout";
+import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export const DashboardPage = () => {
   const [forms, setForms] = useState<Form[]>([]);
@@ -32,20 +45,13 @@ export const DashboardPage = () => {
     navigate("/login");
   };
 
-  const deleteForm = async (id: string, title: string) => {
-    const isConfirmed = window.confirm(
-      `Удалить анкету "${title}"? Это действие нельзя отменить.`,
-    );
-
-    if (!isConfirmed) {
-      return;
-    }
-
+  const deleteForm = async (id: string) => {
     try {
       await api.delete(`/forms/${id}`);
       setForms((prev) => prev.filter((form) => form.id !== id));
+      toast.success("Анкета успешно удалена.");
     } catch {
-      window.alert("Не удалось удалить анкету.");
+      toast.error("Не удалось удалить анкету.");
     }
   };
 
@@ -62,14 +68,35 @@ export const DashboardPage = () => {
             </div>
             {userIsAdmin && (
               <div className="flex items-center gap-1">
-                <button
-                  type="button"
-                  onClick={() => deleteForm(form.id, form.title)}
-                  className="p-2 text-slate-400 hover:text-accent hover:bg-accent/10 rounded-lg transition-colors"
-                  title="Удалить анкету"
-                >
-                  <Trash2 size={20} />
-                </button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" title="Удалить анкету">
+                      <Trash2 size={20} />
+                    </Button>
+                  </AlertDialogTrigger>
+
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Удалить анкету?</AlertDialogTitle>
+
+                      <AlertDialogDescription>
+                        Анкета "{form.title}" будет удалена без возможности
+                        восстановления.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Отмена</AlertDialogCancel>
+
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        onClick={() => deleteForm(form.id)}
+                      >
+                        Удалить
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
 
                 <Link
                   to={`/admin/stats/${form.id}`}
@@ -83,13 +110,17 @@ export const DashboardPage = () => {
           </div>
           <p className="text-s mb-5">{form.title}</p>
           <div className="mt-auto pt-4 border-t border-slate-100">
-            {form.requiredFilters && form.requiredFilters.length > 0 ? (
-              <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mb-3">
-                Требует: {form.requiredFilters.join(", ")}
-              </p>
-            ) : (
-              <p className="text-xs text-slate-400 mb-3">Без фильтров</p>
-            )}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {form.requiredFilters && form.requiredFilters.length > 0 ? (
+                form.requiredFilters.map((filter, i) => (
+                  <Badge key={i} variant="outline">
+                    {filter}
+                  </Badge>
+                ))
+              ) : (
+                <Badge variant="secondary">Без фильтров</Badge>
+              )}
+            </div>
             {!userIsAdmin && (
               <Link
                 to={`/form/${form.id}`}
@@ -134,9 +165,13 @@ export const DashboardPage = () => {
             </h1>
           </div>
           <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-xs font-bold text-slate-600">
-              <User size={14} /> Студент
-            </div>
+            <Badge
+              variant="secondary"
+              className="hidden sm:flex items-center gap-1"
+            >
+              <User size={14} />
+              Студент
+            </Badge>
             <div className="flex items-center gap-4">
               <button
                 onClick={logout}

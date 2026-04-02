@@ -6,9 +6,17 @@ import {
   ContextSelector,
   type SubmissionContext,
 } from "../components/ContextSelector";
-import { ArrowLeft, CheckCircle } from "lucide-react";
-import toast from "react-hot-toast";
+import { AlertCircleIcon, ArrowLeft, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 import { getDeviceId } from "../utils/device";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 
 export const SurveyPage = () => {
   const { id } = useParams();
@@ -30,17 +38,16 @@ export const SurveyPage = () => {
   const handleSubmit = async () => {
     if (!form) return;
 
-    // Простая валидация
     if (form.requiredFilters?.includes("Teacher") && !context.teacherId) {
-      alert("Пожалуйста, выберите преподавателя!");
+      toast.error("Пожалуйста, выберите преподавателя!");
       return;
     }
     if (form.requiredFilters?.includes("Department") && !context.departmentId) {
-      alert("Пожалуйста, выберите кафедру!");
+      toast.error("Пожалуйста, выберите кафедру!");
       return;
     }
     if (form.requiredFilters?.includes("Discipline") && !context.disciplineId) {
-      alert("Пожалуйста, выберите дисциплину!");
+      toast.error("Пожалуйста, выберите дисциплину!");
       return;
     }
 
@@ -88,80 +95,89 @@ export const SurveyPage = () => {
   if (!form) return <div className="p-8 text-center">Загрузка...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <header className="bg-white shadow-sm px-6 py-4 mb-6 sticky top-0 z-10">
-        <div className="max-w-3xl mx-auto flex items-center gap-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-gray-500 hover:text-gray-800"
-          >
+    <div className="min-h-screen bg-muted/40 pb-20">
+      {/* Header */}
+      <header className="bg-background border-b sticky top-0 z-10">
+        <div className="max-w-3xl mx-auto flex items-center gap-4 px-6 py-4">
+          <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft />
-          </button>
-          <h1 className="text-lg font-bold truncate">{form.title}</h1>
+          </Button>
+
+          <h1 className="text-lg font-semibold truncate">{form.title}</h1>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 space-y-6">
+      {/* Content */}
+      <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         <ContextSelector
           requiredFilters={form.requiredFilters}
           onChange={handleContextChange}
         />
-
         {form.questions.map((q, idx) => (
-          <div key={q.id} className="bg-white p-6 rounded-lg shadow-sm">
-            <div className="flex gap-3 mb-4">
-              <span className="shrink-0 w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-600 text-sm">
-                {idx + 1}
-              </span>
-              <p className="font-medium text-gray-800 pt-1">{q.text}</p>
-            </div>
+          <Card key={q.id}>
+            <CardContent className="p-6 space-y-4">
+              {/* Question header */}
+              <div className="flex gap-3">
+                <div className="flex items-center justify-center size-8 rounded-full bg-muted text-sm font-medium">
+                  {idx + 1}
+                </div>
 
-            <div className="pl-11">
-              {q.type === "WeightedRating" && (
-                <WeightedRatingInput
-                  value={answers[q.id]?.value}
-                  weight={answers[q.id]?.weight}
-                  onChange={(v, w) =>
-                    setAnswers({ ...answers, [q.id]: { value: v, weight: w } })
-                  }
-                />
-              )}
+                <p className="font-medium leading-snug">{q.text}</p>
+              </div>
 
-              {q.type === "Text" && (
-                <textarea
-                  className="input-field min-h-25"
-                  placeholder="Ваш ответ..."
-                  value={answers[q.id] || ""}
-                  onChange={(e) =>
-                    setAnswers({ ...answers, [q.id]: e.target.value })
-                  }
-                />
-              )}
+              <Separator />
 
-              {q.type === "Number" && (
-                <input
-                  type="number"
-                  className="input-field w-32"
-                  placeholder="1-10"
-                  value={answers[q.id] || ""}
-                  onChange={(e) =>
-                    setAnswers({
-                      ...answers,
-                      [q.id]: parseFloat(e.target.value),
-                    })
-                  }
-                />
-              )}
-            </div>
-          </div>
+              {/* Answer */}
+              <div className="pl-11">
+                {q.type === "WeightedRating" && (
+                  <WeightedRatingInput
+                    value={answers[q.id]?.value}
+                    weight={answers[q.id]?.weight}
+                    onChange={(v, w) =>
+                      setAnswers({
+                        ...answers,
+                        [q.id]: { value: v, weight: w },
+                      })
+                    }
+                  />
+                )}
+
+                {q.type === "Text" && (
+                  <Textarea
+                    placeholder="Ваш ответ..."
+                    value={answers[q.id] || ""}
+                    onChange={(e) =>
+                      setAnswers({ ...answers, [q.id]: e.target.value })
+                    }
+                  />
+                )}
+
+                {q.type === "Number" && (
+                  <Input
+                    type="number"
+                    placeholder="1–10"
+                    className="w-32"
+                    value={answers[q.id] || ""}
+                    onChange={(e) =>
+                      setAnswers({
+                        ...answers,
+                        [q.id]: parseFloat(e.target.value),
+                      })
+                    }
+                  />
+                )}
+              </div>
+            </CardContent>
+          </Card>
         ))}
 
-        <button
-          onClick={handleSubmit}
-          className="btn-primary w-full py-4 text-lg shadow-lg flex items-center justify-center gap-2"
-        >
-          <CheckCircle /> Отправить анкету
-        </button>
+        {/* Submit */}
+        <div className="pt-4">
+          <Button className="w-full" size="lg" onClick={handleSubmit}>
+            <CheckCircle data-icon="inline-start" />
+            Отправить анкету
+          </Button>
+        </div>
       </main>
     </div>
   );

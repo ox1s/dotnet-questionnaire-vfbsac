@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { dictionariesApi, getApiErrorMessage, type DictionaryItem } from "../api";
+import {
+  dictionariesApi,
+  getApiErrorMessage,
+  type DictionaryItem,
+} from "../api";
 import { AdminLayout } from "../layouts/AdminLayout";
 import { Plus, Edit2, Trash2, Building2, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export const AdminDepartmentsPage = () => {
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
@@ -69,12 +74,9 @@ export const AdminDepartmentsPage = () => {
       title="Кафедры"
       subtitle="Структурные подразделения колледжа."
       actions={
-        <button
-          onClick={() => openModal()}
-          className="flex items-center gap-2 px-5 py-2.5 bg-slate-800 text-white rounded-xl hover:bg-slate-900 font-bold shadow-lg shadow-slate-800/20 text-sm active:scale-95 transition-all"
-        >
+        <Button onClick={() => openModal()}>
           <Plus size={18} /> Добавить
-        </button>
+        </Button>
       }
     >
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -94,7 +96,9 @@ export const AdminDepartmentsPage = () => {
               <tr
                 key={d.id}
                 className={`group transition-colors ${
-                  d.isDeleted ? "bg-slate-50/70 text-slate-400" : "hover:bg-slate-50"
+                  d.isDeleted
+                    ? "bg-slate-50/70 text-slate-400"
+                    : "hover:bg-slate-50"
                 }`}
               >
                 <td className="py-4 px-6">
@@ -102,7 +106,9 @@ export const AdminDepartmentsPage = () => {
                     <div className="p-2 rounded-lg bg-orange-50 text-orange-600">
                       <Building2 size={16} />
                     </div>
-                    <span className={`text-sm font-bold ${d.isDeleted ? "text-slate-500" : "text-slate-900"}`}>
+                    <span
+                      className={`text-sm font-bold ${d.isDeleted ? "text-slate-500" : "text-slate-900"}`}
+                    >
                       {d.name}
                     </span>
                     {d.isDeleted && (
@@ -115,27 +121,23 @@ export const AdminDepartmentsPage = () => {
                 <td className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                     {d.isDeleted ? (
-                      <button
+                      <Button
                         onClick={() => handleRestore(d.id)}
-                        className="p-1.5 rounded text-slate-400 hover:text-emerald-600"
                         title="Восстановить"
                       >
                         <RotateCcw size={18} />
-                      </button>
+                      </Button>
                     ) : (
                       <>
-                        <button
-                          onClick={() => openModal(d)}
-                          className="p-1.5 rounded text-slate-400 hover:text-primary"
-                        >
+                        <Button variant="ghost" onClick={() => openModal(d)}>
                           <Edit2 size={18} />
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="ghost"
                           onClick={() => handleDelete(d.id)}
-                          className="p-1.5 rounded text-slate-400 hover:text-red-600"
                         >
                           <Trash2 size={18} />
-                        </button>
+                        </Button>
                       </>
                     )}
                   </div>
@@ -168,19 +170,10 @@ export const AdminDepartmentsPage = () => {
                 />
               </div>
               <div className="flex gap-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setIsFormOpen(false)}
-                  className="flex-1 py-2.5 rounded-lg border border-slate-200 text-slate-600 font-bold text-sm"
-                >
+                <Button type="button" onClick={() => setIsFormOpen(false)}>
                   Отмена
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-lg bg-slate-800 text-white font-bold text-sm"
-                >
-                  Сохранить
-                </button>
+                </Button>
+                <Button type="submit">Сохранить</Button>
               </div>
             </form>
           </div>

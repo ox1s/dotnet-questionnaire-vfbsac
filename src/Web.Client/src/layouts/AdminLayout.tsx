@@ -10,6 +10,7 @@ import {
   Menu, // Иконка бургера
   X, // Иконка крестика
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -104,12 +105,9 @@ export const AdminLayout = ({
           </div>
 
           {/* Кнопка закрытия только для мобилок */}
-          <button
-            className="lg:hidden p-2 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-100"
-            onClick={closeMenu}
-          >
+          <Button variant="ghost" className="lg:hidden" onClick={closeMenu}>
             <X size={24} />
-          </button>
+          </Button>
         </div>
 
         <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-1">

@@ -9,7 +9,9 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import toast from "react-hot-toast";
+import { FilterSelect } from "@/components/FilterSelect";
+import { toast } from "sonner";
+import { Field } from "@/components/ui/field";
 import {
   CalendarRange,
   Columns3,
@@ -17,7 +19,33 @@ import {
   Filter,
   GitCompareArrows,
   RefreshCw,
+  Calendar as CalendarIcon,
 } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
+
+import { AdminLayout } from "../layouts/AdminLayout";
+
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
+// api
 import api, {
   dictionariesApi,
   getApiErrorMessage,
@@ -30,7 +58,6 @@ import api, {
   type StatisticsFilters,
   type TeacherItem,
 } from "../api";
-import { AdminLayout } from "../layouts/AdminLayout";
 
 type Mode = "single" | "periods" | "groups";
 type CompareField =
@@ -52,7 +79,7 @@ const colors = [
 ];
 
 function asDateInput(date: Date) {
-  return date.toISOString().slice(0, 10);
+  return format(date, "yyyy-MM-dd");
 }
 
 function getSemesterRange(): RangeState {
@@ -327,24 +354,27 @@ export const AdminStatsPage = () => {
           <h4>Режим аналитики</h4>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-          <ModeButton
-            active={mode === "single"}
+          <Button
+            variant={mode === "single" ? "default" : "outline"}
             onClick={() => setMode("single")}
-            icon={<CalendarRange size={16} />}
-            label="Статистика за период"
-          />
-          <ModeButton
-            active={mode === "periods"}
+            size="lg"
+          >
+            Статистика за период
+          </Button>
+          <Button
+            variant={mode === "periods" ? "default" : "outline"}
             onClick={() => setMode("periods")}
-            icon={<GitCompareArrows size={16} />}
-            label="Сравнение периодов"
-          />
-          <ModeButton
-            active={mode === "groups"}
+            size="lg"
+          >
+            Сравнение периодов
+          </Button>
+          <Button
+            variant={mode === "groups" ? "default" : "outline"}
             onClick={() => setMode("groups")}
-            icon={<Columns3 size={16} />}
-            label="Сравнение групп"
-          />
+            size="lg"
+          >
+            Сравнение групп
+          </Button>
         </div>
 
         {mode === "single" || mode === "groups" ? (
@@ -359,25 +389,21 @@ export const AdminStatsPage = () => {
                 }))
               }
             />
-            <input
-              type="date"
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+            <DatePickerInput
               value={singleRange.dateFrom}
-              onChange={(event) =>
+              onChange={(val) =>
                 setSingleRange((previous) => ({
                   ...previous,
-                  dateFrom: event.target.value,
+                  dateFrom: val,
                 }))
               }
             />
-            <input
-              type="date"
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+            <DatePickerInput
               value={singleRange.dateTo}
-              onChange={(event) =>
+              onChange={(val) =>
                 setSingleRange((previous) => ({
                   ...previous,
-                  dateTo: event.target.value,
+                  dateTo: val,
                 }))
               }
             />
@@ -396,21 +422,13 @@ export const AdminStatsPage = () => {
                     updatePeriod(index, "label", event.target.value)
                   }
                 />
-                <input
-                  type="date"
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+                <DatePickerInput
                   value={item.dateFrom}
-                  onChange={(event) =>
-                    updatePeriod(index, "dateFrom", event.target.value)
-                  }
+                  onChange={(val) => updatePeriod(index, "dateFrom", val)}
                 />
-                <input
-                  type="date"
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+                <DatePickerInput
                   value={item.dateTo}
-                  onChange={(event) =>
-                    updatePeriod(index, "dateTo", event.target.value)
-                  }
+                  onChange={(val) => updatePeriod(index, "dateTo", val)}
                 />
                 <button
                   onClick={() =>
@@ -445,83 +463,49 @@ export const AdminStatsPage = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <select
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
-            value={filters.teacherId || ""}
+          <FilterSelect
+            value={filters.teacherId}
+            onChange={(val) => updateFilter("teacherId", val)}
             disabled={mode === "groups" && compareField === "teacherId"}
-            onChange={(event) => updateFilter("teacherId", event.target.value)}
-          >
-            <option value="">Все преподаватели</option>
-            {teachers.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.fullName}
-              </option>
-            ))}
-          </select>
-          <select
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
-            value={filters.disciplineId || ""}
+            placeholder="Все преподаватели"
+            options={teachers.map((t) => ({ id: t.id, label: t.fullName }))}
+          />
+
+          <FilterSelect
+            value={filters.disciplineId}
+            onChange={(val) => updateFilter("disciplineId", val)}
             disabled={mode === "groups" && compareField === "disciplineId"}
-            onChange={(event) =>
-              updateFilter("disciplineId", event.target.value)
-            }
-          >
-            <option value="">Все дисциплины</option>
-            {disciplines.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
-            value={filters.departmentId || ""}
+            placeholder="Все дисциплины"
+            options={disciplines.map((d) => ({ id: d.id, label: d.name }))}
+          />
+
+          <FilterSelect
+            value={filters.departmentId}
+            onChange={(val) => updateFilter("departmentId", val)}
             disabled={mode === "groups" && compareField === "departmentId"}
-            onChange={(event) =>
-              updateFilter("departmentId", event.target.value)
-            }
-          >
-            <option value="">Все кафедры</option>
-            {departments.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
-            value={filters.specialityId || ""}
+            placeholder="Все кафедры"
+            options={departments.map((d) => ({ id: d.id, label: d.name }))}
+          />
+
+          <FilterSelect
+            value={filters.specialityId}
+            onChange={(val) => updateFilter("specialityId", val)}
             disabled={mode === "groups" && compareField === "specialityId"}
-            onChange={(event) =>
-              updateFilter("specialityId", event.target.value)
-            }
-          >
-            <option value="">Все специальности</option>
-            {specialities.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <select
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
-            value={filters.specializationId || ""}
+            placeholder="Все специальности"
+            options={specialities.map((s) => ({ id: s.id, label: s.name }))}
+          />
+
+          <FilterSelect
+            value={filters.specializationId}
+            onChange={(val) => updateFilter("specializationId", val)}
             disabled={mode === "groups" && compareField === "specializationId"}
-            onChange={(event) =>
-              updateFilter("specializationId", event.target.value)
-            }
-          >
-            <option value="">Все специализации</option>
-            {specializations.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-          <input
+            placeholder="Все специализации"
+            options={specializations.map((s) => ({ id: s.id, label: s.name }))}
+          />
+
+          <Input
             type="text"
             placeholder="Название организации..."
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
             value={filters.organizationName || ""}
             onChange={(event) =>
               updateFilter("organizationName", event.target.value)
@@ -573,16 +557,17 @@ export const AdminStatsPage = () => {
         ) : null}
 
         <div className="flex justify-end">
-          <button
+          <Button
             onClick={() => void loadReport()}
             disabled={refreshing}
-            className="flex items-center gap-2 px-5 py-2 bg-primary text-white rounded-lg text-sm font-bold shadow-sm disabled:opacity-70"
+            size="lg"
+            variant="default"
           >
             {refreshing ? (
               <RefreshCw className="animate-spin" size={16} />
             ) : null}{" "}
             Обновить аналитику
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -661,6 +646,45 @@ export const AdminStatsPage = () => {
   );
 };
 
+function DatePickerInput({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const date = value ? parseISO(value) : undefined;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal bg-slate-50 border-slate-200 h-[38px]",
+            !date && "text-muted-foreground",
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {date ? (
+            format(date, "PPP", { locale: ru })
+          ) : (
+            <span>Выберите дату</span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(d) => onChange(d ? format(d, "yyyy-MM-dd") : "")}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 function ModeButton({
   active,
   onClick,
@@ -713,80 +737,68 @@ function QuestionsTable({
   slices: AnalyticsReport["slices"];
 }) {
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
+    <div className="bg-white shadow-sm border border-slate-200 overflow-hidden mb-8">
       <div className="px-4 py-4 border-b border-slate-100">
         <h3 className="text-base md:text-lg font-bold text-slate-900">
           Детализация
         </h3>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-150">
-          <thead>
-            <tr className="bg-slate-50/50">
-              <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase w-12 text-center">
-                №
-              </th>
-              <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase">
-                Вопрос
-              </th>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center">№</TableHead>
+              <TableHead className="text-left">Вопрос</TableHead>
               {slices.length === 1 ? (
                 <>
-                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase text-right">
-                    Среднее
-                  </th>
-                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase text-right">
-                    Итог
-                  </th>
-                  <th className="py-3 px-4 text-xs font-bold text-slate-500 uppercase text-right">
-                    Sigma
-                  </th>
+                  <TableHead className="text-right">Среднее</TableHead>
+                  <TableHead className="text-right">Итог</TableHead>
+                  <TableHead className="text-right">Отклонение</TableHead>
                 </>
               ) : (
                 slices.map((slice, index) => (
-                  <th
+                  <TableHead
                     key={`${slice.label}-${index}`}
-                    className="py-3 px-4 text-xs font-bold text-slate-500 uppercase text-right"
+                    className="text-right"
                   >
                     {slice.label}
-                  </th>
+                  </TableHead>
                 ))
               )}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {questions.map((question, index) => (
-              <tr key={question.questionId} className="hover:bg-slate-50">
-                <td className="py-3 px-4 text-center text-sm">{index + 1}</td>
-                <td className="py-3 px-4 text-sm font-medium text-slate-900">
-                  {question.questionText}
-                </td>
+              <TableRow key={question.questionId}>
+                <TableCell className="text-center">{index + 1}</TableCell>
+                <TableCell>{question.questionText}</TableCell>
                 {slices.length === 1 ? (
                   <>
-                    <td className="py-3 px-4 text-right font-mono text-sm text-slate-500">
+                    <TableCell className="text-right">
                       {question.sliceMetrics[0]?.averageScore.toFixed(2) ?? "-"}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono text-sm font-bold text-primary">
+                    </TableCell>
+                    <TableCell className="text-right">
                       {question.sliceMetrics[0]?.resultScore.toFixed(2) ?? "-"}
-                    </td>
-                    <td className="py-3 px-4 text-right font-mono text-sm text-slate-400">
+                    </TableCell>
+                    <TableCell className="text-right">
                       {question.sliceMetrics[0]?.standardDeviation.toFixed(2) ??
                         "-"}
-                    </td>
+                    </TableCell>
                   </>
                 ) : (
                   question.sliceMetrics.map((metric, metricIndex) => (
-                    <td
+                    <TableCell
                       key={`${question.questionId}-${metricIndex}`}
-                      className="py-3 px-4 text-right font-mono text-sm"
+                      className="text-right"
                     >
                       {metric.resultScore.toFixed(2)}
-                    </td>
+                    </TableCell>
                   ))
                 )}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

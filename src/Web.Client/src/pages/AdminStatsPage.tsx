@@ -1,23 +1,17 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  ChartTooltip,
+  ChartTooltipContent,
+  ChartContainer,
+  type ChartConfig,
+} from "@/components/ui/chart";
 import { FilterSelect } from "@/components/FilterSelect";
 import { toast } from "sonner";
-import { Field } from "@/components/ui/field";
 import {
-  CalendarRange,
-  Columns3,
   Download,
   Filter,
-  GitCompareArrows,
   RefreshCw,
   Calendar as CalendarIcon,
 } from "lucide-react";
@@ -58,6 +52,29 @@ import api, {
   type StatisticsFilters,
   type TeacherItem,
 } from "../api";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { AppSidebar } from "@/components/app-sidebar";
+import { Separator } from "@/components/ui/separator";
 
 type Mode = "single" | "periods" | "groups";
 type CompareField =
@@ -69,13 +86,11 @@ type CompareField =
 type RangeState = { label: string; dateFrom: string; dateTo: string };
 
 const colors = [
-  "#0f766e",
-  "#2563eb",
-  "#f59e0b",
-  "#dc2626",
-  "#7c3aed",
-  "#0891b2",
-  "#65a30d",
+  "var(--chart-5)",
+  "var(--chart-4)",
+  "var(--chart-3)",
+  "var(--chart-2)",
+  "var(--chart-1)",
 ];
 
 function asDateInput(date: Date) {
@@ -298,32 +313,59 @@ export const AdminStatsPage = () => {
         itemIndex === index ? { ...item, [field]: value } : item,
       ),
     );
+  const chartConfig = {
+    desktop: {
+      label: "Desktop",
+      color: "#2563eb",
+    },
+    mobile: {
+      label: "Mobile",
+      color: "#60a5fa",
+    },
+  } satisfies ChartConfig;
 
   const renderCards = () =>
     report?.slices.length === 1 ? (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <MetricCard
-          title="Всего анкет"
-          value={String(report.slices[0].totalSubmissions)}
-        />
-        <MetricCard
-          title="Средний балл"
-          value={report.slices[0].overallAverage.toFixed(2)}
-        />
-        <MetricCard
-          title="Отклонение"
-          value={report.slices[0].overallStandardDeviation.toFixed(2)}
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Всего анкет</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl">
+            {String(report.slices[0].totalSubmissions)}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Средний балл</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl">
+            {report.slices[0].overallAverage.toFixed(2)}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Отклонение</CardTitle>
+          </CardHeader>
+          <CardContent className="text-2xl">
+            {report.slices[0].overallStandardDeviation.toFixed(2)}
+          </CardContent>
+        </Card>
       </div>
     ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
         {report?.slices.map((slice, index) => (
-          <MetricCard
-            key={`${slice.label}-${index}`}
-            title={slice.label}
-            value={`${slice.overallAverage.toFixed(2)} / ${slice.totalSubmissions}`}
-            subtitle={`${slice.dateFrom.slice(0, 10)} - ${slice.dateTo.slice(0, 10)}`}
-          />
+          <Card key={`${slice.label}-${index}`}>
+            <CardHeader>
+              <CardTitle>{slice.label}</CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl">
+              {`${slice.overallAverage.toFixed(2)} / ${slice.totalSubmissions}`}
+            </CardContent>
+            <CardFooter className="text-xs">
+              {`${slice.dateFrom.slice(0, 10)} - ${slice.dateTo.slice(0, 10)}`}
+            </CardFooter>
+          </Card>
         ))}
       </div>
     );
@@ -336,313 +378,382 @@ export const AdminStatsPage = () => {
     );
 
   return (
-    <AdminLayout
-      title="Аналитика"
-      subtitle={form ? `Отчет по форме: ${form.title}` : "Загрузка..."}
-      actions={
-        <button
-          onClick={exportReport}
-          className="flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-slate-50 font-bold shadow-sm text-sm transition-all whitespace-nowrap w-full md:w-auto justify-center"
-        >
-          <Download size={18} /> Экспорт в Word
-        </button>
-      }
-    >
-      <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
-        <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold">
-          <Filter size={18} />
-          <h4>Режим аналитики</h4>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
-          <Button
-            variant={mode === "single" ? "default" : "outline"}
-            onClick={() => setMode("single")}
-            size="lg"
-          >
-            Статистика за период
-          </Button>
-          <Button
-            variant={mode === "periods" ? "default" : "outline"}
-            onClick={() => setMode("periods")}
-            size="lg"
-          >
-            Сравнение периодов
-          </Button>
-          <Button
-            variant={mode === "groups" ? "default" : "outline"}
-            onClick={() => setMode("groups")}
-            size="lg"
-          >
-            Сравнение групп
-          </Button>
-        </div>
-
-        {mode === "single" || mode === "groups" ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <input
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
-              value={singleRange.label}
-              onChange={(event) =>
-                setSingleRange((previous) => ({
-                  ...previous,
-                  label: event.target.value,
-                }))
-              }
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-100 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 bg-white">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-1" />
+            <Separator
+              orientation="vertical"
+              className="mr-2 data-[orientation=vertical]:h-4"
             />
-            <DatePickerInput
-              value={singleRange.dateFrom}
-              onChange={(val) =>
-                setSingleRange((previous) => ({
-                  ...previous,
-                  dateFrom: val,
-                }))
-              }
-            />
-            <DatePickerInput
-              value={singleRange.dateTo}
-              onChange={(val) =>
-                setSingleRange((previous) => ({
-                  ...previous,
-                  dateTo: val,
-                }))
-              }
-            />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbPage className="font-medium text-slate-500">
+                    Аналитика
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage className="font-bold text-slate-900">
+                    {loading
+                      ? "Загрузка..."
+                      : form
+                        ? `Отчет по форме: ${form.title}`
+                        : "Форма не найдена"}
+                  </BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
           </div>
-        ) : (
-          <div className="space-y-4 mb-6">
-            {periods.map((item, index) => (
-              <div
-                key={`${item.label}-${index}`}
-                className="grid grid-cols-1 md:grid-cols-4 gap-4"
+
+          {!loading && form && (
+            <div className="flex items-center">
+              <button
+                onClick={exportReport}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg hover:bg-slate-50 font-bold shadow-sm text-sm transition-all whitespace-nowrap"
               >
-                <input
-                  className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
-                  value={item.label}
-                  onChange={(event) =>
-                    updatePeriod(index, "label", event.target.value)
-                  }
-                />
-                <DatePickerInput
-                  value={item.dateFrom}
-                  onChange={(val) => updatePeriod(index, "dateFrom", val)}
-                />
-                <DatePickerInput
-                  value={item.dateTo}
-                  onChange={(val) => updatePeriod(index, "dateTo", val)}
-                />
-                <button
-                  onClick={() =>
-                    setPeriods((previous) =>
-                      previous.length > 1
-                        ? previous.filter((_, itemIndex) => itemIndex !== index)
-                        : previous,
-                    )
-                  }
-                  className="px-4 py-2 text-sm font-medium text-slate-600"
-                >
-                  Удалить
-                </button>
-              </div>
-            ))}
-            <button
-              onClick={() =>
-                setPeriods((previous) => [
-                  ...previous,
-                  {
-                    label: `Период ${previous.length + 1}`,
-                    dateFrom: singleRange.dateFrom,
-                    dateTo: singleRange.dateTo,
-                  },
-                ])
-              }
-              className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-medium"
-            >
-              Добавить период
-            </button>
-          </div>
-        )}
+                <Download size={16} />{" "}
+                <span className="hidden md:inline">Экспорт в Word</span>
+              </button>
+            </div>
+          )}
+        </header>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-          <FilterSelect
-            value={filters.teacherId}
-            onChange={(val) => updateFilter("teacherId", val)}
-            disabled={mode === "groups" && compareField === "teacherId"}
-            placeholder="Все преподаватели"
-            options={teachers.map((t) => ({ id: t.id, label: t.fullName }))}
-          />
+        <div className="flex flex-1 flex-col gap-4 p-4 md:p-6 lg:p-8 bg-slate-50/50">
+          {loading ? (
+            <div className="flex items-center justify-center h-full min-h-[50vh] text-slate-400">
+              <RefreshCw className="animate-spin mr-2" size={24} /> Загрузка...
+            </div>
+          ) : (
+            <>
+              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mb-6">
+                <div className="flex items-center gap-2 mb-4 text-slate-800 font-bold">
+                  <Filter size={18} />
+                  <h4>Режим аналитики</h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                  <Button
+                    variant={mode === "single" ? "default" : "outline"}
+                    onClick={() => setMode("single")}
+                    size="lg"
+                  >
+                    Статистика за период
+                  </Button>
+                  <Button
+                    variant={mode === "periods" ? "default" : "outline"}
+                    onClick={() => setMode("periods")}
+                    size="lg"
+                  >
+                    Сравнение периодов
+                  </Button>
+                  <Button
+                    variant={mode === "groups" ? "default" : "outline"}
+                    onClick={() => setMode("groups")}
+                    size="lg"
+                  >
+                    Сравнение групп
+                  </Button>
+                </div>
 
-          <FilterSelect
-            value={filters.disciplineId}
-            onChange={(val) => updateFilter("disciplineId", val)}
-            disabled={mode === "groups" && compareField === "disciplineId"}
-            placeholder="Все дисциплины"
-            options={disciplines.map((d) => ({ id: d.id, label: d.name }))}
-          />
+                {mode === "single" || mode === "groups" ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <input
+                      className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+                      value={singleRange.label}
+                      onChange={(event) =>
+                        setSingleRange((previous) => ({
+                          ...previous,
+                          label: event.target.value,
+                        }))
+                      }
+                    />
+                    <DatePickerInput
+                      value={singleRange.dateFrom}
+                      onChange={(val) =>
+                        setSingleRange((previous) => ({
+                          ...previous,
+                          dateFrom: val,
+                        }))
+                      }
+                    />
+                    <DatePickerInput
+                      value={singleRange.dateTo}
+                      onChange={(val) =>
+                        setSingleRange((previous) => ({
+                          ...previous,
+                          dateTo: val,
+                        }))
+                      }
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-4 mb-6">
+                    {periods.map((item, index) => (
+                      <div
+                        key={`${item.label}-${index}`}
+                        className="grid grid-cols-1 md:grid-cols-4 gap-4"
+                      >
+                        <input
+                          className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+                          value={item.label}
+                          onChange={(event) =>
+                            updatePeriod(index, "label", event.target.value)
+                          }
+                        />
+                        <DatePickerInput
+                          value={item.dateFrom}
+                          onChange={(val) =>
+                            updatePeriod(index, "dateFrom", val)
+                          }
+                        />
+                        <DatePickerInput
+                          value={item.dateTo}
+                          onChange={(val) => updatePeriod(index, "dateTo", val)}
+                        />
+                        <button
+                          onClick={() =>
+                            setPeriods((previous) =>
+                              previous.length > 1
+                                ? previous.filter(
+                                    (_, itemIndex) => itemIndex !== index,
+                                  )
+                                : previous,
+                            )
+                          }
+                          className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-red-600 transition-colors"
+                        >
+                          Удалить
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() =>
+                        setPeriods((previous) => [
+                          ...previous,
+                          {
+                            label: `Период ${previous.length + 1}`,
+                            dateFrom: singleRange.dateFrom,
+                            dateTo: singleRange.dateTo,
+                          },
+                        ])
+                      }
+                      className="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-sm font-medium transition-colors"
+                    >
+                      Добавить период
+                    </button>
+                  </div>
+                )}
 
-          <FilterSelect
-            value={filters.departmentId}
-            onChange={(val) => updateFilter("departmentId", val)}
-            disabled={mode === "groups" && compareField === "departmentId"}
-            placeholder="Все кафедры"
-            options={departments.map((d) => ({ id: d.id, label: d.name }))}
-          />
-
-          <FilterSelect
-            value={filters.specialityId}
-            onChange={(val) => updateFilter("specialityId", val)}
-            disabled={mode === "groups" && compareField === "specialityId"}
-            placeholder="Все специальности"
-            options={specialities.map((s) => ({ id: s.id, label: s.name }))}
-          />
-
-          <FilterSelect
-            value={filters.specializationId}
-            onChange={(val) => updateFilter("specializationId", val)}
-            disabled={mode === "groups" && compareField === "specializationId"}
-            placeholder="Все специализации"
-            options={specializations.map((s) => ({ id: s.id, label: s.name }))}
-          />
-
-          <Input
-            type="text"
-            placeholder="Название организации..."
-            value={filters.organizationName || ""}
-            onChange={(event) =>
-              updateFilter("organizationName", event.target.value)
-            }
-          />
-        </div>
-
-        {mode === "groups" ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
-            <select
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
-              value={compareField}
-              onChange={(event) => {
-                setCompareField(event.target.value as CompareField);
-                setSelectedIds([]);
-              }}
-            >
-              {[
-                { value: "departmentId", label: "Кафедры" },
-                { value: "specialityId", label: "Специальности" },
-                { value: "specializationId", label: "Специализации" },
-                { value: "disciplineId", label: "Дисциплины" },
-                { value: "teacherId", label: "Преподаватели" },
-              ].map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-            <select
-              multiple
-              className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 min-h-36"
-              value={selectedIds}
-              onChange={(event) =>
-                setSelectedIds(
-                  Array.from(event.target.selectedOptions).map(
-                    (item) => item.value,
-                  ),
-                )
-              }
-            >
-              {optionsFor().map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        ) : null}
-
-        <div className="flex justify-end">
-          <Button
-            onClick={() => void loadReport()}
-            disabled={refreshing}
-            size="lg"
-            variant="default"
-          >
-            {refreshing ? (
-              <RefreshCw className="animate-spin" size={16} />
-            ) : null}{" "}
-            Обновить аналитику
-          </Button>
-        </div>
-      </div>
-
-      {refreshing ? (
-        <div className="flex justify-center p-10 text-slate-400">
-          <RefreshCw className="animate-spin" size={24} />
-        </div>
-      ) : null}
-      {report ? (
-        renderCards()
-      ) : (
-        <div className="p-10 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
-          Настройте период и срезы для аналитики.
-        </div>
-      )}
-
-      {report && chartData.length > 0 ? (
-        <div className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
-          <h3 className="text-base md:text-lg font-bold text-slate-900 mb-6">
-            Сравнение итоговых баллов по вопросам
-          </h3>
-          <div className="h-80 w-full min-w-70">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={chartData}
-                margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
-              >
-                <CartesianGrid
-                  strokeDasharray="3 3"
-                  vertical={false}
-                  stroke="#e2e8f0"
-                />
-                <XAxis
-                  dataKey="name"
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#64748b", fontSize: 10 }}
-                  dy={10}
-                />
-                <YAxis
-                  axisLine={false}
-                  tickLine={false}
-                  tick={{ fill: "#64748b", fontSize: 10 }}
-                  domain={[0, 10]}
-                  ticks={[0, 2, 4, 6, 8, 10]}
-                />
-                <Tooltip
-                  formatter={(value, name) => [
-                    Number(value ?? 0).toFixed(2),
-                    name,
-                  ]}
-                  labelFormatter={(_label, payload) =>
-                    payload?.[0]?.payload?.fullName ?? "Вопрос"
-                  }
-                />
-                {report.slices.map((slice, index) => (
-                  <Bar
-                    key={`${slice.label}-${index}`}
-                    dataKey={`slice_${index}`}
-                    name={slice.label}
-                    fill={colors[index % colors.length]}
-                    radius={[4, 4, 0, 0]}
-                    maxBarSize={40}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <FilterSelect
+                    value={filters.teacherId}
+                    onChange={(val) => updateFilter("teacherId", val)}
+                    disabled={mode === "groups" && compareField === "teacherId"}
+                    placeholder="Все преподаватели"
+                    options={teachers.map((t) => ({
+                      id: t.id,
+                      label: t.fullName,
+                    }))}
                   />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      ) : null}
 
-      {report ? (
-        <QuestionsTable questions={questions} slices={report.slices} />
-      ) : null}
-    </AdminLayout>
+                  <FilterSelect
+                    value={filters.disciplineId}
+                    onChange={(val) => updateFilter("disciplineId", val)}
+                    disabled={
+                      mode === "groups" && compareField === "disciplineId"
+                    }
+                    placeholder="Все дисциплины"
+                    options={disciplines.map((d) => ({
+                      id: d.id,
+                      label: d.name,
+                    }))}
+                  />
+
+                  <FilterSelect
+                    value={filters.departmentId}
+                    onChange={(val) => updateFilter("departmentId", val)}
+                    disabled={
+                      mode === "groups" && compareField === "departmentId"
+                    }
+                    placeholder="Все кафедры"
+                    options={departments.map((d) => ({
+                      id: d.id,
+                      label: d.name,
+                    }))}
+                  />
+
+                  <FilterSelect
+                    value={filters.specialityId}
+                    onChange={(val) => updateFilter("specialityId", val)}
+                    disabled={
+                      mode === "groups" && compareField === "specialityId"
+                    }
+                    placeholder="Все специальности"
+                    options={specialities.map((s) => ({
+                      id: s.id,
+                      label: s.name,
+                    }))}
+                  />
+
+                  <FilterSelect
+                    value={filters.specializationId}
+                    onChange={(val) => updateFilter("specializationId", val)}
+                    disabled={
+                      mode === "groups" && compareField === "specializationId"
+                    }
+                    placeholder="Все специализации"
+                    options={specializations.map((s) => ({
+                      id: s.id,
+                      label: s.name,
+                    }))}
+                  />
+
+                  <Input
+                    type="text"
+                    placeholder="Название организации..."
+                    value={filters.organizationName || ""}
+                    onChange={(event) =>
+                      updateFilter("organizationName", event.target.value)
+                    }
+                  />
+                </div>
+
+                {mode === "groups" ? (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
+                    <select
+                      className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50"
+                      value={compareField}
+                      onChange={(event) => {
+                        setCompareField(event.target.value as CompareField);
+                        setSelectedIds([]);
+                      }}
+                    >
+                      {[
+                        { value: "departmentId", label: "Кафедры" },
+                        { value: "specialityId", label: "Специальности" },
+                        { value: "specializationId", label: "Специализации" },
+                        { value: "disciplineId", label: "Дисциплины" },
+                        { value: "teacherId", label: "Преподаватели" },
+                      ].map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      multiple
+                      className="px-3 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 min-h-36"
+                      value={selectedIds}
+                      onChange={(event) =>
+                        setSelectedIds(
+                          Array.from(event.target.selectedOptions).map(
+                            (item) => item.value,
+                          ),
+                        )
+                      }
+                    >
+                      {optionsFor().map((item) => (
+                        <option key={item.value} value={item.value}>
+                          {item.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
+
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => void loadReport()}
+                    disabled={refreshing}
+                    size="lg"
+                    variant="default"
+                  >
+                    {refreshing ? (
+                      <RefreshCw className="animate-spin mr-2" size={16} />
+                    ) : null}{" "}
+                    Обновить аналитику
+                  </Button>
+                </div>
+              </div>
+
+              {refreshing ? (
+                <div className="flex justify-center p-10 text-slate-400">
+                  <RefreshCw className="animate-spin" size={24} />
+                </div>
+              ) : null}
+              {report ? (
+                renderCards()
+              ) : (
+                <div className="p-10 text-center text-slate-400 bg-white rounded-2xl border border-slate-200">
+                  Настройте период и срезы для аналитики.
+                </div>
+              )}
+
+              {report && chartData.length > 0 ? (
+                <div>
+                  <ChartContainer config={chartConfig} className="h-50 w-full">
+                    <BarChart
+                      data={chartData}
+                      margin={{ top: 10, right: 10, left: -25, bottom: 0 }}
+                    >
+                      <CartesianGrid
+                        strokeDasharray="3 3"
+                        vertical={false}
+                        stroke="#e2e8f0"
+                      />
+                      <XAxis
+                        dataKey="name"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "#64748b", fontSize: 10 }}
+                        dy={10}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: "#64748b", fontSize: 10 }}
+                        domain={[0, 10]}
+                        ticks={[0, 2, 4, 6, 8, 10]}
+                      />
+                      <ChartTooltip
+                        cursor={true}
+                        content={
+                          <ChartTooltipContent
+                            labelKey="fullName"
+                            formatter={(value, name) => [
+                              <b>{name}</b>,
+                              " ",
+                              Number(value ?? 0).toFixed(2),
+                            ]}
+                          />
+                        }
+                      />
+                      {report.slices.map((slice, index) => (
+                        <Bar
+                          key={`${slice.label}-${index}`}
+                          dataKey={`slice_${index}`}
+                          name={slice.label}
+                          fill={colors[index % colors.length]}
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={40}
+                        />
+                      ))}
+                    </BarChart>
+                  </ChartContainer>
+                </div>
+              ) : null}
+
+              {report ? (
+                <QuestionsTable questions={questions} slices={report.slices} />
+              ) : null}
+            </>
+          )}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 };
 

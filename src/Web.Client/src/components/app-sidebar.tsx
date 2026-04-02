@@ -1,179 +1,121 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavMain } from "@/components/nav-main";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { GalleryVerticalEndIcon, AudioLinesIcon, TerminalIcon, TerminalSquareIcon, BotIcon, BookOpenIcon, Settings2Icon, FrameIcon, PieChartIcon, MapIcon } from "lucide-react"
+} from "@/components/ui/sidebar";
+import {
+  GalleryVerticalEndIcon,
+  AudioLinesIcon,
+  TerminalIcon,
+  Settings2Icon,
+  BookIcon,
+  ChartAreaIcon,
+} from "lucide-react";
+import { isCancel } from "axios";
 
 // This is sample data.
 const data = {
   user: {
-    name: "shadcn",
+    name: "Администратор",
     email: "m@example.com",
     avatar: "/avatars/shadcn.jpg",
   },
   teams: [
     {
       name: "Acme Inc",
-      logo: (
-        <GalleryVerticalEndIcon
-        />
-      ),
+      logo: <GalleryVerticalEndIcon />,
       plan: "Enterprise",
     },
     {
       name: "Acme Corp.",
-      logo: (
-        <AudioLinesIcon
-        />
-      ),
+      logo: <AudioLinesIcon />,
       plan: "Startup",
     },
     {
       name: "Evil Corp.",
-      logo: (
-        <TerminalIcon
-        />
-      ),
+      logo: <TerminalIcon />,
       plan: "Free",
     },
   ],
   navMain: [
     {
-      title: "Playground",
+      title: "Статистика",
+      icon: <ChartAreaIcon />,
       url: "#",
-      icon: (
-        <TerminalSquareIcon
-        />
-      ),
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Дашборд",
+          url: "/dashboard",
         },
         {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
+          title: "Конструктор анкет",
+          url: "/admin/create-form",
         },
       ],
     },
     {
-      title: "Models",
+      title: "Справочники",
       url: "#",
-      icon: (
-        <BotIcon
-        />
-      ),
+      icon: <BookIcon />,
+      isActive: true,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Кафедры",
+          url: "/admin/departments",
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "Преподаватели",
+          url: "/admin/teachers",
         },
         {
-          title: "Quantum",
-          url: "#",
+          title: "Дисциплины",
+          url: "/admin/disciplines",
+        },
+        {
+          title: "Специальности",
+          url: "/admin/specialties",
+        },
+        {
+          title: "Специализации",
+          url: "/admin/specializations",
         },
       ],
     },
     {
-      title: "Documentation",
+      title: "Настройки",
       url: "#",
-      icon: (
-        <BookOpenIcon
-        />
-      ),
+      icon: <Settings2Icon />,
       items: [
         {
-          title: "Introduction",
-          url: "#",
+          title: "Общие",
+          url: "admin/settings",
         },
         {
-          title: "Get Started",
-          url: "#",
+          title: "Группы",
+          url: "admin/groups",
         },
         {
-          title: "Tutorials",
-          url: "#",
+          title: "Преподаватели",
+          url: "admin/teachers",
         },
         {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: (
-        <Settings2Icon
-        />
-      ),
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
+          title: "Наниматели",
+          url: "admin/employers",
         },
       ],
     },
   ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: (
-        <FrameIcon
-        />
-      ),
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: (
-        <PieChartIcon
-        />
-      ),
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: (
-        <MapIcon
-        />
-      ),
-    },
-  ],
-}
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -183,12 +125,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

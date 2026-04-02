@@ -1,21 +1,21 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/sonner";
-import { LoginPage } from "./pages/LoginPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { SurveyPage } from "./pages/SurveyPage";
-import { AdminStatsPage } from "./pages/AdminStatsPage";
-import { CreateFormPage } from "./pages/CreateFormPage";
-import { AdminTeachersPage } from "./pages/AdminTeachersPage";
-import { AdminDisciplinesPage } from "./pages/AdminDisciplinesPage";
-import { AdminDepartmentsPage } from "./pages/AdminDepartmentsPage";
-import { AdminGroupsPage } from "./pages/AdminGroupsPage";
-import { ProtectedRoute } from "./components/ProtectedRoute";
-import { AdminSettingsPage } from "./pages/AdminSettingsPage";
-import { AdminSpecialitiesPage } from "./pages/AdminSpecialitiesPage";
-import { AdminSpecializationsPage } from "./pages/AdminSpecializationsPage";
+import { LoginPage } from "./pages/auth/login-page";
+import { DashboardPage } from "./pages/dashboard/dashboard-page";
+import { SurveyPage } from "./pages/forms/survey-page";
+import { AdminStatsPage } from "./pages/admin/admin-stats-page";
+import { CreateFormPage } from "./pages/forms/create-form-page";
+import { AdminTeachersPage } from "./pages/admin/admin-teachers-page";
+import { AdminDisciplinesPage } from "./pages/admin/admin-disciplines-page";
+import { AdminDepartmentsPage } from "./pages/admin/admin-departments-page";
+import { AdminGroupsPage } from "./pages/admin/admin-groups-page";
+import { ProtectedRoute } from "./components/auth/protected-route";
+import { AdminSettingsPage } from "./pages/admin/admin-settings-page";
+import { AdminSpecialitiesPage } from "./pages/admin/admin-specialities-page";
+import { AdminSpecializationsPage } from "./pages/admin/admin-specializations-page";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/components/theme-provider";
-import { AdminLayout } from "./components/AdminShared";
+import { ThemeProvider } from "@/components/layout/theme-provider";
+import { AdminLayout } from "./components/admin/admin-shared";
 
 function App() {
   return (
@@ -72,3 +72,4 @@ function App() {
 }
 
 export default App;
+

@@ -85,7 +85,7 @@ export const AdminDepartmentsPage = () => {
       setIsFormOpen(false);
       loadData();
     } catch (e) {
-      toast.error("Ошибка сохранения");
+      toast.error(getApiErrorMessage(e, "Ошибка сохранения"));
     }
   };
 
@@ -138,4 +138,3 @@ export const AdminDepartmentsPage = () => {
     </>
   );
 };
-

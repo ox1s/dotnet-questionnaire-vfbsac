@@ -1,5 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { dictionariesApi, getApiErrorMessage, type TeacherItem } from "../../api";
+import {
+  dictionariesApi,
+  getApiErrorMessage,
+  type TeacherItem,
+} from "../../api";
 
 import { Plus } from "lucide-react";
 import {
@@ -160,4 +164,3 @@ export const AdminTeachersPage = () => {
     </>
   );
 };
-

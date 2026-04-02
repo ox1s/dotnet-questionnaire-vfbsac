@@ -19,6 +19,15 @@ internal sealed class UpdateDepartmentCommandHandler(IApplicationDbContext conte
             return Result.Failure(DepartmentErrors.NotFound(command.DepartmentId));
         }
 
+        // TODO: Implement this update with same name for others
+        Department? departmentWithSameName = await context.Departments.IgnoreQueryFilters()
+            .FirstOrDefaultAsync(d => d.Name == command.Name && d.Id != command.DepartmentId, cancellationToken);
+
+        if (departmentWithSameName is not null)
+        {
+            return Result.Failure(DepartmentErrors.Duplicate);
+        }
+
         Result updateNameResult = department.UpdateName(command.Name);
         if (updateNameResult.IsFailure)
         {

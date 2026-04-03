@@ -94,7 +94,6 @@ export const SurveyPage = () => {
 
   return (
     <div className="min-h-screen bg-muted/40 pb-20">
-      {/* Header */}
       <header className="bg-background border-b sticky top-0 z-10">
         <div className="max-w-3xl mx-auto flex items-center gap-4 px-6 py-4">
           <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
@@ -105,7 +104,6 @@ export const SurveyPage = () => {
         </div>
       </header>
 
-      {/* Content */}
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
         <ContextSelector
           requiredFilters={form.requiredFilters}
@@ -114,18 +112,15 @@ export const SurveyPage = () => {
         {form.questions.map((q, idx) => (
           <Card key={q.id}>
             <CardContent className="p-6 space-y-4">
-              {/* Question header */}
               <div className="flex gap-3">
                 <div className="flex size-8 items-center justify-center bg-muted text-sm font-medium">
                   {idx + 1}
                 </div>
-
                 <p className="font-medium leading-snug">{q.text}</p>
               </div>
 
               <Separator />
 
-              {/* Answer */}
               <div className="pl-11">
                 {q.type === "WeightedRating" && (
                   <WeightedRatingInput
@@ -169,7 +164,6 @@ export const SurveyPage = () => {
           </Card>
         ))}
 
-        {/* Submit */}
         <div className="pt-4">
           <Button className="w-full" size="lg" onClick={handleSubmit}>
             <CheckCircle data-icon="inline-start" />
@@ -180,4 +174,3 @@ export const SurveyPage = () => {
     </div>
   );
 };
-

@@ -4,7 +4,6 @@ import {
   getApiErrorMessage,
   type TeacherItem,
 } from "../../api";
-
 import { Plus } from "lucide-react";
 import {
   AdminModal,
@@ -22,10 +21,8 @@ import { toast } from "sonner";
 
 export const AdminTeachersPage = () => {
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
-
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -42,8 +39,8 @@ export const AdminTeachersPage = () => {
     loadData();
   }, []);
   useAdminPageConfig({
-    title: "Преподаватели",
-    subtitle: "Управление списком преподавателейц учебного заведения.",
+    title: "Справочники",
+    subtitle: "Преподаватели",
     actions: (
       <Button onClick={() => openModal()}>
         <Plus size={18} className="mr-2" /> Добавить
@@ -81,6 +78,9 @@ export const AdminTeachersPage = () => {
     try {
       await dictionariesApi.restoreTeacher(id);
       loadData();
+      toast.success("Преподаватель успешно восстановлен.", {
+        style: { color: "green" },
+      });
     } catch (e) {
       toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
     }

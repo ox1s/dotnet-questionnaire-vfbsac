@@ -62,8 +62,8 @@ export const AdminSpecializationsPage = () => {
   }, []);
 
   useAdminPageConfig({
-    title: "Специализации",
-    subtitle: "Управление списком специализаций учебного заведения.",
+    title: "Справочники",
+    subtitle: "Специализации",
     actions: (
       <Button onClick={() => openModal()}>
         <Plus size={18} className="mr-2" /> Добавить
@@ -108,6 +108,9 @@ export const AdminSpecializationsPage = () => {
     try {
       await dictionariesApi.restoreSpecialization(id);
       loadData();
+      toast.success("Специализация успешно восстановлена.", {
+        style: { color: "green" },
+      });
     } catch (e) {
       toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
     }
@@ -221,4 +224,3 @@ export const AdminSpecializationsPage = () => {
     </>
   );
 };
-

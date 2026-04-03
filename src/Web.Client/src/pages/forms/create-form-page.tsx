@@ -51,11 +51,9 @@ const QUESTION_TYPES = [
 
 export const CreateFormPage = () => {
   const navigate = useNavigate();
-
   const [title, setTitle] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<FilterField[]>([]);
   const [questions, setQuestions] = useState<QuestionDraft[]>([]);
-
   const [newQText, setNewQText] = useState("");
   const [newQType, setNewQType] = useState<QuestionType>(
     QuestionType.WeightedRating,

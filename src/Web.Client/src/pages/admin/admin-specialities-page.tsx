@@ -44,8 +44,8 @@ export const AdminSpecialitiesPage = () => {
   );
 
   useAdminPageConfig({
-    title: "Специальности",
-    subtitle: "Управление перечнем образовательных специальностей.",
+    title: "Справочники",
+    subtitle: "Специальности",
     actions: (
       <Button onClick={() => openModal()}>
         <Plus size={18} /> Добавить
@@ -80,6 +80,9 @@ export const AdminSpecialitiesPage = () => {
     try {
       await dictionariesApi.restoreSpeciality(id);
       loadData();
+      toast.success("Специальность успешно восстановлена.", {
+        style: { color: "green" },
+      });
     } catch (e) {
       toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
     }
@@ -154,4 +157,3 @@ export const AdminSpecialitiesPage = () => {
     </>
   );
 };
-

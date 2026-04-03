@@ -21,6 +21,7 @@ import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 
 export const AdminDepartmentsPage = () => {
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -39,8 +40,8 @@ export const AdminDepartmentsPage = () => {
   }, []);
 
   useAdminPageConfig({
-    title: "Кафедры",
-    subtitle: "Управление списком кафедр учебного заведения.",
+    title: "Справочники",
+    subtitle: "Кафедры",
     actions: (
       <Button onClick={() => openModal()}>
         <Plus size={18} className="mr-2" /> Добавить
@@ -59,6 +60,10 @@ export const AdminDepartmentsPage = () => {
     setIsFormOpen(true);
   };
 
+  const filteredDepartments = departments.filter((d) =>
+    d.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+
   const handleDelete = async (id: string) => {
     try {
       await dictionariesApi.deleteDepartment(id);
@@ -72,6 +77,9 @@ export const AdminDepartmentsPage = () => {
     try {
       await dictionariesApi.restoreDepartment(id);
       loadData();
+      toast.success("Кафедра успешно восстановлена.", {
+        style: { color: "green" },
+      });
     } catch (e) {
       toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
     }
@@ -92,7 +100,10 @@ export const AdminDepartmentsPage = () => {
   return (
     <>
       <AdminTable
-        data={departments}
+        data={filteredDepartments}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder="Поиск кафедры..."
         columns={[
           { header: "Название / Аббревиатура" },
           { header: "", className: "text-right w-24" },

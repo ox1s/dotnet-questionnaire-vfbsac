@@ -60,87 +60,6 @@ export interface SubmissionListItem {
   };
 }
 
-export const usersApi = {
-  createGroup: (groupName: string, password: string) =>
-    api.post<string>("/users/groups", { groupName, password }),
-  getGroups: () => api.get<GroupUser[]>("/users/groups"),
-
-  createStaff: (login: string, displayName: string, password: string) =>
-    api.post<string>("/users/staff", { login, displayName, password }),
-  getStaff: () => api.get<GroupUser[]>("/users/staff"),
-
-  deleteUser: (id: string) => api.delete(`/users/${id}`),
-  updateUser: (id: string, login: string, displayName: string) =>
-    api.put(`/users/${id}`, { login, displayName }),
-
-  setPassword: (id: string, newPassword: string) =>
-    api.post(`/users/${id}/set-password`, { userId: id, newPassword }),
-};
-
-export const settingsApi = {
-  closeSemester: () => api.post("/settings/close-semester"),
-};
-
-export const dictionariesApi = {
-  getDepartments: () => api.get<DictionaryItem[]>("/dictionaries/departments"),
-  getTeachers: () => api.get<TeacherItem[]>("/dictionaries/teachers"),
-  getDisciplines: () => api.get<DictionaryItem[]>("/dictionaries/disciplines"),
-  getSpecialities: () =>
-    api.get<DictionaryItem[]>("/dictionaries/specialities"),
-  getSpecializations: () =>
-    api.get<DictionaryItem[]>("/dictionaries/specializations"),
-
-  createTeacher: (fullName: string) =>
-    api.post<string>("/teachers", { fullName }),
-  createDiscipline: (name: string, departmentId: string) =>
-    api.post<string>("/disciplines", { name, departmentId }),
-  createDepartment: (name: string) =>
-    api.post<string>("/departments", { name }),
-  createSpeciality: (name: string) =>
-    api.post<string>("/specialities", { name }),
-  createSpecialization: (name: string, specialityId: string) =>
-    api.post<string>("/specializations", { name, specialityId }),
-  deleteDepartment: (id: string) => api.delete(`/departments/${id}`),
-  deleteTeacher: (id: string) => api.delete(`/teachers/${id}`),
-  deleteDiscipline: (id: string) => api.delete(`/disciplines/${id}`),
-  deleteSpeciality: (id: string) => api.delete(`/specialities/${id}`),
-  deleteSpecialization: (id: string) => api.delete(`/specializations/${id}`),
-  restoreDepartment: (id: string) => api.post(`/departments/${id}/restore`),
-  restoreTeacher: (id: string) => api.post(`/teachers/${id}/restore`),
-  restoreDiscipline: (id: string) => api.post(`/disciplines/${id}/restore`),
-  restoreSpeciality: (id: string) => api.post(`/specialities/${id}/restore`),
-  restoreSpecialization: (id: string) =>
-    api.post(`/specializations/${id}/restore`),
-
-  updateDepartment: (id: string, name: string) =>
-    api.put(`/departments/${id}`, { departmentId: id, name }),
-
-  updateTeacher: (id: string, fullName: string) =>
-    api.put(`/teachers/${id}`, { fullName }),
-
-  updateDiscipline: (id: string, name: string, departmentId: string) =>
-    api.put(`/disciplines/${id}`, { name, departmentId }),
-
-  updateSpeciality: (id: string, name: string) =>
-    api.put(`/specialities/${id}`, { name }),
-
-  updateSpecialization: (id: string, name: string, specialityId: string) =>
-    api.put(`/specializations/${id}`, { name, specialityId }),
-};
-
-export const submissionsApi = {
-  getMyList: () => {
-    const user = JSON.parse(atob(localStorage.getItem("token")!.split(".")[1]));
-    const userId = user.sub;
-    const deviceId = getDeviceId();
-    return api.get<SubmissionListItem[]>(
-      `/submissions?userId=${userId}&deviceId=${deviceId}`,
-    );
-  },
-};
-
-export default api;
-
 export interface Form {
   id: string;
   title: string;
@@ -211,6 +130,84 @@ export interface AnalyticsReport {
   questions: AnalyticsQuestion[];
 }
 
+export const usersApi = {
+  createGroup: (groupName: string, password: string) =>
+    api.post<string>("/users/groups", { groupName, password }),
+  createStaff: (login: string, displayName: string, password: string) =>
+    api.post<string>("/users/staff", { login, displayName, password }),
+
+  getStaff: () => api.get<GroupUser[]>("/users/staff"),
+  getGroups: () => api.get<GroupUser[]>("/users/groups"),
+
+  deleteUser: (id: string) => api.delete(`/users/${id}`),
+
+  updateUser: (id: string, login: string, displayName: string) =>
+    api.put(`/users/${id}`, { login, displayName }),
+
+  setPassword: (id: string, newPassword: string) =>
+    api.post(`/users/${id}/set-password`, { userId: id, newPassword }),
+};
+
+export const settingsApi = {
+  closeSemester: () => api.post("/settings/close-semester"),
+};
+
+export const dictionariesApi = {
+  getDepartments: () => api.get<DictionaryItem[]>("/dictionaries/departments"),
+  getTeachers: () => api.get<TeacherItem[]>("/dictionaries/teachers"),
+  getDisciplines: () => api.get<DictionaryItem[]>("/dictionaries/disciplines"),
+  getSpecialities: () =>
+    api.get<DictionaryItem[]>("/dictionaries/specialities"),
+  getSpecializations: () =>
+    api.get<DictionaryItem[]>("/dictionaries/specializations"),
+
+  createTeacher: (fullName: string) =>
+    api.post<string>("/teachers", { fullName }),
+  createDiscipline: (name: string, departmentId: string) =>
+    api.post<string>("/disciplines", { name, departmentId }),
+  createDepartment: (name: string) =>
+    api.post<string>("/departments", { name }),
+  createSpeciality: (name: string) =>
+    api.post<string>("/specialities", { name }),
+  createSpecialization: (name: string, specialityId: string) =>
+    api.post<string>("/specializations", { name, specialityId }),
+
+  deleteDepartment: (id: string) => api.delete(`/departments/${id}`),
+  deleteTeacher: (id: string) => api.delete(`/teachers/${id}`),
+  deleteDiscipline: (id: string) => api.delete(`/disciplines/${id}`),
+  deleteSpeciality: (id: string) => api.delete(`/specialities/${id}`),
+  deleteSpecialization: (id: string) => api.delete(`/specializations/${id}`),
+
+  restoreDepartment: (id: string) => api.post(`/departments/${id}/restore`),
+  restoreTeacher: (id: string) => api.post(`/teachers/${id}/restore`),
+  restoreDiscipline: (id: string) => api.post(`/disciplines/${id}/restore`),
+  restoreSpeciality: (id: string) => api.post(`/specialities/${id}/restore`),
+  restoreSpecialization: (id: string) =>
+    api.post(`/specializations/${id}/restore`),
+
+  updateDepartment: (id: string, name: string) =>
+    api.put(`/departments/${id}`, { departmentId: id, name }),
+  updateTeacher: (id: string, fullName: string) =>
+    api.put(`/teachers/${id}`, { fullName }),
+  updateDiscipline: (id: string, name: string, departmentId: string) =>
+    api.put(`/disciplines/${id}`, { name, departmentId }),
+  updateSpeciality: (id: string, name: string) =>
+    api.put(`/specialities/${id}`, { name }),
+  updateSpecialization: (id: string, name: string, specialityId: string) =>
+    api.put(`/specializations/${id}`, { name, specialityId }),
+};
+
+export const submissionsApi = {
+  getMyList: () => {
+    const user = JSON.parse(atob(localStorage.getItem("token")!.split(".")[1]));
+    const userId = user.sub;
+    const deviceId = getDeviceId();
+    return api.get<SubmissionListItem[]>(
+      `/submissions?userId=${userId}&deviceId=${deviceId}`,
+    );
+  },
+};
+
 export const reportsApi = {
   getAnalytics: (payload: AnalyticsReportRequest) =>
     api.post<AnalyticsReport>("/reports/analytics", payload),
@@ -250,3 +247,5 @@ export const getApiErrorMessage = (
 
   return fallback;
 };
+
+export default api;

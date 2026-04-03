@@ -23,7 +23,7 @@ export const AdminSettingsPage = () => {
 
   useAdminPageConfig({
     title: "Настройки",
-    subtitle: "Управление настройками.",
+    subtitle: "Общее",
   });
 
   const handlePasswordChange = async (e: React.FormEvent) => {
@@ -150,4 +150,3 @@ export const AdminSettingsPage = () => {
     </>
   );
 };
-

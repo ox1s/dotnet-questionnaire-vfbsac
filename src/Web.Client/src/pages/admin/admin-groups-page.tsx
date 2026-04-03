@@ -64,8 +64,8 @@ export const AdminGroupsPage = () => {
   };
 
   useAdminPageConfig({
-    title: "Группы",
-    subtitle: "Управление списком групп учебного заведения.",
+    title: "Настройки",
+    subtitle: "Группы",
     actions: (
       <Button onClick={openCreate}>
         <Plus size={18} className="mr-2" /> Добавить
@@ -102,7 +102,11 @@ export const AdminGroupsPage = () => {
       setIsSubmitting(true);
 
       if (editingId) {
-        await usersApi.updateUser(editingId, groupName.trim(), groupName.trim());
+        await usersApi.updateUser(
+          editingId,
+          groupName.trim(),
+          groupName.trim(),
+        );
 
         if (password.trim()) {
           await usersApi.setPassword(editingId, password.trim());
@@ -252,4 +256,3 @@ export const AdminGroupsPage = () => {
     </>
   );
 };
-

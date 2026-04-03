@@ -31,10 +31,8 @@ import {
 export const AdminDisciplinesPage = () => {
   const [disciplines, setDisciplines] = useState<DictionaryItem[]>([]);
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
-
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
   const [newName, setNewName] = useState("");
   const [selectedDept, setSelectedDept] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -57,8 +55,8 @@ export const AdminDisciplinesPage = () => {
   }, []);
 
   useAdminPageConfig({
-    title: "Дисциплины",
-    subtitle: "Управление списком дисциплин учебного заведения.",
+    title: "Справочники",
+    subtitle: "Дисциплины",
     actions: (
       <Button onClick={() => openModal()}>
         <Plus size={18} className="mr-2" /> Добавить
@@ -99,6 +97,9 @@ export const AdminDisciplinesPage = () => {
     try {
       await dictionariesApi.restoreDiscipline(id);
       loadData();
+      toast.success("Дисциплина успешно восстановлена.", {
+        style: { color: "green" },
+      });
     } catch (e) {
       toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
     }
@@ -197,4 +198,3 @@ export const AdminDisciplinesPage = () => {
     </>
   );
 };
-

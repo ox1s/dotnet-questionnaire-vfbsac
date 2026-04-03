@@ -2,6 +2,7 @@ import { type Form } from "../../api";
 import { LogOut, FileText, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ModeToggle } from "@/components/shared/mode-toggle";
 import { DashboardContent } from "./dashboard-content";
 
 export const UserDashboard = ({
@@ -28,6 +29,7 @@ export const UserDashboard = ({
             >
               <User size={14} /> Студент
             </Badge>
+            <ModeToggle />
             <Button
               variant="ghost"
               onClick={logout}
@@ -52,4 +54,3 @@ export const UserDashboard = ({
     </div>
   );
 };
-

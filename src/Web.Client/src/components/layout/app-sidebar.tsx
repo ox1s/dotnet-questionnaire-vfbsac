@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { Link } from "react-router-dom";
 
 import { NavMain } from "@/components/layout/nav-main";
-import { NavUser } from "@/components/layout/nav-user";
 import {
   Sidebar,
   SidebarContent,
@@ -14,14 +14,16 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Settings2Icon, BookIcon, ChartAreaIcon } from "lucide-react";
+import {
+  Settings2Icon,
+  BookIcon,
+  ChartAreaIcon,
+  LogOutIcon,
+} from "lucide-react";
+import { Button } from "../ui/button";
+import { ModeToggle } from "../shared/mode-toggle";
 
 const data = {
-  user: {
-    name: "Администратор",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Дашборд",
@@ -103,10 +105,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <a href="#">
+              <Link to="/dashboard">
                 <img src="/logo.png" alt="Logo" className="size-5!" />
                 <span className="text-base font-semibold">ВФБГАС</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -115,7 +117,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <div className="px-4 py-3 flex justify-end items-center">
+          {" "}
+          <ModeToggle />
+          <Button
+            onClick={() => {
+              window.location.href = "/login";
+            }}
+            variant="outline"
+            size="icon"
+            className="ml-4"
+          >
+            <LogOutIcon />
+          </Button>
+        </div>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

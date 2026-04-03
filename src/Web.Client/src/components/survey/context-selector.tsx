@@ -5,6 +5,14 @@ import {
   type TeacherItem,
 } from "../../api";
 import { getLinkedFilterOptions } from "@/utils/linked-filters";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   requiredFilters: string[] | undefined;
@@ -22,6 +30,7 @@ export const ContextSelector: React.FC<Props> = ({
   requiredFilters,
   onChange,
 }) => {
+  const EMPTY_VALUE = "__empty__";
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [disciplines, setDisciplines] = useState<DictionaryItem[]>([]);
@@ -65,6 +74,10 @@ export const ContextSelector: React.FC<Props> = ({
           ...prev,
           [field]: value || undefined,
         };
+
+        if (field === "departmentId" && value !== prev.departmentId) {
+          nextContext.disciplineId = undefined;
+        }
 
         const selectedDiscipline = nextContext.disciplineId
           ? disciplines.find(
@@ -112,84 +125,111 @@ export const ContextSelector: React.FC<Props> = ({
   });
 
   return (
-    <div className="bg-white p-6 shadow-sm border border-blue-100 mb-6">
-      <h3 className="font-semibold mb-4 text-blue-900">Данные для анкеты</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Форма обучения
-          </label>
-          <select
-            className="input-field"
+    <div className="mb-6 border bg-card p-6 shadow-sm">
+      <h3 className="mb-4 text-base font-semibold text-foreground">
+        Данные для анкеты
+      </h3>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <ContextField label="Форма обучения">
+          <Select
             value={context.educationForm}
-            onChange={(e) => handleChange("educationForm", e.target.value)}
+            onValueChange={(value) => handleChange("educationForm", value)}
           >
-            <option value="ДФПО">Дневная (ДФПО)</option>
-            <option value="ЗФПО">Заочная (ЗФПО)</option>
-          </select>
-        </div>
+            <SelectTrigger className="w-full bg-background text-sm">
+              <SelectValue placeholder="Выберите форму обучения" />
+            </SelectTrigger>
+            <SelectContent position="popper">
+              <SelectItem value="ДФПО">Дневная (ДФПО)</SelectItem>
+              <SelectItem value="ЗФПО">Заочная (ЗФПО)</SelectItem>
+            </SelectContent>
+          </Select>
+        </ContextField>
 
         {requiredFilters?.includes("Department") && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Кафедра
-            </label>
-            <select
-              className="input-field"
-              value={context.departmentId || ""}
-              onChange={(e) => handleChange("departmentId", e.target.value)}
+          <ContextField label="Кафедра">
+            <Select
+              value={context.departmentId ?? EMPTY_VALUE}
+              onValueChange={(value) =>
+                handleChange("departmentId", value === EMPTY_VALUE ? "" : value)
+              }
             >
-              <option value="">-- Выберите кафедру --</option>
-              {linkedOptions.departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              <SelectTrigger className="w-full bg-background text-sm">
+                <SelectValue placeholder="Выберите кафедру" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value={EMPTY_VALUE}>Не выбрано</SelectItem>
+                {linkedOptions.departments.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ContextField>
         )}
 
         {requiredFilters?.includes("Discipline") && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Дисциплина
-            </label>
-            <select
-              className="input-field"
-              value={context.disciplineId || ""}
-              onChange={(e) => handleChange("disciplineId", e.target.value)}
+          <ContextField label="Дисциплина">
+            <Select
+              value={context.disciplineId ?? EMPTY_VALUE}
+              onValueChange={(value) =>
+                handleChange("disciplineId", value === EMPTY_VALUE ? "" : value)
+              }
               disabled={linkedOptions.disciplines.length === 0}
             >
-              <option value="">-- Выберите дисциплину --</option>
-              {linkedOptions.disciplines.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </div>
+              <SelectTrigger className="w-full bg-background text-sm">
+                <SelectValue placeholder="Выберите дисциплину" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value={EMPTY_VALUE}>Не выбрано</SelectItem>
+                {linkedOptions.disciplines.map((d) => (
+                  <SelectItem key={d.id} value={d.id}>
+                    {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ContextField>
         )}
 
         {requiredFilters?.includes("Teacher") && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Преподаватель
-            </label>
-            <select
-              className="input-field"
-              value={context.teacherId || ""}
-              onChange={(e) => handleChange("teacherId", e.target.value)}
+          <ContextField label="Преподаватель">
+            <Select
+              value={context.teacherId ?? EMPTY_VALUE}
+              onValueChange={(value) =>
+                handleChange("teacherId", value === EMPTY_VALUE ? "" : value)
+              }
             >
-              <option value="">-- Выберите преподавателя --</option>
-              {teachers.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.fullName}
-                </option>
-              ))}
-            </select>
-          </div>
+              <SelectTrigger className="w-full bg-background text-sm">
+                <SelectValue placeholder="Выберите преподавателя" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value={EMPTY_VALUE}>Не выбрано</SelectItem>
+                {teachers.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.fullName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ContextField>
         )}
       </div>
     </div>
   );
 };
+
+function ContextField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs text-muted-foreground">{label}</Label>
+      {children}
+    </div>
+  );
+}

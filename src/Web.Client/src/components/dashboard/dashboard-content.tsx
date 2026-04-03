@@ -104,7 +104,7 @@ export const DashboardContent = ({
               )}
             </div>
             {!isAdmin && (
-              <Button asChild className="w-full" variant="secondary">
+              <Button asChild className="w-full" variant="outline">
                 <Link to={`/form/${form.id}`}>
                   Пройти опрос <ArrowRight size={16} className="ml-2" />
                 </Link>
@@ -123,4 +123,3 @@ export const DashboardContent = ({
     </div>
   );
 };
-

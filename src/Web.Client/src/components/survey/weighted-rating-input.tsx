@@ -1,6 +1,8 @@
 import React from "react";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface Props {
   value: number | undefined;
@@ -34,34 +36,38 @@ export const WeightedRatingInput: React.FC<Props> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2 p-4 border bg-gray-50 border-gray-200">
-      <div className="flex gap-4 items-start">
+    <div className="flex flex-col gap-3 border bg-muted/30 p-4">
+      <div className="flex items-start gap-4">
         <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-500 mb-1">
+          <Label className="mb-1.5 text-xs text-muted-foreground">
             Важность (1-10)
-          </label>
-          <input
+          </Label>
+          <Input
             type="number"
             min="1"
             max="10"
-            className={`input-field ${isWeightInvalid ? "border-red-500 ring-1 ring-red-500" : ""}`}
+            className={isWeightInvalid ? "border-red-500 ring-1 ring-red-500" : ""}
             placeholder="10"
             value={weight ?? ""}
             onChange={(e) => handleChange(e, "weight")}
           />
         </div>
 
-        <div className="text-gray-300 font-light text-2xl mt-6">/</div>
+        <div className="mt-6 text-2xl font-light text-muted-foreground/40">/</div>
 
         <div className="flex-1">
-          <label className="block text-xs font-medium text-gray-500 mb-1">
+          <Label className="mb-1.5 text-xs text-muted-foreground">
             Оценка (1-10)
-          </label>
-          <input
+          </Label>
+          <Input
             type="number"
             min="1"
             max="10"
-            className={`input-field ${isValueInvalid || isLogicInvalid ? "border-red-500 ring-1 ring-red-500" : ""}`}
+            className={
+              isValueInvalid || isLogicInvalid
+                ? "border-red-500 ring-1 ring-red-500"
+                : ""
+            }
             placeholder="8"
             value={value ?? ""}
             onChange={(e) => handleChange(e, "value")}
@@ -84,8 +90,8 @@ export const WeightedRatingInput: React.FC<Props> = ({
       )}
 
       {!hasError && (
-        <div className="text-xs text-gray-400 mt-1">
-          Слева укажите важность критерия, справа — реальную оценку.
+        <div className="mt-1 text-xs text-muted-foreground">
+          Слева укажите важность критерия, справа - реальную оценку.
         </div>
       )}
     </div>

@@ -28,7 +28,7 @@ export function FilterSelect({
       disabled={disabled}
       onValueChange={(val) => onChange(val === "all" ? "" : val)}
     >
-      <SelectTrigger className="w-full bg-slate-50 border-slate-200 text-sm ">
+      <SelectTrigger className="w-full bg-background text-sm">
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent position="popper">

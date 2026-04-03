@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { ShieldAlert, KeyRound, PowerOff, AlertTriangle } from "lucide-react";
+import {
+  ShieldAlert,
+  KeyRound,
+  PowerOff,
+  AlertTriangle,
+  LockKeyholeIcon,
+  LockKeyholeOpenIcon,
+  CheckIcon,
+} from "lucide-react";
 import { usersApi, settingsApi } from "../../api";
 import { getUserInfo } from "../../utils/auth";
 import { Button } from "@/components/ui/button";
@@ -132,7 +140,7 @@ export const AdminSettingsPage = () => {
         <Card className="border-destructive/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="p-2 bg-destructive/15 text-destructive">
+              <div className="p-2 bg-chart-1/20 text-chart-4">
                 <ShieldAlert size={20} />
               </div>
               Управление доступом
@@ -142,7 +150,7 @@ export const AdminSettingsPage = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col items-start justify-between gap-4 border border-destructive/20 bg-destructive/5 p-5 sm:flex-row sm:items-center">
+            <div className="flex flex-col items-start justify-between gap-4 border border-destructive/20 bg-destructive/5 p-5 sm:flex-row sm:items-center grid-rows-2">
               <div>
                 <h4 className="font-bold text-foreground flex items-center gap-2">
                   <AlertTriangle size={18} className="text-destructive" />
@@ -159,30 +167,14 @@ export const AdminSettingsPage = () => {
                 disabled={isClosing}
                 className="w-full sm:w-auto shrink-0"
               >
-                <PowerOff size={16} className="mr-2" />
+                <LockKeyholeIcon size={16} className="mr-2" />
                 {isClosing ? "Завершение..." : "Завершить"}
               </Button>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-destructive/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="p-2 bg-destructive/15 text-destructive">
-                <ShieldAlert size={20} />
-              </div>
-              Управление доступом
-            </CardTitle>
-            <CardDescription>
-              Изменить доступность анкет для прохождения
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col items-start justify-between gap-4 border border-destructive/20 bg-destructive/5 p-5 sm:flex-row sm:items-center">
+            <div className="mt-5 flex flex-col items-start justify-between gap-4 border border-chart-5/20 bg-chart-1/5 p-5 sm:flex-row sm:items-center">
               <div>
                 <h4 className="font-bold text-foreground flex items-center gap-2">
-                  <AlertTriangle size={18} className="text-destructive" />
+                  <CheckIcon size={18} />
                   Открыть текущий семестр
                 </h4>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed max-w-sm">
@@ -191,12 +183,12 @@ export const AdminSettingsPage = () => {
                 </p>
               </div>
               <Button
-                variant="destructive"
+                variant="secondary"
                 onClick={handleOpenSemester}
                 disabled={isOpening}
                 className="w-full sm:w-auto shrink-0"
               >
-                <PowerOff size={16} className="mr-2" />
+                <LockKeyholeOpenIcon size={16} className="mr-2" />
                 {isOpening ? "Открытие..." : "Открыть"}
               </Button>
             </div>

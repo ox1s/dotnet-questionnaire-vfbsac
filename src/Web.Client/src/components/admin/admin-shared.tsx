@@ -128,27 +128,27 @@ const AdminLayoutContent = ({
       <AppSidebar variant="inset" />
 
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 border-b border-slate-100 bg-white">
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b bg-background px-4">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbPage className="font-medium text-slate-500">
+                  <BreadcrumbPage className="font-medium text-muted-foreground">
                     {resolvedTitle}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
-                  <BreadcrumbPage className="font-bold text-slate-900">
+                  <BreadcrumbPage className="font-bold text-foreground">
                     {resolvedSubtitle}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          {resolvedActions && <div>{resolvedActions}</div>}
+          {resolvedActions ? <div>{resolvedActions}</div> : null}
         </header>
 
         <main className="p-4 md:p-6 max-w-7xl mx-auto w-full">

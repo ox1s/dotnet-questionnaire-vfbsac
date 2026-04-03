@@ -431,15 +431,15 @@ export const AdminStatsPage = () => {
         ) : undefined
       }
     >
-      <div className="flex flex-1 flex-col gap-4 bg-slate-50/50">
+      <div className="flex flex-1 flex-col gap-4 bg-background">
         {loading ? (
-          <div className="flex items-center justify-center h-full min-h-[50vh] text-slate-400">
+          <div className="flex h-full min-h-[50vh] items-center justify-center text-muted-foreground">
             <RefreshCw className="animate-spin mr-2" size={24} /> Загрузка...
           </div>
         ) : (
           <>
-            <div className="bg-white border border-slate-200 p-6 shadow-sm mb-6">
-              <div className="mb-5 flex items-center gap-2 text-slate-800 font-bold">
+            <div className="mb-6 border bg-card p-6 shadow-sm">
+              <div className="mb-5 flex items-center gap-2 font-bold text-foreground">
                 <Filter size={18} />
                 <h4>Режим аналитики</h4>
               </div>
@@ -471,7 +471,7 @@ export const AdminStatsPage = () => {
                 <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
                   <AnalyticsField label="Название периода">
                     <Input
-                      className="w-full bg-slate-50 border-slate-200 text-sm"
+                      className="w-full text-sm"
                       value={singleRange.label}
                       placeholder="Название периода"
                       onChange={(event) =>
@@ -514,7 +514,7 @@ export const AdminStatsPage = () => {
                     >
                       <AnalyticsField label="Название периода">
                         <Input
-                          className="bg-slate-50"
+                          className="bg-background"
                           value={item.label}
                           placeholder={`Период ${index + 1}`}
                           onChange={(event) =>
@@ -651,7 +651,7 @@ export const AdminStatsPage = () => {
                 <AnalyticsField label="Организация">
                   <Input
                     type="text"
-                    className="w-full bg-slate-50 border-slate-200 text-sm"
+                    className="w-full text-sm"
                     placeholder="Название организации..."
                     value={filters.organizationName || ""}
                     onChange={(event) =>
@@ -674,7 +674,7 @@ export const AdminStatsPage = () => {
                         setSelectedIds([]);
                       }}
                     >
-                      <SelectTrigger className="w-full bg-slate-50 border-slate-200">
+                      <SelectTrigger className="w-full">
                         <SelectValue placeholder="Выберите поле" />
                       </SelectTrigger>
                       <SelectContent position="popper">
@@ -691,7 +691,7 @@ export const AdminStatsPage = () => {
                     label="Сравниваемые значения"
                     className="xl:col-span-2"
                   >
-                    <Card className="gap-3 border border-slate-200 bg-slate-50 py-3">
+                    <Card className="gap-3 border bg-muted/40 py-3">
                       <CardContent className="space-y-2">
                         {optionsFor().length > 0 ? (
                           optionsFor().map((item) => {
@@ -744,14 +744,14 @@ export const AdminStatsPage = () => {
             </div>
 
             {refreshing ? (
-              <div className="flex justify-center p-10 text-slate-400">
+              <div className="flex justify-center p-10 text-muted-foreground">
                 <RefreshCw className="animate-spin" size={24} />
               </div>
             ) : null}
             {report ? (
               renderCards()
             ) : (
-              <div className="p-10 text-center text-slate-400 bg-white border border-slate-200">
+              <div className="border bg-card p-10 text-center text-muted-foreground">
                 Настройте период и срезы для аналитики.
               </div>
             )}
@@ -766,19 +766,19 @@ export const AdminStatsPage = () => {
                     <CartesianGrid
                       strokeDasharray="3 3"
                       vertical={false}
-                      stroke="#e2e8f0"
+                      stroke="var(--border)"
                     />
                     <XAxis
                       dataKey="name"
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "#64748b", fontSize: 10 }}
+                      tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
                       dy={10}
                     />
                     <YAxis
                       axisLine={false}
                       tickLine={false}
-                      tick={{ fill: "#64748b", fontSize: 10 }}
+                      tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
                       domain={[0, 10]}
                       ticks={[0, 2, 4, 6, 8, 10]}
                     />
@@ -835,7 +835,7 @@ function DatePickerInput({
         <Button
           variant="outline"
           className={cn(
-            "w-full justify-start text-left font-normal bg-slate-50 border-slate-200",
+            "w-full justify-start bg-background text-left font-normal",
             !date && "text-muted-foreground",
           )}
         >
@@ -870,7 +870,7 @@ function AnalyticsField({
 }) {
   return (
     <div className={cn("space-y-2", className)}>
-      <Label className="text-xs text-slate-600">{label}</Label>
+      <Label className="text-xs text-muted-foreground">{label}</Label>
       {children}
     </div>
   );
@@ -884,9 +884,9 @@ function QuestionsTable({
   slices: AnalyticsReport["slices"];
 }) {
   return (
-    <div className="bg-white shadow-sm border border-slate-200 overflow-hidden mb-8">
-      <div className="px-4 py-4 border-b border-slate-100">
-        <h3 className="text-base md:text-lg font-bold text-slate-900">
+    <div className="mb-8 overflow-hidden border bg-card shadow-sm">
+      <div className="border-b px-4 py-4">
+        <h3 className="text-base font-bold text-foreground md:text-lg">
           Детализация
         </h3>
       </div>

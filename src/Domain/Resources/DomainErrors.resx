@@ -231,4 +231,13 @@
   <data name="Submissions_AnswerExists" xml:space="preserve">
     <value>Уже есть ответ на вопрос</value>
   </data>
+  <data name="Disciplines_Duplicate" xml:space="preserve">
+    <value>Уже существует такая дисциплина</value>
+  </data>
+  <data name="Specialities_Duplicate" xml:space="preserve">
+    <value>Специальность с таким именем уже существует</value>
+  </data>
+  <data name="Specializations_Duplicate" xml:space="preserve">
+    <value>Специаизация с таким же именем уже существует</value>
+  </data>
 </root>

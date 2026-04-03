@@ -20,6 +20,14 @@ internal sealed class UpdateSpecializationCommandHandler(IApplicationDbContext c
             return Result.Failure(SpecializationErrors.NotFound(command.SpecializationId));
         }
 
+        Specialization? specializationWithSameName = await context.Specializations
+            .FirstOrDefaultAsync(s => s.Name == command.Name && s.Id != command.SpecializationId, cancellationToken);
+
+        if (specializationWithSameName is not null)
+        {
+            return Result.Failure(SpecializationErrors.Duplicate(command.Name));
+        }
+
         Result updateNameResult = specialization.UpdateName(command.Name);
         if (updateNameResult.IsFailure)
         {

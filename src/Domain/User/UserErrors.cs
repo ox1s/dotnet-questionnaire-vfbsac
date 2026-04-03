@@ -6,32 +6,32 @@ public static class UserErrors
 {
     public static Error NotFound(Guid userId) => Error.NotFound(
         "Users.NotFound",
-        $"The user with the Id = '{userId}' was not found");
+        $"{Resources.DomainErrors.Users_NotFound}, Id = '{userId}'");
 
     public static Error NotFoundByLogin(string login) => Error.NotFound(
         "Users.NotFoundByLogin",
-        $"The user with the Login = '{login}' was not found");
+        $"{Resources.DomainErrors.Users_NotFoundByLogin}, Login = '{login}'");
 
     public static Error Unauthorized() => Error.Failure(
         "Users.Unauthorized",
-        "You are not authorized to perform this action.");
+        $"{Resources.DomainErrors.Users_Unauthorized}");
 
     public static Error InvalidResetToken() => Error.Validation(
         "Users.InvalidResetToken",
-        "Invalid or expired password reset token.");
+        $"{Resources.DomainErrors.Users_InvalidResetToken}");
 
     public static Error ExpiredResetToken() => Error.Validation(
         "Users.ExpiredResetToken",
-        "The password reset token has expired.");
+        $"{Resources.DomainErrors.Users_ExpiredResetToken}");
     
     public static Error UserExist() => Error.Conflict(
         "Users.UserExists",
-        "User already exists.");
+        $"{Resources.DomainErrors.Users_UserExist}");
     public static Error GroupExists(string login) => Error.Conflict(
         "Users.GroupExists", 
-        $"Group with {login} already exists");
+        $"{Resources.DomainErrors.Users_GroupExists}, Login = {login}");
 
     public static Error GroupNameInvalid() => Error.Failure(
         "Users.GroupNameInvalid",
-        "Group name is invalid (should be less than 5 characters).");
+        $"{Resources.DomainErrors.Users_GroupNameInvalid}");
 }

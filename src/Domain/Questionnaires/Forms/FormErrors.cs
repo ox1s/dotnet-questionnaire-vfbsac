@@ -6,25 +6,25 @@ public static class FormErrors
 {
     public static Error NotFound(Guid formId) => Error.NotFound(
         "Forms.NotFound",
-        $"The form with the Id = '{formId}' was not found");
+        $"{Resources.DomainErrors.Forms_NotFound}, Id = '{formId}'");
 
     public static Error QuestionNotFound(Guid questionId) => Error.NotFound(
         "Forms.QuestionNotFound",
-        $"The question with the Id = '{questionId}' was not found");
+        $"{Resources.DomainErrors.Forms_QuestionNotFound}, Id = '{questionId}'");
 
     public static Error FormInactive(Guid formId) => Error.Failure(
         "Forms.Inactive",
-        $"The form with the Id = '{formId}' is not active");
+        $"{Resources.DomainErrors.Forms_Inactive}, Id = '{formId}'");
 
     public static Error QuestionOrderExists(int order) => Error.Failure(
         "Forms.QuestionOrderExists",
-        $"Question with order {order} already exists");
+        $"{Resources.DomainErrors.Forms_QuestionOrderExists}, Order = '{order}'");
 
     public static Error AlreadyActive(Guid formId) => Error.Failure(
         "Forms.AlreadyActive",
-        $"The form with the Id = '{formId}' is already active");
+        $"{Resources.DomainErrors.Forms_AlreadyActive}, Id = '{formId}'");
 
     public static Error AlreadyDeactivated(Guid formId) => Error.Failure(
         "Forms.AlreadyDeactivated",
-        $"The form with the Id = '{formId}' is already deactivated");
+        $"{Resources.DomainErrors.Forms_AlreadyDeactivated}, Id = '{formId}'");
 }

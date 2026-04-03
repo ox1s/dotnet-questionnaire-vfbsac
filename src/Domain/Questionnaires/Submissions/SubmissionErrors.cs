@@ -1,21 +1,25 @@
 using SharedKernel;
-
 namespace Domain.Questionnaires.Submissions;
 
 public static class SubmissionErrors
 {
     public static Error NotFound(Guid submissionId) => Error.NotFound(
         "Submissions.NotFound",
-        $"The submission with the Id = '{submissionId}' was not found");
+        $"{Resources.DomainErrors.Submissions_NotFound}, Id = '{submissionId}'");
 
     public static Error AnswerNotFound(Guid answerId) => Error.NotFound(
         "Submissions.AnswerNotFound",
-        $"The answer with the Id = '{answerId}' was not found");
+        $"{Resources.DomainErrors.Submissions_AnswerNotFound}, Id = '{answerId}'");
+
     public static Error InvalidWeight(Guid questionId) => Error.Validation(
-    "Submissions.InvalidWeight",
-    $"The value cannot be greater than the weight for question '{questionId}'.");
+        "Submissions.InvalidWeight",
+        $"{Resources.DomainErrors.Submissions_InvalidWeight}, QuestionId = '{questionId}'");
 
     public static Error AlreadySubmitted() => Error.Conflict(
         "Submissions.AlreadySubmitted",
-        "Вы уже отправляли ответ на эту анкету с выбранными параметрами.");
+        $"{Resources.DomainErrors.Submissions_AlreadySubmitted}");
+
+    public static Error AnswerExists(Guid questionId) => Error.Failure(
+        "Submissions.AnswerExists",
+        $"{Resources.DomainErrors.Submissions_AnswerExists}. QuestionId = {questionId}");
 }

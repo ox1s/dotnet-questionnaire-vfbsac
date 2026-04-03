@@ -7,17 +7,17 @@ public static class AnswerErrors
     public static Error NotFound(Guid answerId) =>
         Error.NotFound(
             "Answers.NotFound",
-            $"The answer with the Id = '{answerId}' was not found");
+            $"{Resources.DomainErrors.Answers_NotFound}, Id = '{answerId}'");
     public static Error ValueRequired =>
         Error.Failure(
             "Answers.ValueRequired",
-            "Either Value or NumericValue must be provided");
+            $"{Resources.DomainErrors.Answers_ValueRequired}");
     public static Error InvalidScore(int MinValue, int MaxValue) =>
         Error.Failure(
             "Answers.InvalidScore",
-            $"Score must be between {MinValue} and {MaxValue}");
+            $"{Resources.DomainErrors.Answers_InvalidScore}, Min = '{MinValue}', Max = '{MaxValue}'");
     public static Error InvalidWeight(int MinValue, int MaxValue) =>
         Error.Failure(
             "Answers.InvalidWeight",
-            $"Weight must be between {MinValue} and {MaxValue}");
+            $"{Resources.DomainErrors.Answers_InvalidWeight}, Min = '{MinValue}', Max = '{MaxValue}'");
 }

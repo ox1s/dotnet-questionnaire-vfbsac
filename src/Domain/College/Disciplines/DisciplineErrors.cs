@@ -6,9 +6,13 @@ public static class DisciplineErrors
 {
     public static Error NotFound(Guid disciplineId) => Error.NotFound(
         "Disciplines.NotFound",
-        $"The discipline with the Id = '{disciplineId}' was not found");
+        $"{Resources.DomainErrors.Disciplines_NotFound}, Id = '{disciplineId}'");
 
     public static Error DepartmentDeleted(Guid departmentId) => Error.Conflict(
         "Disciplines.DepartmentDeleted",
-        $"Нельзя восстановить дисциплину, пока кафедра '{departmentId}' удалена.");
+        $"{Resources.DomainErrors.Disciplines_DepartmentDeleted}, Id = '{departmentId}'");
+
+    public static Error Duplicate(string name) => Error.Conflict(
+        "Disciplines.DuplicateName",
+        $"{Resources.DomainErrors.Disciplines_Duplicate}, Name = '{name}'");
 }

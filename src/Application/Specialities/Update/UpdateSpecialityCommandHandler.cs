@@ -19,6 +19,14 @@ internal sealed class UpdateSpecialityCommandHandler(IApplicationDbContext conte
             return Result.Failure(SpecialityErrors.NotFound(command.SpecialityId));
         }
 
+        Speciality? specialityWithSameName = await context.Specialities
+            .FirstOrDefaultAsync(s => s.Name == command.Name && s.Id != command.SpecialityId, cancellationToken);
+
+        if (specialityWithSameName is not null)
+        {
+            return Result.Failure(SpecialityErrors.Duplicate(command.Name));
+        }
+
         Result updateNameResult = speciality.UpdateName(command.Name);
         if (updateNameResult.IsFailure)
         {

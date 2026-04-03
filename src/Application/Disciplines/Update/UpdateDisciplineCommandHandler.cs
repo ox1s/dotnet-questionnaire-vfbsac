@@ -20,6 +20,14 @@ internal sealed class UpdateDisciplineCommandHandler(IApplicationDbContext conte
             return Result.Failure(DisciplineErrors.NotFound(command.DisciplineId));
         }
 
+        Discipline? disciplineWithSameName = await context.Disciplines
+            .FirstOrDefaultAsync(d => d.Name == command.Name && d.Id != command.DisciplineId, cancellationToken);
+
+        if (disciplineWithSameName is not null)
+        {
+            return Result.Failure(DisciplineErrors.Duplicate(command.Name));
+        }
+
         Result updateNameResult = discipline.UpdateName(command.Name);
         if (updateNameResult.IsFailure)
         {

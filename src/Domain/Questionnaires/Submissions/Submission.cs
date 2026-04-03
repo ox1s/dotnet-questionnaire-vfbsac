@@ -59,9 +59,7 @@ public sealed class Submission : Entity
     {
         if (_answers.Any(a => a.QuestionId == questionId))
         {
-            return Result.Failure<Answer>(Error.Failure(
-                "Submissions.AnswerExists",
-                $"Answer for question {questionId} already exists"));
+            return Result.Failure<Answer>(SubmissionErrors.AnswerExists(questionId));
         }
 
         Result<Answer> answerResult = Answer.Create(Id, questionId, value, numericValue, weight);
@@ -75,7 +73,7 @@ public sealed class Submission : Entity
 
         return answer;
     }
-    // TODO: Result
+
     public Result UpdateContext(SubmissionContext context)
     {
         Context = context;

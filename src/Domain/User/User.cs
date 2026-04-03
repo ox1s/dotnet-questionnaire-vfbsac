@@ -74,7 +74,7 @@ public sealed class User : Entity, ISoftDeletable
         return new User
         {
             Id = Guid.NewGuid(),
-            Login = new Login(login.Value.ToUpperInvariant()),
+            Login = new Login(login.Value),
             PasswordHash = passwordHash,
             DisplayName = login.Value,
             Role = UserRole.Admin,

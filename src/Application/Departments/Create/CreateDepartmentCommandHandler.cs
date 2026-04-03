@@ -11,7 +11,8 @@ internal sealed class CreateDepartmentCommandHandler(IApplicationDbContext conte
 {
     public async Task<Result<Guid>> Handle(CreateDepartmentCommand command, CancellationToken cancellationToken)
     {
-        Department existingDepartment = context.Departments.IgnoreQueryFilters().FirstOrDefault(d => d.Name == command.Name);
+        Department existingDepartment = context.Departments
+            .IgnoreQueryFilters().FirstOrDefault(d => d.Name == command.Name);
         if (existingDepartment is not null)
         {
             return Result.Failure<Guid>(DepartmentErrors.Duplicate);

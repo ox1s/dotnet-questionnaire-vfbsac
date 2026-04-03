@@ -6,9 +6,13 @@ public static class SpecialityErrors
 {
     public static Error NotFound(Guid specialityId) => Error.NotFound(
         "Specialities.NotFound",
-        $"The speciality with the Id = '{specialityId}' was not found");
+        $"{Resources.DomainErrors.Specialities_NotFound}, Id = '{specialityId}'");
 
     public static Error HasSpecializations() => Error.Conflict(
         "Specialities.HasSpecializations",
-        "К специальности привязаны специализации, поэтому сначала уберите их.");
+        $"{Resources.DomainErrors.Specialities_HasSpecializations}");
+
+    public static Error Duplicate(string name) => Error.Conflict(
+        "Specialities.Duplicate",
+        $"{Resources.DomainErrors.Specialities_Duplicate}, Name = '{name}'");
 }

@@ -6,9 +6,9 @@ public static class QuestionErrors
 {
     public static Error EmptyField => Error.Failure(
         "Questions.EmptyField",
-        "Text cannot be empty");
+        $"{Resources.DomainErrors.Questions_EmptyField}");
 
     public static Error OrderInvalid => Error.Failure(
         "Questions.OrderInvalid",
-        "Order must be non-negative");
+        $"{Resources.DomainErrors.Questions_OrderInvalid}");
 }

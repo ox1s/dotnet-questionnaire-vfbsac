@@ -22,14 +22,14 @@ namespace Domain.Resources {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Resources {
+    internal class DomainErrors {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Resources() {
+        internal DomainErrors() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Domain.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Domain.Resources.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Domain.Resources.DomainErrors", typeof(DomainErrors).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -151,6 +151,15 @@ namespace Domain.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Уже существует такая дисциплина.
+        /// </summary>
+        internal static string Disciplines_Duplicate {
+            get {
+                return ResourceManager.GetString("Disciplines_Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Дисциплина с таким id не найдена.
         /// </summary>
         internal static string Disciplines_NotFound {
@@ -232,6 +241,15 @@ namespace Domain.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Специальность с таким именем уже существует.
+        /// </summary>
+        internal static string Specialities_Duplicate {
+            get {
+                return ResourceManager.GetString("Specialities_Duplicate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to К специальности привязаны специализации, поэтому сначала уберите их.
         /// </summary>
         internal static string Specialities_HasSpecializations {
@@ -246,6 +264,15 @@ namespace Domain.Resources {
         internal static string Specialities_NotFound {
             get {
                 return ResourceManager.GetString("Specialities_NotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Специаизация с таким же именем уже существует.
+        /// </summary>
+        internal static string Specializations_Duplicate {
+            get {
+                return ResourceManager.GetString("Specializations_Duplicate", resourceCulture);
             }
         }
         

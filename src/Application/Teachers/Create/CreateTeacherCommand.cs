@@ -3,4 +3,5 @@ using Application.Abstractions.Messaging;
 namespace Application.Teachers.Create;
 
 public sealed record CreateTeacherCommand(
-    string FullName) : ICommand<Guid>;
+    string FullName,
+    Guid? DepartmentId) : ICommand<Guid>;

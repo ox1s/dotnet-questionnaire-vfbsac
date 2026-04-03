@@ -1,6 +1,8 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
+using Domain.College.Departments;
 using Domain.College.Teachers;
+using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
 namespace Application.Teachers.Create;
@@ -10,7 +12,18 @@ internal sealed class CreateTeacherCommandHandler(IApplicationDbContext context)
 {
     public async Task<Result<Guid>> Handle(CreateTeacherCommand command, CancellationToken cancellationToken)
     {
-        Result<Teacher> teacherResult = Teacher.Create(command.FullName);
+        if (command.DepartmentId.HasValue)
+        {
+            bool departmentExists = await context.Departments
+                .AnyAsync(d => d.Id == command.DepartmentId.Value, cancellationToken);
+
+            if (!departmentExists)
+            {
+                return Result.Failure<Guid>(DepartmentErrors.NotFound(command.DepartmentId.Value));
+            }
+        }
+
+        Result<Teacher> teacherResult = Teacher.Create(command.FullName, command.DepartmentId);
 
         if (teacherResult.IsFailure)
         {

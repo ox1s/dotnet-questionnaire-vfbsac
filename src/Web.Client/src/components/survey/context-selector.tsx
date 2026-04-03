@@ -67,6 +67,20 @@ export const ContextSelector: React.FC<Props> = ({
     onChange(context);
   }, [context, onChange]);
 
+  const getTeacherLabel = (teacher: TeacherItem) => {
+    if (!teacher.departmentId) {
+      return teacher.fullName;
+    }
+
+    const departmentName = departments.find(
+      (department) => department.id === teacher.departmentId,
+    )?.name;
+
+    return departmentName
+      ? `${teacher.fullName} (${departmentName})`
+      : teacher.fullName;
+  };
+
   const handleChange = (field: keyof SubmissionContext, value: string) => {
     setContext((prev) => {
       if (field === "departmentId" || field === "disciplineId") {
@@ -207,7 +221,7 @@ export const ContextSelector: React.FC<Props> = ({
                 <SelectItem value={EMPTY_VALUE}>Не выбрано</SelectItem>
                 {teachers.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
-                    {t.fullName}
+                    {getTeacherLabel(t)}
                   </SelectItem>
                 ))}
               </SelectContent>

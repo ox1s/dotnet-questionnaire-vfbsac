@@ -132,7 +132,7 @@ public sealed class DemoDataGenerator
         await context.Departments.AddRangeAsync(departments.Values, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
-        List<Teacher> teachers = CreateTeachers();
+        List<Teacher> teachers = CreateTeachers(departments);
         await context.Teachers.AddRangeAsync(teachers, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
 
@@ -181,13 +181,15 @@ public sealed class DemoDataGenerator
         return departments;
     }
 
-    private List<Teacher> CreateTeachers()
+    private List<Teacher> CreateTeachers(Dictionary<string, Department> departments)
     {
         List<Teacher> teachers = [];
 
-        foreach (string teacherName in TeacherNames)
+        for (int index = 0; index < TeacherNames.Length; index++)
         {
-            Teacher teacher = Teacher.Create(teacherName).Value;
+            string teacherName = TeacherNames[index];
+            Guid departmentId = departments[DepartmentNames[index % DepartmentNames.Length]].Id;
+            Teacher teacher = Teacher.Create(teacherName, departmentId).Value;
             teachers.Add(teacher);
         }
 

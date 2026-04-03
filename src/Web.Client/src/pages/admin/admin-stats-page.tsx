@@ -199,9 +199,27 @@ export const AdminStatsPage = () => {
     );
   }, [departments, disciplines, specialities, specializations]);
 
+  const teacherLabel = (teacher: TeacherItem) => {
+    if (!teacher.departmentId) {
+      return teacher.fullName;
+    }
+
+    const departmentName = departments.find(
+      (department) => department.id === teacher.departmentId,
+    )?.name;
+
+    return departmentName
+      ? `${teacher.fullName} (${departmentName})`
+      : teacher.fullName;
+  };
+
   const labelFor = (field: CompareField, value: string) => {
     if (field === "teacherId")
-      return teachers.find((item) => item.id === value)?.fullName ?? value;
+    {
+      const teacher = teachers.find((item) => item.id === value);
+      return teacher ? teacherLabel(teacher) : value;
+    }
+
     const sets: Record<Exclude<CompareField, "teacherId">, DictionaryItem[]> = {
       departmentId: departments,
       disciplineId: disciplines,
@@ -220,7 +238,10 @@ export const AdminStatsPage = () => {
     });
 
     if (compareField === "teacherId")
-      return teachers.map((item) => ({ value: item.id, label: item.fullName }));
+      return teachers.map((item) => ({
+        value: item.id,
+        label: teacherLabel(item),
+      }));
     const sets: Record<Exclude<CompareField, "teacherId">, DictionaryItem[]> = {
       departmentId: compareOptions.departments,
       disciplineId: compareOptions.disciplines,
@@ -605,7 +626,7 @@ export const AdminStatsPage = () => {
                     placeholder="Все преподаватели"
                     options={teachers.map((t) => ({
                       id: t.id,
-                      label: t.fullName,
+                      label: teacherLabel(t),
                     }))}
                   />
                 </AnalyticsField>

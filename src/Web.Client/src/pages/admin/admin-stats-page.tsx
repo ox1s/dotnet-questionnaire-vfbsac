@@ -26,6 +26,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import {
+  getLinkedFilterOptions,
+  sanitizeLinkedFilters,
+} from "@/utils/linked-filters";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -162,6 +166,17 @@ export const AdminStatsPage = () => {
     run();
   }, [id]);
 
+  useEffect(() => {
+    setFilters((previous) =>
+      sanitizeLinkedFilters(previous, {
+        departments,
+        disciplines,
+        specialities,
+        specializations,
+      }),
+    );
+  }, [departments, disciplines, specialities, specializations]);
+
   const labelFor = (field: CompareField, value: string) => {
     if (field === "teacherId")
       return teachers.find((item) => item.id === value)?.fullName ?? value;
@@ -175,19 +190,33 @@ export const AdminStatsPage = () => {
   };
 
   const optionsFor = () => {
+    const compareOptions = getLinkedFilterOptions(baseFilters(compareField), {
+      departments,
+      disciplines,
+      specialities,
+      specializations,
+    });
+
     if (compareField === "teacherId")
       return teachers.map((item) => ({ value: item.id, label: item.fullName }));
     const sets: Record<Exclude<CompareField, "teacherId">, DictionaryItem[]> = {
-      departmentId: departments,
-      disciplineId: disciplines,
-      specialityId: specialities,
-      specializationId: specializations,
+      departmentId: compareOptions.departments,
+      disciplineId: compareOptions.disciplines,
+      specialityId: compareOptions.specialities,
+      specializationId: compareOptions.specializations,
     };
     return sets[compareField].map((item) => ({
       value: item.id,
       label: item.name,
     }));
   };
+
+  useEffect(() => {
+    const allowedIds = new Set(optionsFor().map((item) => item.value));
+    setSelectedIds((previous) =>
+      previous.filter((value) => allowedIds.has(value)),
+    );
+  }, [compareField, filters, departments, disciplines, specialities, specializations]);
 
   const baseFilters = (
     field?: CompareField,
@@ -280,6 +309,12 @@ export const AdminStatsPage = () => {
   const questions = report
     ? [...report.questions].sort((a, b) => a.order - b.order)
     : [];
+  const availableLinkedOptions = getLinkedFilterOptions(filters, {
+    departments,
+    disciplines,
+    specialities,
+    specializations,
+  });
   const chartData = questions.map((question, index) => {
     const row: Record<string, string | number> = {
       name: `В${index + 1}`,
@@ -292,7 +327,17 @@ export const AdminStatsPage = () => {
   });
 
   const updateFilter = (field: keyof StatisticsFilters, value: string) =>
-    setFilters((previous) => ({ ...previous, [field]: value || undefined }));
+    setFilters((previous) =>
+      sanitizeLinkedFilters(
+        { ...previous, [field]: value || undefined },
+        {
+          departments,
+          disciplines,
+          specialities,
+          specializations,
+        },
+      ),
+    );
   const updatePeriod = (
     index: number,
     field: keyof RangeState,
@@ -551,7 +596,7 @@ export const AdminStatsPage = () => {
                       mode === "groups" && compareField === "disciplineId"
                     }
                     placeholder="Все дисциплины"
-                    options={disciplines.map((d) => ({
+                    options={availableLinkedOptions.disciplines.map((d) => ({
                       id: d.id,
                       label: d.name,
                     }))}
@@ -566,7 +611,7 @@ export const AdminStatsPage = () => {
                       mode === "groups" && compareField === "departmentId"
                     }
                     placeholder="Все кафедры"
-                    options={departments.map((d) => ({
+                    options={availableLinkedOptions.departments.map((d) => ({
                       id: d.id,
                       label: d.name,
                     }))}
@@ -581,7 +626,7 @@ export const AdminStatsPage = () => {
                       mode === "groups" && compareField === "specialityId"
                     }
                     placeholder="Все специальности"
-                    options={specialities.map((s) => ({
+                    options={availableLinkedOptions.specialities.map((s) => ({
                       id: s.id,
                       label: s.name,
                     }))}
@@ -596,7 +641,7 @@ export const AdminStatsPage = () => {
                       mode === "groups" && compareField === "specializationId"
                     }
                     placeholder="Все специализации"
-                    options={specializations.map((s) => ({
+                    options={availableLinkedOptions.specializations.map((s) => ({
                       id: s.id,
                       label: s.name,
                     }))}

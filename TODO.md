@@ -7,8 +7,7 @@ TODO:
 
 2. Выход из аккаунта для админа с красивым оформлением
 
-3. Toggle day/night
-
+~~3. Toggle day/night~~
 Темный лес:
 
 - create-form-page.tsx

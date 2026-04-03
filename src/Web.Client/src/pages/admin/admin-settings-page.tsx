@@ -20,6 +20,7 @@ export const AdminSettingsPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
 
   useAdminPageConfig({
     title: "Настройки",
@@ -60,6 +61,24 @@ export const AdminSettingsPage = () => {
         toast.error("Не удалось закрыть семестр.");
       } finally {
         setIsClosing(false);
+      }
+    }
+  };
+
+  const handleOpenSemester = async () => {
+    if (
+      window.confirm(
+        "Вы уверены, что хотите открыть новый семестр? Это действие может привести к потере данных о текущем семестре.",
+      )
+    ) {
+      try {
+        setIsOpening(true);
+        await settingsApi.openSemester();
+        toast.success("Новый семестр успешно открыт.");
+      } catch (e) {
+        toast.error("Не удалось открыть новый семестр.");
+      } finally {
+        setIsOpening(false);
       }
     }
   };
@@ -142,6 +161,43 @@ export const AdminSettingsPage = () => {
               >
                 <PowerOff size={16} className="mr-2" />
                 {isClosing ? "Завершение..." : "Завершить"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-destructive/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <div className="p-2 bg-destructive/15 text-destructive">
+                <ShieldAlert size={20} />
+              </div>
+              Управление доступом
+            </CardTitle>
+            <CardDescription>
+              Изменить доступность анкет для прохождения
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col items-start justify-between gap-4 border border-destructive/20 bg-destructive/5 p-5 sm:flex-row sm:items-center">
+              <div>
+                <h4 className="font-bold text-foreground flex items-center gap-2">
+                  <AlertTriangle size={18} className="text-destructive" />
+                  Открыть текущий семестр
+                </h4>
+                <p className="text-sm text-muted-foreground mt-1 leading-relaxed max-w-sm">
+                  Студенты получат доступ к анкетам. Используйте эту кнопку
+                  только по началу периода опросов.
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={handleOpenSemester}
+                disabled={isOpening}
+                className="w-full sm:w-auto shrink-0"
+              >
+                <PowerOff size={16} className="mr-2" />
+                {isOpening ? "Открытие..." : "Открыть"}
               </Button>
             </div>
           </CardContent>

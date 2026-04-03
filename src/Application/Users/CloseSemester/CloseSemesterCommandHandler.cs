@@ -18,5 +18,4 @@ public class CloseSemesterCommandHandler(
 
         return Result.Success();
     }
-
 }

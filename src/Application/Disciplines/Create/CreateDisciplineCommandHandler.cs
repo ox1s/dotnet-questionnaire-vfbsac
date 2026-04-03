@@ -20,6 +20,13 @@ internal sealed class CreateDisciplineCommandHandler(IApplicationDbContext conte
             return Result.Failure<Guid>(DepartmentErrors.NotFound(command.DepartmentId));
         }
 
+        bool disciplineExists = await context.Disciplines
+            .AnyAsync(d => d.Name == command.Name, cancellationToken);
+        if (disciplineExists)
+        {
+            return Result.Failure<Guid>(DisciplineErrors.Duplicate(command.Name));
+        }
+
         Result<Discipline> disciplineResult = Discipline.Create(command.Name, command.DepartmentId);
 
         if (disciplineResult.IsFailure)

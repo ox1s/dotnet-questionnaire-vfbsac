@@ -150,6 +150,7 @@ export const usersApi = {
 
 export const settingsApi = {
   closeSemester: () => api.post("/settings/close-semester"),
+  openSemester: () => api.post("/settings/open-semester"),
 };
 
 export const dictionariesApi = {

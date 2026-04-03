@@ -20,6 +20,14 @@ internal sealed class CreateSpecializationCommandHandler(IApplicationDbContext c
             return Result.Failure<Guid>(SpecialityErrors.NotFound(command.SpecialityId));
         }
 
+        bool specializationExists = await context.Specializations
+            .AnyAsync(s => s.Name == command.Name, cancellationToken);
+
+        if (specializationExists)
+        {
+            return Result.Failure<Guid>(SpecialityErrors.Duplicate(command.Name));
+        }
+
         Result<Specialization> specializationResult = Specialization.Create(command.Name, command.SpecialityId);
         if (specializationResult.IsFailure)
         {

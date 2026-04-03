@@ -7,10 +7,10 @@ internal sealed class CreateDisciplineCommandValidator : AbstractValidator<Creat
     public CreateDisciplineCommandValidator()
     {
         RuleFor(x => x.Name)
-            .NotEmpty().WithMessage("Название дисциплины обязательно")
+            .NotEmpty().WithMessage(Resources.ApplicationErrors.NotEmpty)
             .MaximumLength(255);
 
         RuleFor(x => x.DepartmentId)
-            .NotEmpty().WithMessage("Укажите кафедру");
+            .NotEmpty().WithMessage(Resources.ApplicationErrors.WithReference);
     }
 }

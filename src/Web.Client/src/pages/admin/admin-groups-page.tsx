@@ -24,6 +24,8 @@ export const AdminGroupsPage = () => {
   const [groupName, setGroupName] = useState("");
   const [password, setPassword] = useState("");
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [lastCreated, setLastCreated] = useState<{
     name: string;
     pass: string;
@@ -72,6 +74,10 @@ export const AdminGroupsPage = () => {
       </Button>
     ),
   });
+
+  const filteredGroups = groups.filter((g) =>
+    g.login.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const handleDelete = async (id: string, name: string) => {
     if (!window.confirm(`Вы уверены, что хотите удалить группу "${name}"?`))
@@ -140,8 +146,10 @@ export const AdminGroupsPage = () => {
         <div className="p-8 text-center text-slate-500">Загрузка данных...</div>
       ) : (
         <AdminTable
-          data={groups}
+          data={filteredGroups}
+          searchQuery={searchQuery}
           emptyText="Нет групп"
+          onSearchChange={setSearchQuery}
           topContent={
             lastCreated && (
               <div className="bg-green-50 border border-green-200 p-4 flex justify-between items-center animate-in slide-in-from-top-2">

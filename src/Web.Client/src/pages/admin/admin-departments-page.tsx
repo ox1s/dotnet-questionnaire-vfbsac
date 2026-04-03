@@ -106,7 +106,7 @@ export const AdminDepartmentsPage = () => {
         searchPlaceholder="Поиск кафедры..."
         columns={[
           { header: "Название / Аббревиатура" },
-          { header: "", className: "text-right w-24" },
+          { header: "Действия", className: "text-right w-24" },
         ]}
         renderRow={(d) => (
           <AdminTableRow key={d.id} isDeleted={d.isDeleted}>

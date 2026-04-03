@@ -17,6 +17,7 @@ public sealed record AnalyticsSliceResponse
     public decimal OverallAverage { get; init; }
     public decimal OverallStandardDeviation { get; init; }
     public AnalyticsFilterSet Filters { get; init; } = new();
+    public AnalyticsFilterDisplaySet FilterDisplay { get; init; } = new();
 }
 
 public sealed record AnalyticsQuestionResponse
@@ -36,3 +37,11 @@ public sealed record AnalyticsQuestionSliceMetricResponse
     public decimal StandardDeviation { get; init; }
     public int SubmissionCount { get; init; }
 }
+
+public sealed record AnalyticsFilterDisplaySet(
+    string? Discipline = null,
+    string? Teacher = null,
+    string? Department = null,
+    string? Speciality = null,
+    string? Specialization = null,
+    string? Organization = null);

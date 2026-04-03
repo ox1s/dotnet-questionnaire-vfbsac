@@ -50,7 +50,7 @@ public sealed class WordReportGenerator : IReportGenerator
                     body,
                     $"Отклонение: {slice.OverallStandardDeviation.ToString("F2", CultureInfo.InvariantCulture)}");
 
-                string filtersLine = BuildFiltersLine(slice.Filters);
+                string filtersLine = BuildFiltersLine(slice);
                 if (!string.IsNullOrWhiteSpace(filtersLine))
                 {
                     AddParagraph(body, $"Фильтры: {filtersLine}");
@@ -120,38 +120,40 @@ public sealed class WordReportGenerator : IReportGenerator
         return stream.ToArray();
     }
 
-    private static string BuildFiltersLine(AnalyticsFilterSet filters)
+    private static string BuildFiltersLine(AnalyticsSliceResponse slice)
     {
         List<string> parts = [];
+        AnalyticsFilterDisplaySet display = slice.FilterDisplay;
+        AnalyticsFilterSet filters = slice.Filters;
 
         if (filters.TeacherId.HasValue)
         {
-            parts.Add($"TeacherId={filters.TeacherId.Value}");
+            parts.Add($"Преподаватель={display.Teacher ?? filters.TeacherId.Value.ToString()}");
         }
 
         if (filters.DisciplineId.HasValue)
         {
-            parts.Add($"DisciplineId={filters.DisciplineId.Value}");
+            parts.Add($"Дисциплина={display.Discipline ?? filters.DisciplineId.Value.ToString()}");
         }
 
         if (filters.DepartmentId.HasValue)
         {
-            parts.Add($"DepartmentId={filters.DepartmentId.Value}");
+            parts.Add($"Кафедра={display.Department ?? filters.DepartmentId.Value.ToString()}");
         }
 
         if (filters.SpecialityId.HasValue)
         {
-            parts.Add($"SpecialityId={filters.SpecialityId.Value}");
+            parts.Add($"Специальность={display.Speciality ?? filters.SpecialityId.Value.ToString()}");
         }
 
         if (filters.SpecializationId.HasValue)
         {
-            parts.Add($"SpecializationId={filters.SpecializationId.Value}");
+            parts.Add($"Специализация={display.Specialization ?? filters.SpecializationId.Value.ToString()}");
         }
 
         if (!string.IsNullOrWhiteSpace(filters.OrganizationName))
         {
-            parts.Add($"Organization={filters.OrganizationName}");
+            parts.Add($"Организация={display.Organization ?? filters.OrganizationName}");
         }
 
         return string.Join(", ", parts);

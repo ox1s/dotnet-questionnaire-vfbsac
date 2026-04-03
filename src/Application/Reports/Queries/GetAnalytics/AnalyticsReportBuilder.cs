@@ -38,6 +38,22 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
 
         List<AnalyticsSliceResult> sliceResults = [];
 
+        Dictionary<Guid, string> departmentNames = await context.Departments
+            .AsNoTracking()
+            .ToDictionaryAsync(item => item.Id, item => item.Name, cancellationToken);
+        Dictionary<Guid, string> disciplineNames = await context.Disciplines
+            .AsNoTracking()
+            .ToDictionaryAsync(item => item.Id, item => item.Name, cancellationToken);
+        Dictionary<Guid, string> specialityNames = await context.Specialities
+            .AsNoTracking()
+            .ToDictionaryAsync(item => item.Id, item => item.Name, cancellationToken);
+        Dictionary<Guid, string> specializationNames = await context.Specializations
+            .AsNoTracking()
+            .ToDictionaryAsync(item => item.Id, item => item.Name, cancellationToken);
+        Dictionary<Guid, string> teacherNames = await context.Teachers
+            .AsNoTracking()
+            .ToDictionaryAsync(item => item.Id, item => item.FullName, cancellationToken);
+
         foreach (AnalyticsSliceRequest slice in slices)
         {
             AnalyticsSliceResult sliceResult = await BuildSliceAsync(form, slice, cancellationToken);
@@ -91,7 +107,14 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
                     TotalSubmissions = slice.TotalSubmissions,
                     OverallAverage = slice.OverallAverage,
                     OverallStandardDeviation = slice.OverallStandardDeviation,
-                    Filters = slice.Filters
+                    Filters = slice.Filters,
+                    FilterDisplay = BuildFilterDisplay(
+                        slice.Filters,
+                        disciplineNames,
+                        teacherNames,
+                        departmentNames,
+                        specialityNames,
+                        specializationNames)
                 })
                 .ToList(),
             Questions = questions
@@ -235,6 +258,39 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
         }
 
         return submissionsQuery;
+    }
+
+    private static AnalyticsFilterDisplaySet BuildFilterDisplay(
+        AnalyticsFilterSet filters,
+        IReadOnlyDictionary<Guid, string> disciplineNames,
+        IReadOnlyDictionary<Guid, string> teacherNames,
+        IReadOnlyDictionary<Guid, string> departmentNames,
+        IReadOnlyDictionary<Guid, string> specialityNames,
+        IReadOnlyDictionary<Guid, string> specializationNames)
+    {
+        return new AnalyticsFilterDisplaySet(
+            Discipline: ResolveName(filters.DisciplineId, disciplineNames),
+            Teacher: ResolveName(filters.TeacherId, teacherNames),
+            Department: ResolveName(filters.DepartmentId, departmentNames),
+            Speciality: ResolveName(filters.SpecialityId, specialityNames),
+            Specialization: ResolveName(filters.SpecializationId, specializationNames),
+            Organization: string.IsNullOrWhiteSpace(filters.OrganizationName)
+                ? null
+                : filters.OrganizationName);
+    }
+
+    private static string? ResolveName(
+        Guid? id,
+        IReadOnlyDictionary<Guid, string> names)
+    {
+        if (!id.HasValue)
+        {
+            return null;
+        }
+
+        return names.TryGetValue(id.Value, out string? name)
+            ? name
+            : id.Value.ToString();
     }
 
     private sealed record FormProjection(

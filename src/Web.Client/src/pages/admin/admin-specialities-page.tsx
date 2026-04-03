@@ -114,7 +114,7 @@ export const AdminSpecialitiesPage = () => {
         data={filteredSpecialities}
         columns={[
           { header: "Название" },
-          { header: "", className: "text-right w-24" },
+          { header: "Действия", className: "text-right w-24" },
         ]}
         renderRow={(speciality) => (
           <AdminTableRow key={speciality.id} isDeleted={speciality.isDeleted}>

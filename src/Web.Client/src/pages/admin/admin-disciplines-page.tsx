@@ -132,7 +132,7 @@ export const AdminDisciplinesPage = () => {
         columns={[
           { header: "Название" },
           { header: "Кафедра" },
-          { header: "", className: "text-right w-24" },
+          { header: "Действия", className: "text-right w-24" },
         ]}
         renderRow={(d) => (
           <AdminTableRow key={d.id} isDeleted={d.isDeleted}>

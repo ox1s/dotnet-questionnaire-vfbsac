@@ -77,7 +77,12 @@ type CompareField =
   | "specializationId"
   | "disciplineId"
   | "teacherId";
-type RangeState = { label: string; dateFrom: string; dateTo: string };
+type RangeState = {
+  id: string;
+  label: string;
+  dateFrom: string;
+  dateTo: string;
+};
 
 const colors = [
   "var(--chart-5)",
@@ -91,15 +96,42 @@ function asDateInput(date: Date) {
   return format(date, "yyyy-MM-dd");
 }
 
+function createRangeState(
+  label: string,
+  dateFrom: string,
+  dateTo: string,
+): RangeState {
+  return {
+    id: crypto.randomUUID(),
+    label,
+    dateFrom,
+    dateTo,
+  };
+}
+
 function getSemesterRange(): RangeState {
   const now = new Date();
   const start =
     now.getMonth() < 6
       ? new Date(now.getFullYear(), 0, 1)
       : new Date(now.getFullYear(), 6, 1);
+
+  return createRangeState(
+    "Текущий семестр",
+    asDateInput(start),
+    asDateInput(now),
+  );
+}
+
+function getPreviousPeriodRange(): RangeState {
+  const now = new Date();
+
   return {
-    label: "Текущий семестр",
-    dateFrom: asDateInput(start),
+    id: crypto.randomUUID(),
+    label: "Предыдущий период",
+    dateFrom: asDateInput(
+      new Date(now.getFullYear(), Math.max(now.getMonth() - 6, 0), 1),
+    ),
     dateTo: asDateInput(now),
   };
 }
@@ -121,17 +153,7 @@ export const AdminStatsPage = () => {
     useState<RangeState>(getSemesterRange());
   const [periods, setPeriods] = useState<RangeState[]>([
     getSemesterRange(),
-    {
-      label: "Предыдущий период",
-      dateFrom: asDateInput(
-        new Date(
-          new Date().getFullYear(),
-          Math.max(new Date().getMonth() - 6, 0),
-          1,
-        ),
-      ),
-      dateTo: asDateInput(new Date()),
-    },
+    getPreviousPeriodRange(),
   ]);
   const [compareField, setCompareField] =
     useState<CompareField>("departmentId");
@@ -509,7 +531,7 @@ export const AdminStatsPage = () => {
                 <div className="mb-6 space-y-4">
                   {periods.map((item, index) => (
                     <div
-                      key={`${item.label}-${index}`}
+                      key={item.id}
                       className="grid grid-cols-1 gap-4 md:grid-cols-4"
                     >
                       <AnalyticsField label="Название периода">
@@ -561,11 +583,11 @@ export const AdminStatsPage = () => {
                     onClick={() =>
                       setPeriods((previous) => [
                         ...previous,
-                        {
-                          label: `Период ${previous.length + 1}`,
-                          dateFrom: singleRange.dateFrom,
-                          dateTo: singleRange.dateTo,
-                        },
+                        createRangeState(
+                          `Период ${previous.length + 1}`,
+                          singleRange.dateFrom,
+                          singleRange.dateTo,
+                        ),
                       ])
                     }
                   >

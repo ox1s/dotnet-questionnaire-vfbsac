@@ -1,3 +1,5 @@
+using Aspire.Hosting.DevTunnels;
+
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
 IResourceBuilder<PostgresServerResource> postgres = builder
@@ -10,9 +12,19 @@ IResourceBuilder<PostgresServerResource> postgres = builder
 IResourceBuilder<PostgresDatabaseResource> database = postgres
     .AddDatabase("questionnaire-vfbsac");
 
-builder.AddProject<Projects.Web_Api>("web-api")
+IResourceBuilder<ProjectResource> backend = builder.AddProject<Projects.Web_Api>("web-api")
     .WithEnvironment("ConnectionStrings__Database", database)
     .WithReference(database)
     .WaitFor(database);
+
+
+IResourceBuilder<NodeAppResource> frontend = builder.AddViteApp("frontend", "../Web.Client")
+    .WithNpmPackageInstallation()
+    .WithExternalHttpEndpoints();
+
+builder.AddDevTunnel("public-api")
+    .WithReference(backend)
+    .WithReference(frontend)
+    .WithAnonymousAccess();
 
 builder.Build().Run();

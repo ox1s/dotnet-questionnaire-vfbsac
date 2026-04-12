@@ -1,9 +1,7 @@
 using Application.Abstractions.Messaging;
 using Application.Abstractions.Reports;
 using Application.Reports.Queries.GetAnalytics;
-using Infrastructure.Reports;
 using SharedKernel;
-using Web.Api.Extensions;
 using Web.Api.Infrastructure;
 
 namespace Web.Api.Endpoints.Reports;
@@ -25,7 +23,7 @@ internal sealed class Download : IEndpoint
                     return CustomResults.Problem(result);
                 }
 
-                byte[] fileBytes = reportGenerator.GenerateAnalyticsReport(result.Value);
+                byte[] fileBytes = await reportGenerator.GenerateAnalyticsReport(result.Value, cancellationToken);
 
                 return Results.File(
                     fileBytes,

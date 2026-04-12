@@ -1,17 +1,22 @@
 using System.Globalization;
+using Application.Abstractions.Data;
 using Application.Abstractions.Reports;
 using Application.Reports.Queries.GetAnalytics;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.EntityFrameworkCore;
 using A = DocumentFormat.OpenXml.Wordprocessing;
 
 namespace Infrastructure.Reports;
 
-public sealed class WordReportGenerator : IReportGenerator
+public sealed class WordReportGenerator(IApplicationDbContext context) : IReportGenerator
 {
-    public byte[] GenerateAnalyticsReport(AnalyticsReportResponse analyticsReport)
+    public async Task<byte[]> GenerateAnalyticsReport(AnalyticsReportResponse analyticsReport,
+        CancellationToken cancellationToken = default)
     {
+        ReportDictionaries dictionaries = await LoadDisplayNamesAsync(analyticsReport, cancellationToken);
+
         using MemoryStream stream = new();
 
         using (var wordDocument = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document))
@@ -50,7 +55,7 @@ public sealed class WordReportGenerator : IReportGenerator
                     body,
                     $"Отклонение: {slice.OverallStandardDeviation.ToString("F2", CultureInfo.InvariantCulture)}");
 
-                string filtersLine = BuildFiltersLine(slice);
+                string filtersLine = BuildFiltersLine(slice.Filters, dictionaries);
                 if (!string.IsNullOrWhiteSpace(filtersLine))
                 {
                     AddParagraph(body, $"Фильтры: {filtersLine}");
@@ -120,40 +125,84 @@ public sealed class WordReportGenerator : IReportGenerator
         return stream.ToArray();
     }
 
-    private static string BuildFiltersLine(AnalyticsSliceResponse slice)
+    private sealed record ReportDictionaries(
+        Dictionary<Guid, string> Teachers,
+        Dictionary<Guid, string> Disciplines,
+        Dictionary<Guid, string> Departments,
+        Dictionary<Guid, string> Specialities,
+        Dictionary<Guid, string> Specializations);
+
+    private async Task<ReportDictionaries> LoadDisplayNamesAsync(
+        AnalyticsReportResponse report,
+        CancellationToken ct)
+    {
+        var teacherIds = report.Slices.Select(s => s.Filters.TeacherId).OfType<Guid>().Distinct().ToList();
+        var disciplineIds = report.Slices.Select(s => s.Filters.DisciplineId).OfType<Guid>().Distinct().ToList();
+        var departmentIds = report.Slices.Select(s => s.Filters.DepartmentId).OfType<Guid>().Distinct().ToList();
+        var specialityIds = report.Slices.Select(s => s.Filters.SpecialityId).OfType<Guid>().Distinct().ToList();
+        var specializationIds =
+            report.Slices.Select(s => s.Filters.SpecializationId).OfType<Guid>().Distinct().ToList();
+
+        Dictionary<Guid, string> teachers = teacherIds.Count != 0
+            ? await context.Teachers.Where(t => teacherIds.Contains(t.Id))
+                .ToDictionaryAsync(t => t.Id, t => t.FullName, ct)
+            : [];
+
+        Dictionary<Guid, string> disciplines = disciplineIds.Count != 0
+            ? await context.Disciplines.Where(d => disciplineIds.Contains(d.Id))
+                .ToDictionaryAsync(d => d.Id, d => d.Name, ct)
+            : [];
+
+        Dictionary<Guid, string> departments = departmentIds.Count != 0
+            ? await context.Departments.Where(d => departmentIds.Contains(d.Id))
+                .ToDictionaryAsync(d => d.Id, d => d.Name, ct)
+            : [];
+
+        Dictionary<Guid, string> specialities = specialityIds.Count != 0
+            ? await context.Specialities.Where(s => specialityIds.Contains(s.Id))
+                .ToDictionaryAsync(s => s.Id, s => s.Name, ct)
+            : [];
+
+        Dictionary<Guid, string> specializations = specializationIds.Count != 0
+            ? await context.Specializations.Where(s => specializationIds.Contains(s.Id))
+                .ToDictionaryAsync(s => s.Id, s => s.Name, ct)
+            : [];
+
+        return new ReportDictionaries(teachers, disciplines, departments, specialities, specializations);
+    }
+
+    private static string BuildFiltersLine(AnalyticsFilterSet filters, ReportDictionaries dicts)
     {
         List<string> parts = [];
-        AnalyticsFilterDisplaySet display = slice.FilterDisplay;
-        AnalyticsFilterSet filters = slice.Filters;
-
+        
         if (filters.TeacherId.HasValue)
         {
-            parts.Add($"Преподаватель={display.Teacher ?? filters.TeacherId.Value.ToString()}");
+            parts.Add($"Преподаватель={dicts.Teachers.GetValueOrDefault(filters.TeacherId.Value, filters.TeacherId.Value.ToString())}");
         }
 
         if (filters.DisciplineId.HasValue)
         {
-            parts.Add($"Дисциплина={display.Discipline ?? filters.DisciplineId.Value.ToString()}");
+            parts.Add($"Дисциплина={dicts.Disciplines.GetValueOrDefault(filters.DisciplineId.Value, filters.DisciplineId.Value.ToString())}");
         }
 
         if (filters.DepartmentId.HasValue)
         {
-            parts.Add($"Кафедра={display.Department ?? filters.DepartmentId.Value.ToString()}");
+            parts.Add($"Кафедра={dicts.Departments.GetValueOrDefault(filters.DepartmentId.Value, filters.DepartmentId.Value.ToString())}");
         }
 
         if (filters.SpecialityId.HasValue)
         {
-            parts.Add($"Специальность={display.Speciality ?? filters.SpecialityId.Value.ToString()}");
+            parts.Add($"Специальность={dicts.Specialities.GetValueOrDefault(filters.SpecialityId.Value, filters.SpecialityId.Value.ToString())}");
         }
 
         if (filters.SpecializationId.HasValue)
         {
-            parts.Add($"Специализация={display.Specialization ?? filters.SpecializationId.Value.ToString()}");
+            parts.Add($"Специализация={dicts.Specializations.GetValueOrDefault(filters.SpecializationId.Value, filters.SpecializationId.Value.ToString())}");
         }
 
         if (!string.IsNullOrWhiteSpace(filters.OrganizationName))
         {
-            parts.Add($"Организация={display.Organization ?? filters.OrganizationName}");
+            parts.Add($"Организация={filters.OrganizationName}");
         }
 
         return string.Join(", ", parts);

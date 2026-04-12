@@ -4,5 +4,5 @@ namespace Application.Abstractions.Reports;
 
 public interface IReportGenerator
 {
-    byte[] GenerateAnalyticsReport(AnalyticsReportResponse analyticsReport);
+    Task<byte[]> GenerateAnalyticsReport(AnalyticsReportResponse analyticsReport, CancellationToken cancellationToken = default);
 }

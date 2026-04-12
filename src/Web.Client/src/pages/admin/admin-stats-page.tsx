@@ -32,6 +32,7 @@ import {
 } from "@/utils/linked-filters";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -53,6 +54,7 @@ import api, {
   dictionariesApi,
   getApiErrorMessage,
   reportsApi,
+  type AdviceItem,
   type AnalyticsQuestion,
   type AnalyticsReport,
   type AnalyticsReportRequest,
@@ -140,6 +142,7 @@ export const AdminStatsPage = () => {
   const { id } = useParams();
   const [form, setForm] = useState<FormDetail | null>(null);
   const [report, setReport] = useState<AnalyticsReport | null>(null);
+  const [advices, setAdvices] = useState<AdviceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
@@ -212,6 +215,12 @@ export const AdminStatsPage = () => {
       ? `${teacher.fullName} (${departmentName})`
       : teacher.fullName;
   };
+
+  const getTeacherName = (teacherId?: string) =>
+    teachers.find((teacher) => teacher.id === teacherId)?.fullName;
+
+  const getDepartmentName = (departmentId?: string) =>
+    departments.find((department) => department.id === departmentId)?.name;
 
   const labelFor = (field: CompareField, value: string) => {
     if (field === "teacherId")
@@ -311,14 +320,26 @@ export const AdminStatsPage = () => {
 
   const loadReport = async () => {
     const request = buildRequest();
-    if (!request || request.slices.length === 0) {
+    if (!request || request.slices.length === 0 || !id) {
       setReport(null);
+      setAdvices([]);
       return;
     }
     setRefreshing(true);
     try {
-      const response = await reportsApi.getAnalytics(request);
-      setReport(response.data);
+      const [reportResponse, advicesResponse] = await Promise.all([
+        reportsApi.getAnalytics(request),
+        reportsApi.getAdvices(id, filters.teacherId),
+      ]);
+
+      setReport(reportResponse.data);
+      setAdvices(
+        filters.departmentId
+          ? advicesResponse.data.filter(
+              (item) => item.departmentId === filters.departmentId,
+            )
+          : advicesResponse.data,
+      );
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Не удалось построить отчет"));
     } finally {
@@ -856,6 +877,16 @@ export const AdminStatsPage = () => {
             {report ? (
               <QuestionsTable questions={questions} slices={report.slices} />
             ) : null}
+
+            {report ? (
+              <AdvicesSection
+                advices={advices}
+                teacherFilterId={filters.teacherId}
+                departmentFilterId={filters.departmentId}
+                getTeacherName={getTeacherName}
+                getDepartmentName={getDepartmentName}
+              />
+            ) : null}
           </>
         )}
       </div>
@@ -899,6 +930,64 @@ function DatePickerInput({
         />
       </PopoverContent>
     </Popover>
+  );
+}
+
+function AdvicesSection({
+  advices,
+  teacherFilterId,
+  departmentFilterId,
+  getTeacherName,
+  getDepartmentName,
+}: {
+  advices: AdviceItem[];
+  teacherFilterId?: string;
+  departmentFilterId?: string;
+  getTeacherName: (teacherId?: string) => string | undefined;
+  getDepartmentName: (departmentId?: string) => string | undefined;
+}) {
+  const showTeacher = !departmentFilterId || Boolean(teacherFilterId);
+  const showDepartment = !teacherFilterId || Boolean(departmentFilterId);
+
+  return (
+    <div className="mb-8 overflow-hidden border bg-card shadow-sm">
+      <div className="border-b px-4 py-4">
+        <h3 className="text-base font-bold text-foreground md:text-lg">
+          Текстовые ответы
+        </h3>
+      </div>
+
+      {advices.length > 0 ? (
+        <div className="space-y-4 p-4">
+          {advices.map((advice, index) => {
+            const teacherName = getTeacherName(advice.teacherId);
+            const departmentName = getDepartmentName(advice.departmentId);
+
+            return (
+              <Card key={`${advice.text}-${index}`} className="gap-3 py-5">
+                <CardContent className="space-y-3">
+                  <div className="flex flex-wrap gap-2">
+                    {showTeacher && teacherName ? (
+                      <Badge variant="secondary">{teacherName}</Badge>
+                    ) : null}
+                    {showDepartment && departmentName ? (
+                      <Badge variant="outline">{departmentName}</Badge>
+                    ) : null}
+                  </div>
+                  <p className="text-sm leading-6 text-foreground whitespace-pre-wrap">
+                    {advice.text}
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="p-10 text-center text-muted-foreground">
+          Текстовые ответы не найдены.
+        </div>
+      )}
+    </div>
   );
 }
 

@@ -131,6 +131,12 @@ export interface AnalyticsReport {
   questions: AnalyticsQuestion[];
 }
 
+export interface AdviceItem {
+  text: string;
+  teacherId?: string;
+  departmentId?: string;
+}
+
 export const usersApi = {
   createGroup: (groupName: string, password: string) =>
     api.post<string>("/users/groups", { groupName, password }),
@@ -213,6 +219,11 @@ export const submissionsApi = {
 export const reportsApi = {
   getAnalytics: (payload: AnalyticsReportRequest) =>
     api.post<AnalyticsReport>("/reports/analytics", payload),
+
+  getAdvices: (formId: string, teacherId?: string) =>
+    api.get<AdviceItem[]>(`/reports/forms/${formId}/advices`, {
+      params: { teacherId },
+    }),
 
   downloadAnalyticsWord: (payload: AnalyticsReportRequest) =>
     api.post("/reports/word", payload, { responseType: "blob" }),

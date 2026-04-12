@@ -1,9 +1,13 @@
+using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
+using Domain.Questionnaires.Forms;
+using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
 namespace Application.Reports.Queries.GetAnalytics;
 
 internal sealed class GetAnalyticsReportQueryHandler(
+    IApplicationDbContext context,
     IAnalyticsReportBuilder analyticsReportBuilder)
     : IQueryHandler<GetAnalyticsReportQuery, AnalyticsReportResponse>
 {
@@ -17,19 +21,18 @@ internal sealed class GetAnalyticsReportQueryHandler(
                 Error.Validation("Analytics.SlicesRequired", "At least one analytics slice is required."));
         }
 
-        try
+        bool form = context.Forms.Any(f => f.Id == query.FormId);
+        if (!form)
         {
-            AnalyticsReportResponse response = await analyticsReportBuilder.BuildAsync(
+            return Result.Failure<AnalyticsReportResponse>(
+                FormErrors.NotFound(query.FormId));
+        }
+
+        AnalyticsReportResponse response = await analyticsReportBuilder.BuildAsync(
                 query.FormId,
                 query.Slices,
                 cancellationToken);
 
-            return response;
-        }
-        catch (InvalidOperationException exception)
-        {
-            return Result.Failure<AnalyticsReportResponse>(
-                Error.NotFound("Analytics.FormNotFound", exception.Message));
-        }
+        return response;
     }
 }

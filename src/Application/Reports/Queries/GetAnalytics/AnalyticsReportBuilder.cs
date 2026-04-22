@@ -2,38 +2,44 @@ using Application.Abstractions.Data;
 using Domain.Questionnaires.Forms;
 using Domain.Questionnaires.Submissions;
 using Microsoft.EntityFrameworkCore;
+using SharedKernel;
 
 namespace Application.Reports.Queries.GetAnalytics;
 
 internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
     : IAnalyticsReportBuilder
 {
-    public async Task<AnalyticsReportResponse> BuildAsync(
+    public async Task<Result<AnalyticsReportResponse>> BuildAsync(
         Guid formId,
         IReadOnlyCollection<AnalyticsSliceRequest> slices,
         CancellationToken cancellationToken)
     {
         if (slices.Count == 0)
         {
-            throw new InvalidOperationException("At least one analytics slice is required.");
+            return Result.Failure<AnalyticsReportResponse>(
+                Error.Validation("Analytics.SlicesRequired", "At least one analytics slice is required."));
         }
 
         FormProjection form = await context.Forms
-                                  .AsNoTracking()
-                                  .Where(f => f.Id == formId)
-                                  .Select(f => new FormProjection(
-                                      f.Id,
-                                      f.Title,
-                                      f.Questions
-                                          .Where(q =>
-                                              q.Type == QuestionType.Number ||
-                                              q.Type == QuestionType.Rating ||
-                                              q.Type == QuestionType.WeightedRating)
-                                          .OrderBy(q => q.Order)
-                                          .Select(q => new QuestionProjection(q.Id, q.Text, q.Type, q.Order))
-                                          .ToList()))
-                                  .FirstOrDefaultAsync(cancellationToken)
-                              ?? throw new InvalidOperationException($"Form {formId} was not found.");
+            .AsNoTracking()
+            .Where(f => f.Id == formId)
+            .Select(f => new FormProjection(
+                            f.Id,
+                            f.Title,
+                            f.Questions
+                                .Where(q =>
+                                    q.Type == QuestionType.Number ||
+                                    q.Type == QuestionType.Rating ||
+                                    q.Type == QuestionType.WeightedRating)
+                                .OrderBy(q => q.Order)
+                                .Select(q => new QuestionProjection(q.Id, q.Text, q.Type, q.Order))
+                                .ToList()))
+                                  .FirstOrDefaultAsync(cancellationToken);
+
+        if (form == null)
+        {
+            return Result.Failure<AnalyticsReportResponse>(FormErrors.NotFound(formId));
+        }
 
         List<AnalyticsSliceResult> sliceResults = [];
         foreach (AnalyticsSliceRequest slice in slices)
@@ -76,15 +82,15 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
         }
 
         var list = sliceResults.Select(slice => new AnalyticsSliceResponse
-            {
-                Label = slice.Label,
-                DateFrom = slice.DateFrom,
-                DateTo = slice.DateTo,
-                TotalSubmissions = slice.TotalSubmissions,
-                OverallAverage = slice.OverallAverage,
-                OverallStandardDeviation = slice.OverallStandardDeviation,
-                Filters = slice.Filters
-            })
+        {
+            Label = slice.Label,
+            DateFrom = slice.DateFrom,
+            DateTo = slice.DateTo,
+            TotalSubmissions = slice.TotalSubmissions,
+            OverallAverage = slice.OverallAverage,
+            OverallStandardDeviation = slice.OverallStandardDeviation,
+            Filters = slice.Filters
+        })
             .ToList();
 
         return new AnalyticsReportResponse
@@ -153,7 +159,12 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
                 }
 
                 decimal variance = aggregate.RawAverageSquares - aggregate.RawAverage * aggregate.RawAverage;
-                if (variance < 0)
+                if (variance < -0.0001m)
+                {
+                    // Log warning: negative variance indicates data quality issue
+                    variance = 0;
+                }
+                else if (variance < 0)
                 {
                     variance = 0;
                 }
@@ -173,7 +184,11 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
         }
 
         decimal overallAverage = overallScores.Count > 0 ? overallScores.Average() : 0;
-        decimal overallStdDev = overallStandardDeviations.Count > 0 ? overallStandardDeviations.Average() : 0;
+        
+        // Calculate pooled standard deviation (root-mean-square of individual stddevs)
+        decimal overallStdDev = overallStandardDeviations.Count > 0 
+            ? (decimal)Math.Sqrt(overallStandardDeviations.Average(sd => (double)(sd * sd)))
+            : 0;
 
         return new AnalyticsSliceResult(
             slice.Label,

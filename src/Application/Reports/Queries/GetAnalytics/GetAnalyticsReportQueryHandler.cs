@@ -21,18 +21,9 @@ internal sealed class GetAnalyticsReportQueryHandler(
                 Error.Validation("Analytics.SlicesRequired", "At least one analytics slice is required."));
         }
 
-        bool form = context.Forms.Any(f => f.Id == query.FormId);
-        if (!form)
-        {
-            return Result.Failure<AnalyticsReportResponse>(
-                FormErrors.NotFound(query.FormId));
-        }
-
-        AnalyticsReportResponse response = await analyticsReportBuilder.BuildAsync(
+        return await analyticsReportBuilder.BuildAsync(
                 query.FormId,
                 query.Slices,
                 cancellationToken);
-
-        return response;
     }
 }

@@ -183,12 +183,10 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
             overallStandardDeviations.Add(metric.StandardDeviation);
         }
 
-        decimal overallAverage = overallScores.Count > 0 ? overallScores.Average() : 0;
+        decimal overallAverage = overallScores.Average();
         
         // Calculate pooled standard deviation (root-mean-square of individual stddevs)
-        decimal overallStdDev = overallStandardDeviations.Count > 0 
-            ? (decimal)Math.Sqrt(overallStandardDeviations.Average(sd => (double)(sd * sd)))
-            : 0;
+        decimal overallStdDev = (decimal)Math.Sqrt(overallStandardDeviations.Average(sd => (double)(sd * sd)));
 
         return new AnalyticsSliceResult(
             slice.Label,
@@ -240,7 +238,7 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
             submissionsQuery = submissionsQuery
                 .Where(s =>
                     s.Context.OrganizationName != null &&
-                    s.Context.OrganizationName.Contains(filters.OrganizationName));
+                    EF.Functions.Like(s.Context.OrganizationName, $"%{filters.OrganizationName}%"));
         }
 
         return submissionsQuery;

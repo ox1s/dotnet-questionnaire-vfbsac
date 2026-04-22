@@ -9,6 +9,24 @@ namespace Application.Reports.Queries.GetAnalytics;
 internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
     : IAnalyticsReportBuilder
 {
+    private static readonly Func<IApplicationDbContext, Guid, CancellationToken, Task<FormProjection?>> GetFormQuery =
+        EF.CompileAsyncQuery((IApplicationDbContext ctx, Guid formId, CancellationToken ct) =>
+            ctx.Forms
+                .AsNoTracking()
+                .Where(f => f.Id == formId)
+                .Select(f => new FormProjection(
+                    f.Id,
+                    f.Title,
+                    f.Questions
+                        .Where(q =>
+                            q.Type == QuestionType.Number ||
+                            q.Type == QuestionType.Rating ||
+                            q.Type == QuestionType.WeightedRating)
+                        .OrderBy(q => q.Order)
+                        .Select(q => new QuestionProjection(q.Id, q.Text, q.Type, q.Order))
+                        .ToList()))
+                .FirstOrDefault());
+
     public async Task<Result<AnalyticsReportResponse>> BuildAsync(
         Guid formId,
         IReadOnlyCollection<AnalyticsSliceRequest> slices,
@@ -20,21 +38,7 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
                 Error.Validation("Analytics.SlicesRequired", "At least one analytics slice is required."));
         }
 
-        FormProjection form = await context.Forms
-            .AsNoTracking()
-            .Where(f => f.Id == formId)
-            .Select(f => new FormProjection(
-                            f.Id,
-                            f.Title,
-                            f.Questions
-                                .Where(q =>
-                                    q.Type == QuestionType.Number ||
-                                    q.Type == QuestionType.Rating ||
-                                    q.Type == QuestionType.WeightedRating)
-                                .OrderBy(q => q.Order)
-                                .Select(q => new QuestionProjection(q.Id, q.Text, q.Type, q.Order))
-                                .ToList()))
-                                  .FirstOrDefaultAsync(cancellationToken);
+        FormProjection? form = await GetFormQuery(context, formId, cancellationToken);
 
         if (form == null)
         {
@@ -112,6 +116,7 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
 
         IQueryable<Submission> submissionsQuery = context.Submissions
             .AsNoTracking()
+            .AsSplitQuery()
             .Where(s =>
                 s.FormId == form.Id &&
                 s.SubmittedAt >= normalizedFrom &&
@@ -119,8 +124,6 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
 
         AnalyticsFilterSet filters = slice.ToFilterSet();
         submissionsQuery = ApplyFilters(submissionsQuery, filters);
-
-        int totalSubmissions = await submissionsQuery.CountAsync(cancellationToken);
 
         List<QuestionAggregateProjection> aggregates = await submissionsQuery
             .SelectMany(s => s.Answers)
@@ -135,13 +138,18 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
                 g.Count()))
             .ToListAsync(cancellationToken);
 
+        int totalSubmissions = aggregates.Sum(a => a.SubmissionCount);
+
+        Dictionary<Guid, QuestionAggregateProjection> aggregatesByQuestionId = aggregates
+            .ToDictionary(a => a.QuestionId);
+
         Dictionary<Guid, SliceQuestionMetricProjection> metricsByQuestionId = [];
         List<decimal> overallScores = [];
         List<decimal> overallStandardDeviations = [];
 
         foreach (QuestionProjection question in form.Questions)
         {
-            QuestionAggregateProjection? aggregate = aggregates.FirstOrDefault(a => a.QuestionId == question.Id);
+            aggregatesByQuestionId.TryGetValue(question.Id, out QuestionAggregateProjection? aggregate);
             SliceQuestionMetricProjection metric;
 
             if (aggregate is null)

@@ -9,24 +9,6 @@ namespace Application.Reports.Queries.GetAnalytics;
 internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
     : IAnalyticsReportBuilder
 {
-    private static readonly Func<IApplicationDbContext, Guid, CancellationToken, Task<FormProjection?>> GetFormQuery =
-        EF.CompileAsyncQuery((IApplicationDbContext ctx, Guid formId, CancellationToken ct) =>
-            ctx.Forms
-                .AsNoTracking()
-                .Where(f => f.Id == formId)
-                .Select(f => new FormProjection(
-                    f.Id,
-                    f.Title,
-                    f.Questions
-                        .Where(q =>
-                            q.Type == QuestionType.Number ||
-                            q.Type == QuestionType.Rating ||
-                            q.Type == QuestionType.WeightedRating)
-                        .OrderBy(q => q.Order)
-                        .Select(q => new QuestionProjection(q.Id, q.Text, q.Type, q.Order))
-                        .ToList()))
-                .FirstOrDefault());
-
     public async Task<Result<AnalyticsReportResponse>> BuildAsync(
         Guid formId,
         IReadOnlyCollection<AnalyticsSliceRequest> slices,
@@ -38,7 +20,21 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
                 Error.Validation("Analytics.SlicesRequired", "At least one analytics slice is required."));
         }
 
-        FormProjection? form = await GetFormQuery(context, formId, cancellationToken);
+        FormProjection? form = await context.Forms
+            .AsNoTracking()
+            .Where(f => f.Id == formId)
+            .Select(f => new FormProjection(
+                f.Id,
+                f.Title,
+                f.Questions
+                    .Where(q =>
+                        q.Type == QuestionType.Number ||
+                        q.Type == QuestionType.Rating ||
+                        q.Type == QuestionType.WeightedRating)
+                    .OrderBy(q => q.Order)
+                    .Select(q => new QuestionProjection(q.Id, q.Text, q.Type, q.Order))
+                    .ToList()))
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (form == null)
         {
@@ -116,7 +112,6 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
 
         IQueryable<Submission> submissionsQuery = context.Submissions
             .AsNoTracking()
-            .AsSplitQuery()
             .Where(s =>
                 s.FormId == form.Id &&
                 s.SubmittedAt >= normalizedFrom &&
@@ -124,6 +119,8 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
 
         AnalyticsFilterSet filters = slice.ToFilterSet();
         submissionsQuery = ApplyFilters(submissionsQuery, filters);
+
+        int totalSubmissions = await submissionsQuery.CountAsync(cancellationToken);
 
         List<QuestionAggregateProjection> aggregates = await submissionsQuery
             .SelectMany(s => s.Answers)
@@ -138,9 +135,7 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
                 g.Count()))
             .ToListAsync(cancellationToken);
 
-        int totalSubmissions = aggregates.Sum(a => a.SubmissionCount);
-
-        Dictionary<Guid, QuestionAggregateProjection> aggregatesByQuestionId = aggregates
+        var aggregatesByQuestionId = aggregates
             .ToDictionary(a => a.QuestionId);
 
         Dictionary<Guid, SliceQuestionMetricProjection> metricsByQuestionId = [];
@@ -170,9 +165,9 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
                 if (variance < -0.0001m)
                 {
                     // Log warning: negative variance indicates data quality issue
-                    variance = 0;
                 }
-                else if (variance < 0)
+                
+                if (variance < 0m)
                 {
                     variance = 0;
                 }
@@ -191,10 +186,12 @@ internal sealed class AnalyticsReportBuilder(IApplicationDbContext context)
             overallStandardDeviations.Add(metric.StandardDeviation);
         }
 
-        decimal overallAverage = overallScores.Average();
+        decimal overallAverage = overallScores.Count > 0 ? overallScores.Average() : 0;
         
         // Calculate pooled standard deviation (root-mean-square of individual stddevs)
-        decimal overallStdDev = (decimal)Math.Sqrt(overallStandardDeviations.Average(sd => (double)(sd * sd)));
+        decimal overallStdDev = overallStandardDeviations.Count > 0
+            ? (decimal)Math.Sqrt(overallStandardDeviations.Average(sd => (double)(sd * sd)))
+            : 0;
 
         return new AnalyticsSliceResult(
             slice.Label,

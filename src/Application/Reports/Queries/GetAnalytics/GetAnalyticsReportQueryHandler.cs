@@ -7,7 +7,6 @@ using SharedKernel;
 namespace Application.Reports.Queries.GetAnalytics;
 
 internal sealed class GetAnalyticsReportQueryHandler(
-    IApplicationDbContext context,
     IAnalyticsReportBuilder analyticsReportBuilder)
     : IQueryHandler<GetAnalyticsReportQuery, AnalyticsReportResponse>
 {

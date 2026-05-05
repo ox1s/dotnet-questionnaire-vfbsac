@@ -77,7 +77,7 @@ export const AdminDepartmentsPage = () => {
     try {
       await dictionariesApi.restoreDepartment(id);
       loadData();
-      toast.success("Кафедра успешно восстановлена.", {
+      toast.success("Филиал кафедры успешно восстановлен.", {
         style: { color: "green" },
       });
     } catch (e) {
@@ -134,7 +134,7 @@ export const AdminDepartmentsPage = () => {
       <AdminModal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        title={editingId ? "Редактирование" : "Новая кафедра"}
+        title={editingId ? "Редактирование" : "Новый филиал кафедры"}
         onSubmit={handleSubmit}
       >
         <div className="space-y-2">

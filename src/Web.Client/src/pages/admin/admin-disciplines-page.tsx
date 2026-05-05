@@ -97,7 +97,7 @@ export const AdminDisciplinesPage = () => {
     try {
       await dictionariesApi.restoreDiscipline(id);
       loadData();
-      toast.success("Дисциплина успешно восстановлена.", {
+      toast.success("Предмет успешно восстановлен.", {
         style: { color: "green" },
       });
     } catch (e) {
@@ -131,7 +131,7 @@ export const AdminDisciplinesPage = () => {
         data={filteredDisciplines}
         columns={[
           { header: "Название" },
-          { header: "Кафедра" },
+          { header: "Филиал кафедры" },
           { header: "Действия", className: "text-right w-24" },
         ]}
         renderRow={(d) => (
@@ -165,7 +165,7 @@ export const AdminDisciplinesPage = () => {
       <AdminModal
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
-        title={editingId ? "Редактирование" : "Новая дисциплина"}
+        title={editingId ? "Редактирование" : "Новый предмет"}
         onSubmit={handleSubmit}
       >
         <div className="space-y-2">
@@ -173,7 +173,7 @@ export const AdminDisciplinesPage = () => {
           <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
         </div>
         <div className="space-y-2">
-          <Label>Кафедра</Label>
+          <Label>Филиал кафедры</Label>
           <Select
             value={selectedDept}
             onValueChange={(value) => setSelectedDept(value)}

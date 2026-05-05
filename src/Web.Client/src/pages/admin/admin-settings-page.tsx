@@ -156,7 +156,7 @@ export const AdminSettingsPage = () => {
                   Закрыть текущий семестр
                 </h4>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed max-w-sm">
-                  Студенты потеряют доступ к анкетам. Используйте эту кнопку
+                  Учащиеся потеряют доступ к анкетам. Используйте эту кнопку
                   только по окончании периода опросов.
                 </p>
               </div>
@@ -177,7 +177,7 @@ export const AdminSettingsPage = () => {
                   Открыть текущий семестр
                 </h4>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed max-w-sm">
-                  Студенты получат доступ к анкетам. Используйте эту кнопку
+                  Учащиеся получат доступ к анкетам. Используйте эту кнопку
                   только по началу периода опросов.
                 </p>
               </div>

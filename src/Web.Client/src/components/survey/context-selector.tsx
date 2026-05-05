@@ -160,7 +160,7 @@ export const ContextSelector: React.FC<Props> = ({
         </ContextField>
 
         {requiredFilters?.includes("Department") && (
-          <ContextField label="Кафедра">
+          <ContextField label="Филиал кафедры">
             <Select
               value={context.departmentId ?? EMPTY_VALUE}
               onValueChange={(value) =>
@@ -183,7 +183,7 @@ export const ContextSelector: React.FC<Props> = ({
         )}
 
         {requiredFilters?.includes("Discipline") && (
-          <ContextField label="Дисциплина">
+          <ContextField label="Предмет">
             <Select
               value={context.disciplineId ?? EMPTY_VALUE}
               onValueChange={(value) =>

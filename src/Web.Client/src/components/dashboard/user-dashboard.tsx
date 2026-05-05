@@ -20,14 +20,14 @@ export const UserDashboard = ({
             <div className="w-8 h-8 bg-primary flex items-center justify-center text-primary-foreground">
               <FileText size={18} />
             </div>
-            <h1 className="text-lg font-bold">Опросы Студентов</h1>
+            <h1 className="text-lg font-bold">Опросы Учащихся</h1>
           </div>
           <div className="flex items-center gap-4">
             <Badge
               variant="secondary"
               className="hidden sm:flex items-center gap-1"
             >
-              <User size={14} /> Студент
+              <User size={14} /> Учащийся
             </Badge>
             <ModeToggle />
             <Button

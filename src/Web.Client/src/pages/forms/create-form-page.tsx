@@ -38,8 +38,8 @@ interface QuestionDraft {
 
 const FILTER_OPTIONS: { key: FilterField; label: string }[] = [
   { key: "Teacher", label: "Преподаватель" },
-  { key: "Discipline", label: "Дисциплина" },
-  { key: "Department", label: "Кафедра" },
+  { key: "Discipline", label: "Предмет" },
+  { key: "Department", label: "Филиал кафедры" },
   { key: "Speciality", label: "Специальность" },
 ];
 
@@ -167,7 +167,7 @@ export const CreateFormPage = () => {
               <div>
                 <Label>Контекст (Фильтры)</Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Что выбирает студент перед началом?
+                  Что выбирает учащийся перед началом?
                 </p>
               </div>
               <div className="space-y-2">

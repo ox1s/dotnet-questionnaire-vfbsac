@@ -652,7 +652,7 @@ export const AdminStatsPage = () => {
                   />
                 </AnalyticsField>
 
-                <AnalyticsField label="Дисциплина">
+                <AnalyticsField label="Предмет">
                   <FilterSelect
                     value={filters.disciplineId}
                     onChange={(val) => updateFilter("disciplineId", val)}
@@ -667,7 +667,7 @@ export const AdminStatsPage = () => {
                   />
                 </AnalyticsField>
 
-                <AnalyticsField label="Кафедра">
+                <AnalyticsField label="Филиал кафедры">
                   <FilterSelect
                     value={filters.departmentId}
                     onChange={(val) => updateFilter("departmentId", val)}

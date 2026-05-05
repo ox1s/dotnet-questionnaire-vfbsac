@@ -146,7 +146,7 @@ export const AdminTeachersPage = () => {
         data={filteredTeachers}
         columns={[
           { header: "ФИО" },
-          { header: "Кафедра" },
+          { header: "Филиал кафедры" },
           { header: "Действия", className: "text-right w-24" },
         ]}
         renderRow={(teacher) => (
@@ -198,7 +198,7 @@ export const AdminTeachersPage = () => {
           />
         </div>
         <div className="space-y-2">
-          <Label>Кафедра</Label>
+          <Label>Филиал кафедры</Label>
           <Select
             value={selectedDepartmentId || EMPTY_VALUE}
             onValueChange={(value) =>

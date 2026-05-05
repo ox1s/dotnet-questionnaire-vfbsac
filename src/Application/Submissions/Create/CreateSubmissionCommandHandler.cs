@@ -7,7 +7,9 @@ using SharedKernel;
 
 namespace Application.Submissions.Create;
 
-internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext context)
+internal sealed class CreateSubmissionCommandHandler(
+    IApplicationDbContext context,
+    IDateTimeProvider dateTimeProvider)
     : ICommandHandler<CreateSubmissionCommand, Guid>
 {
     public async Task<Result<Guid>> Handle(CreateSubmissionCommand command, CancellationToken cancellationToken)
@@ -56,6 +58,7 @@ internal sealed class CreateSubmissionCommandHandler(IApplicationDbContext conte
             command.FormId,
             command.DeviceId,
             command.UserId,
+            dateTimeProvider.UtcNow,
             command.DisciplineId,
             command.TeacherId,
             command.DepartmentId,

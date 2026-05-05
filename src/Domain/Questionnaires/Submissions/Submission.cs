@@ -29,6 +29,7 @@ public sealed class Submission : Entity
         Guid formId,
         string deviceId,
         Guid userId,
+        DateTime submittedAt,
         Guid? disciplineId = null,
         Guid? teacherId = null,
         Guid? departmentId = null,
@@ -49,7 +50,7 @@ public sealed class Submission : Entity
             deviceId,
             formId,
             userId,
-            DateTime.UtcNow,
+            submittedAt,
             context);
 
         return submission;

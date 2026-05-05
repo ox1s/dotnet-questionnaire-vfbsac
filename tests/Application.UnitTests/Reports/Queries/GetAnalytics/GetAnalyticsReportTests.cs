@@ -39,7 +39,7 @@ public sealed class GetAnalyticsReportTests
         db.Context.Submissions.AddRange(firstSubmission, secondSubmission);
         await db.Context.SaveChangesAsync();
 
-        AnalyticsReportBuilder builder = new(db.Context);
+        AnalyticsReportBuilder builder = CreateBuilder(db.Context);
 
         Result<AnalyticsReportResponse> result = await builder.BuildAsync(
             form.Id,
@@ -66,7 +66,7 @@ public sealed class GetAnalyticsReportTests
         db.Context.Forms.Add(form);
         await db.Context.SaveChangesAsync();
 
-        AnalyticsReportBuilder builder = new(db.Context);
+        AnalyticsReportBuilder builder = CreateBuilder(db.Context);
 
         Result<AnalyticsReportResponse> result = await builder.BuildAsync(
             form.Id,
@@ -85,7 +85,7 @@ public sealed class GetAnalyticsReportTests
     public async Task Handle_ShouldReturnValidationFailure_WhenSlicesEmpty()
     {
         await using TestDbContext db = await TestDbContext.CreateAsync();
-        AnalyticsReportBuilder builder = new(db.Context);
+        AnalyticsReportBuilder builder = CreateBuilder(db.Context);
         GetAnalyticsReportQueryHandler handler = new(builder);
 
         Result<AnalyticsReportResponse> result = await handler.Handle(
@@ -100,7 +100,7 @@ public sealed class GetAnalyticsReportTests
     public async Task Handle_ShouldReturnNotFound_WhenFormMissing()
     {
         await using TestDbContext db = await TestDbContext.CreateAsync();
-        AnalyticsReportBuilder builder = new(db.Context);
+        AnalyticsReportBuilder builder = CreateBuilder(db.Context);
         GetAnalyticsReportQueryHandler handler = new(builder);
 
         Result<AnalyticsReportResponse> result = await handler.Handle(
@@ -111,6 +111,16 @@ public sealed class GetAnalyticsReportTests
 
         result.IsFailure.ShouldBeTrue();
         result.Error.Code.ShouldBe("Forms.NotFound");
+    }
+
+    private static AnalyticsReportBuilder CreateBuilder(ApplicationDbContext context)
+    {
+        SubmissionQueryBuilder queryBuilder = new(context);
+        QuestionAggregator aggregator = new();
+        MetricCalculator calculator = new();
+        ResponseMapper mapper = new();
+        
+        return new AnalyticsReportBuilder(context, queryBuilder, aggregator, calculator, mapper);
     }
 
     private static Submission CreateSubmission(

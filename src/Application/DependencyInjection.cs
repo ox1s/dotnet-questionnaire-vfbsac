@@ -30,7 +30,12 @@ public static class DependencyInjection
         services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandBaseHandler<>));
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
+        
         services.AddScoped<IAnalyticsReportBuilder, AnalyticsReportBuilder>();
+        services.AddScoped<SubmissionQueryBuilder>();
+        services.AddScoped<QuestionAggregator>();
+        services.AddScoped<MetricCalculator>();
+        services.AddScoped<ResponseMapper>();
 
         return services;
     }

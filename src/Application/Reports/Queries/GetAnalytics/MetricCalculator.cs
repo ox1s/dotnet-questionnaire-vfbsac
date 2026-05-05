@@ -14,7 +14,7 @@ internal sealed class MetricCalculator
         }
 
         decimal resultScore = CalculateResultScore(questionType, aggregate);
-        decimal standardDeviation = CalculateStandardDeviation(aggregate);
+        decimal standardDeviation = CalculateStandardDeviation(questionType, aggregate);
 
         return new SliceQuestionMetric(
             aggregate.RawAverage,
@@ -26,16 +26,20 @@ internal sealed class MetricCalculator
     public (decimal OverallAverage, decimal OverallStdDev) CalculateOverallMetrics(
         IEnumerable<SliceQuestionMetric> metrics)
     {
-        var metricsList = metrics.ToList();
-        var scores = metricsList.Select(m => m.ResultScore).ToList();
-        var stdDevs = metricsList.Select(m => m.StandardDeviation).ToList();
+        var metricsWithData = metrics.Where(m => m.SubmissionCount > 0).ToList();
+        
+        if (metricsWithData.Count == 0)
+        {
+            return (0, 0);
+        }
 
-        decimal overallAverage = scores.Count > 0 ? scores.Average() : 0;
+        var scores = metricsWithData.Select(m => m.ResultScore).ToList();
+        var stdDevs = metricsWithData.Select(m => m.StandardDeviation).ToList();
+
+        decimal overallAverage = scores.Average();
         
         // Pooled standard deviation: RMS of individual stddevs
-        decimal overallStdDev = stdDevs.Count > 0
-            ? (decimal)Math.Sqrt(stdDevs.Average(sd => (double)(sd * sd)))
-            : 0;
+        decimal overallStdDev = (decimal)Math.Sqrt(stdDevs.Average(sd => (double)(sd * sd)));
 
         return (overallAverage, overallStdDev);
     }
@@ -54,9 +58,25 @@ internal sealed class MetricCalculator
         return aggregate.RawAverage;
     }
 
-    private static decimal CalculateStandardDeviation(QuestionAggregateProjection aggregate)
+    private static decimal CalculateStandardDeviation(
+        QuestionType questionType,
+        QuestionAggregateProjection aggregate)
     {
-        decimal variance = aggregate.RawAverageSquares - aggregate.RawAverage * aggregate.RawAverage;
+        decimal average;
+        decimal averageSquares;
+
+        if (questionType == QuestionType.WeightedRating && aggregate.WeightedCount > 0)
+        {
+            average = aggregate.WeightedNormalizedSum / aggregate.WeightedCount;
+            averageSquares = aggregate.WeightedNormalizedAverageSquares;
+        }
+        else
+        {
+            average = aggregate.RawAverage;
+            averageSquares = aggregate.RawAverageSquares;
+        }
+
+        decimal variance = averageSquares - average * average;
         
         if (variance < -0.0001m)
         {

@@ -6,16 +6,16 @@ using SharedKernel;
 namespace Application.Teachers.GetList;
 
 internal sealed class GetTeachersQueryHandler(IApplicationDbContext context)
-    : IQueryHandler<GetTeachersQuery, List<TeacherResponse>>
+    : IQueryHandler<GetTeachersQuery, List<GetTeacherQueryResponse>>
 {
-    public async Task<Result<List<TeacherResponse>>> Handle(GetTeachersQuery query, CancellationToken cancellationToken)
+    public async Task<Result<List<GetTeacherQueryResponse>>> Handle(GetTeachersQuery query, CancellationToken cancellationToken)
     {
-        List<TeacherResponse> teachers = await context.Teachers
+        List<GetTeacherQueryResponse> teachers = await context.Teachers
             .IgnoreQueryFilters()
             .AsNoTracking()
             .OrderBy(t => t.IsDeleted)
             .ThenBy(t => t.FullName)
-            .Select(t => new TeacherResponse(t.Id, t.FullName, t.DepartmentId, t.IsDeleted))
+            .Select(t => new GetTeacherQueryResponse(t.Id, t.FullName, t.DepartmentId, t.IsDeleted))
             .ToListAsync(cancellationToken);
 
         return teachers;

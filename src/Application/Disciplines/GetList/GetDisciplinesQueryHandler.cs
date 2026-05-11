@@ -6,16 +6,16 @@ using Microsoft.EntityFrameworkCore;
 namespace Application.Disciplines.GetList;
 
 public class GetDisciplinesQueryHandler(IApplicationDbContext context)
-    : IQueryHandler<GetDisciplinesQuery, List<DisciplineResponse>>
+    : IQueryHandler<GetDisciplinesQuery, List<GetDisciplineQueryResponse>>
 {
-    public async Task<Result<List<DisciplineResponse>>> Handle(GetDisciplinesQuery query, CancellationToken cancellationToken)
+    public async Task<Result<List<GetDisciplineQueryResponse>>> Handle(GetDisciplinesQuery query, CancellationToken cancellationToken)
     {
-        List<DisciplineResponse> disciplines = await context.Disciplines
+        List<GetDisciplineQueryResponse> disciplines = await context.Disciplines
             .IgnoreQueryFilters()
             .AsNoTracking()
             .OrderBy(d => d.IsDeleted)
             .ThenBy(d => d.Name)
-            .Select(d => new DisciplineResponse(d.Id, d.Name, d.DepartmentId, d.IsDeleted))
+            .Select(d => new GetDisciplineQueryResponse(d.Id, d.Name, d.DepartmentId, d.IsDeleted))
             .ToListAsync(cancellationToken);
 
         return disciplines;

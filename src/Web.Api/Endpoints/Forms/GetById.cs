@@ -12,12 +12,12 @@ internal sealed class GetById : IEndpoint
     {
         app.MapGet("forms/{formId:guid}", async (
             Guid formId,
-            IQueryHandler<GetFormByIdQuery, FormResponse> handler,
+            IQueryHandler<GetFormByIdQuery, GetFormByIdQueryResponse> handler,
             CancellationToken cancellationToken) =>
         {
             var query = new GetFormByIdQuery(formId);
 
-            Result<FormResponse> result = await handler.Handle(query, cancellationToken);
+            Result<GetFormByIdQueryResponse> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })

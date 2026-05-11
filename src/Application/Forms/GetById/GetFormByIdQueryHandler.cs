@@ -7,13 +7,13 @@ using SharedKernel;
 namespace Application.Forms.GetById;
 
 internal sealed class GetFormByIdQueryHandler(IApplicationDbContext context)
-    : IQueryHandler<GetFormByIdQuery, FormResponse>
+    : IQueryHandler<GetFormByIdQuery, GetFormByIdQueryResponse>
 {
-    public async Task<Result<FormResponse>> Handle(GetFormByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<GetFormByIdQueryResponse>> Handle(GetFormByIdQuery query, CancellationToken cancellationToken)
     {
-        FormResponse? form = await context.Forms
+        GetFormByIdQueryResponse? form = await context.Forms
             .Where(f => f.Id == query.FormId)
-            .Select(f => new FormResponse
+            .Select(f => new GetFormByIdQueryResponse
             {
                 Id = f.Id,
                 Title = f.Title,
@@ -34,7 +34,7 @@ internal sealed class GetFormByIdQueryHandler(IApplicationDbContext context)
 
         if (form is null)
         {
-            return Result.Failure<FormResponse>(FormErrors.NotFound(query.FormId));
+            return Result.Failure<GetFormByIdQueryResponse>(FormErrors.NotFound(query.FormId));
         }
 
         return form;

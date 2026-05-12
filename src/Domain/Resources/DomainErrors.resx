@@ -240,4 +240,7 @@
   <data name="Specializations_Duplicate" xml:space="preserve">
     <value>Специаизация с таким же именем уже существует</value>
   </data>
+  <data name="Question_NotFound" xml:space="preserve">
+    <value>Вопрос не найден</value>
+  </data>
 </root>

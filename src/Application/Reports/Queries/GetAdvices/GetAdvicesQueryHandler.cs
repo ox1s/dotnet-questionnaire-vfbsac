@@ -9,9 +9,9 @@ namespace Application.Reports.Queries.GetAdvices;
 
 internal sealed class GetAdvicesQueryHandler(
     IApplicationDbContext context)
-    : IQueryHandler<GetAdvicesQuery, List<AdvicesQueryResponse>>
+    : IQueryHandler<GetAdvicesQuery, List<GetAdvicesQueryResponse>>
 {
-    public async Task<Result<List<AdvicesQueryResponse>>> Handle(
+    public async Task<Result<List<GetAdvicesQueryResponse>>> Handle(
         GetAdvicesQuery query,
         CancellationToken cancellationToken)
     {
@@ -20,7 +20,7 @@ internal sealed class GetAdvicesQueryHandler(
 
         if (!formExists)
         {
-            return Result.Failure<List<AdvicesQueryResponse>>(
+            return Result.Failure<List<GetAdvicesQueryResponse>>(
                 FormErrors.NotFound(query.FormId));
         }
 
@@ -33,10 +33,10 @@ internal sealed class GetAdvicesQueryHandler(
             submissionsQuery = submissionsQuery.Where(s => s.Context.TeacherId == query.TeacherId);
         }
 
-        List<AdvicesQueryResponse> responses = await submissionsQuery
+        List<GetAdvicesQueryResponse> responses = await submissionsQuery
             .SelectMany(s => s.Answers, (submission, answer) => new { submission, answer })
             .Where(x => x.answer.Value != null && x.answer.Value != "")
-            .Select(x => new AdvicesQueryResponse(
+            .Select(x => new GetAdvicesQueryResponse(
                 x.answer.Value!,
                 x.submission.Context.TeacherId,
                 x.submission.Context.DepartmentId))

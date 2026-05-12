@@ -13,11 +13,11 @@ internal sealed class GetAdvices : IEndpoint
         app.MapGet("reports/forms/{formId:guid}/advices", async (
             Guid formId,
             Guid? teacherId,
-            IQueryHandler<GetAdvicesQuery, List<AdvicesQueryResponse>> handler,
+            IQueryHandler<GetAdvicesQuery, List<GetAdvicesQueryResponse>> handler,
             CancellationToken cancellationToken) =>
         {
             var query = new GetAdvicesQuery(formId, teacherId);
-            Result<List<AdvicesQueryResponse>> result = await handler.Handle(query, cancellationToken);
+            Result<List<GetAdvicesQueryResponse>> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })

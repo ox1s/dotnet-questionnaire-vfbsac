@@ -1,6 +1,6 @@
 namespace Application.Reports.Queries.GetAdvices;
 
-public record AdvicesQueryResponse(
+public sealed record GetAdvicesQueryResponse(
     string Text,
     Guid? TeacherId,
     Guid? DepartmentId);

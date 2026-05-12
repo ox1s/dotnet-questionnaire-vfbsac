@@ -3,6 +3,7 @@
     "python-envs.pythonProjects": [],
     "kiroAgent.trustedCommands": [
         "git *",
-        "dotnet *"
+        "dotnet *",
+        "& \"$env:USERPROFILE\\.dotnet\\tools\\dotnet-ef.exe\" migrations list --project src/Infrastructure --startup-project src/Web.Api --no-build"
     ]
 }

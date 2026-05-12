@@ -1,6 +1,5 @@
 using Application.Abstractions.Behaviors;
 using Application.Abstractions.Messaging;
-using Application.Reports.Queries.GetAnalytics;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using SharedKernel;
@@ -30,12 +29,6 @@ public static class DependencyInjection
         services.Decorate(typeof(ICommandHandler<>), typeof(LoggingDecorator.CommandBaseHandler<>));
 
         services.AddValidatorsFromAssembly(typeof(DependencyInjection).Assembly, includeInternalTypes: true);
-        
-        services.AddScoped<IAnalyticsReportBuilder, AnalyticsReportBuilder>();
-        services.AddScoped<SubmissionQueryBuilder>();
-        services.AddScoped<QuestionAggregator>();
-        services.AddScoped<MetricCalculator>();
-        services.AddScoped<ResponseMapper>();
 
         return services;
     }

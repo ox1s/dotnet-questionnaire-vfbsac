@@ -1,151 +1,152 @@
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import {
-  dictionariesApi,
-  getApiErrorMessage,
-  type DictionaryItem,
+    dictionariesApi,
+    getApiErrorMessage,
+    type DictionaryItem,
 } from "../../api";
-import { Plus, Building2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { TableCell } from "@/components/ui/table";
-import { toast } from "sonner";
+import {Plus, Building2} from "lucide-react";
+import {Button} from "@/components/ui/button";
+import {Input} from "@/components/ui/input";
+import {TableCell} from "@/components/ui/table";
+import {toast} from "sonner";
 import {
-  AdminModal,
-  AdminTable,
-  AdminTableActions,
-  AdminTableIconCell,
-  AdminTableRow,
+    AdminModal,
+    AdminTable,
+    AdminTableActions,
+    AdminTableIconCell,
+    AdminTableRow,
 } from "@/components/admin/admin-shared";
-import { Label } from "@/components/ui/label";
-import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import {Label} from "@/components/ui/label";
+import {useAdminPageConfig} from "@/hooks/use-admin-page-config";
 
 export const AdminDepartmentsPage = () => {
-  const [departments, setDepartments] = useState<DictionaryItem[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+    const [departments, setDepartments] = useState<DictionaryItem[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [newName, setNewName] = useState("");
+    const [editingId, setEditingId] = useState<string | null>(null);
 
-  const loadData = async () => {
-    try {
-      const res = await dictionariesApi.getDepartments();
-      setDepartments(res.data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+    const loadData = async () => {
+        try {
+            const res = await dictionariesApi.getDepartments();
+            setDepartments(res.data);
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
-  useEffect(() => {
-    loadData();
-  }, []);
+    useEffect(() => {
+        loadData();
+    }, []);
 
-  useAdminPageConfig({
-    title: "Справочники",
-    subtitle: "Кафедры",
-    actions: (
-      <Button onClick={() => openModal()}>
-        <Plus size={18} className="mr-2" /> Добавить
-      </Button>
-    ),
-  });
+    const openModal = (d?: DictionaryItem) => {
+        if (d) {
+            setEditingId(d.id);
+            setNewName(d.name);
+        } else {
+            setEditingId(null);
+            setNewName("");
+        }
+        setIsFormOpen(true);
+    };
 
-  const openModal = (d?: DictionaryItem) => {
-    if (d) {
-      setEditingId(d.id);
-      setNewName(d.name);
-    } else {
-      setEditingId(null);
-      setNewName("");
-    }
-    setIsFormOpen(true);
-  };
+    useAdminPageConfig({
+        title: "Справочники",
+        subtitle: "Кафедры",
+        actions: (
+            <Button onClick={() => openModal()}>
+                <Plus size={18} className="mr-2"/> Добавить
+            </Button>
+        ),
+    });
 
-  const filteredDepartments = departments.filter((d) =>
-    d.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
-  const handleDelete = async (id: string) => {
-    try {
-      await dictionariesApi.deleteDepartment(id);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка удаления"));
-    }
-  };
+    const filteredDepartments = departments.filter((d) =>
+        d.name.toLowerCase().includes(searchQuery.toLowerCase()),
+    );
 
-  const handleRestore = async (id: string) => {
-    try {
-      await dictionariesApi.restoreDepartment(id);
-      loadData();
-      toast.success("Филиал кафедры успешно восстановлен.", {
-        style: { color: "green" },
-      });
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
-    }
-  };
+    const handleDelete = async (id: string) => {
+        try {
+            await dictionariesApi.deleteDepartment(id);
+            loadData();
+        } catch (e) {
+            toast.error(getApiErrorMessage(e, "Ошибка удаления"));
+        }
+    };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingId) await dictionariesApi.updateDepartment(editingId, newName);
-      else await dictionariesApi.createDepartment(newName);
-      setIsFormOpen(false);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка сохранения"));
-    }
-  };
+    const handleRestore = async (id: string) => {
+        try {
+            await dictionariesApi.restoreDepartment(id);
+            loadData();
+            toast.success("Филиал кафедры успешно восстановлен.", {
+                style: {color: "green"},
+            });
+        } catch (e) {
+            toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
+        }
+    };
 
-  return (
-    <>
-      <AdminTable
-        data={filteredDepartments}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        searchPlaceholder="Поиск кафедры..."
-        columns={[
-          { header: "Название / Аббревиатура" },
-          { header: "Действия", className: "text-right w-24" },
-        ]}
-        renderRow={(d) => (
-          <AdminTableRow key={d.id} isDeleted={d.isDeleted}>
-            <TableCell className="align-top">
-              <AdminTableIconCell
-                icon={<Building2 size={14} />}
-                iconColorClass="bg-chart-4/15 text-chart-4"
-                title={d.name}
-                isDeleted={d.isDeleted}
-              />
-            </TableCell>
-            <TableCell className="align-top text-right">
-              <AdminTableActions
-                isDeleted={d.isDeleted}
-                onEdit={() => openModal(d)}
-                onDelete={() => handleDelete(d.id)}
-                onRestore={() => handleRestore(d.id)}
-                deleteDescription={`Вы уверены, что хотите удалить кафедру "${d.name}"?`}
-              />
-            </TableCell>
-          </AdminTableRow>
-        )}
-      />
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            if (editingId) await dictionariesApi.updateDepartment(editingId, newName);
+            else await dictionariesApi.createDepartment(newName);
+            setIsFormOpen(false);
+            loadData();
+        } catch (e) {
+            toast.error(getApiErrorMessage(e, "Ошибка сохранения"));
+        }
+    };
 
-      <AdminModal
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-        title={editingId ? "Редактирование" : "Новый филиал кафедры"}
-        onSubmit={handleSubmit}
-      >
-        <div className="space-y-2">
-          <Label>Название</Label>
-          <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            placeholder="Введите название кафедры..."
-          />
-        </div>
-      </AdminModal>
-    </>
-  );
+    return (
+        <>
+            <AdminTable
+                data={filteredDepartments}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                searchPlaceholder="Поиск кафедры..."
+                columns={[
+                    {header: "Название / Аббревиатура"},
+                    {header: "Действия", className: "text-right w-24"},
+                ]}
+                renderRow={(d) => (
+                    <AdminTableRow key={d.id} isDeleted={d.isDeleted}>
+                        <TableCell className="align-top">
+                            <AdminTableIconCell
+                                icon={<Building2 size={14}/>}
+                                iconColorClass="bg-chart-4/15 text-chart-4"
+                                title={d.name}
+                                isDeleted={d.isDeleted}
+                            />
+                        </TableCell>
+                        <TableCell className="align-top text-right">
+                            <AdminTableActions
+                                isDeleted={d.isDeleted}
+                                onEdit={() => openModal(d)}
+                                onDelete={() => handleDelete(d.id)}
+                                onRestore={() => handleRestore(d.id)}
+                                deleteDescription={`Вы уверены, что хотите удалить кафедру "${d.name}"?`}
+                            />
+                        </TableCell>
+                    </AdminTableRow>
+                )}
+            />
+
+            <AdminModal
+                isOpen={isFormOpen}
+                onClose={() => setIsFormOpen(false)}
+                title={editingId ? "Редактирование" : "Новый филиал кафедры"}
+                onSubmit={handleSubmit}
+            >
+                <div className="space-y-2">
+                    <Label>Название</Label>
+                    <Input
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        placeholder="Введите название кафедры..."
+                    />
+                </div>
+            </AdminModal>
+        </>
+    );
 };

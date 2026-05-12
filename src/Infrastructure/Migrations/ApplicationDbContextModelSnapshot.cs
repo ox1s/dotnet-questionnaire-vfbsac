@@ -225,13 +225,13 @@ namespace Infrastructure.Migrations
                         .HasColumnName("type");
 
                     b.HasKey("Id")
-                        .HasName("pk_question");
+                        .HasName("pk_questions");
 
                     b.HasIndex("FormId", "Order")
                         .IsUnique()
-                        .HasDatabaseName("ix_question_form_id_order");
+                        .HasDatabaseName("ix_questions_form_id_order");
 
-                    b.ToTable("question", "public");
+                    b.ToTable("questions", "public");
                 });
 
             modelBuilder.Entity("Domain.Questionnaires.Submissions.Answer", b =>
@@ -269,13 +269,13 @@ namespace Infrastructure.Migrations
                         .HasColumnName("weight");
 
                     b.HasKey("Id")
-                        .HasName("pk_answer");
+                        .HasName("pk_answers");
 
                     b.HasIndex("SubmissionId", "QuestionId")
                         .IsUnique()
-                        .HasDatabaseName("ix_answer_submission_id_question_id");
+                        .HasDatabaseName("ix_answers_submission_id_question_id");
 
-                    b.ToTable("answer", "public");
+                    b.ToTable("answers", "public");
                 });
 
             modelBuilder.Entity("Domain.Questionnaires.Submissions.Submission", b =>
@@ -400,7 +400,7 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("FormId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_question_forms_form_id");
+                        .HasConstraintName("fk_questions_forms_form_id");
                 });
 
             modelBuilder.Entity("Domain.Questionnaires.Submissions.Answer", b =>
@@ -410,7 +410,7 @@ namespace Infrastructure.Migrations
                         .HasForeignKey("SubmissionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_answer_submissions_submission_id");
+                        .HasConstraintName("fk_answers_submissions_submission_id");
                 });
 
             modelBuilder.Entity("Domain.Questionnaires.Submissions.Submission", b =>

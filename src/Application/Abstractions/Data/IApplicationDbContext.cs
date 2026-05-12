@@ -18,8 +18,10 @@ public interface IApplicationDbContext
     DbSet<Department> Departments { get; }
     DbSet<Discipline> Disciplines { get; }
     DbSet<Teacher> Teachers { get; }
+    DbSet<Question> Questions { get; }
     DbSet<Speciality> Specialities { get; }
     DbSet<Specialization> Specializations { get; }
+    DbSet<Answer> Answers { get; }
 
     DbSet<TEntity> Set<TEntity>() where TEntity : class;
 

@@ -20,6 +20,7 @@ public sealed class ApplicationDbContext(
     public DbSet<User> Users { get; set; }
 
     public DbSet<Form> Forms { get; set; }
+    public DbSet<Answer> Answers { get; set; }
 
     public DbSet<Submission> Submissions { get; set; }
 
@@ -30,6 +31,7 @@ public sealed class ApplicationDbContext(
     public DbSet<Teacher> Teachers { get; set; }
 
     public DbSet<Speciality> Specialities { get; set; }
+    public DbSet<Question> Questions { get; set;  }
 
     public DbSet<Specialization> Specializations { get; set; }
 

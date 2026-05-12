@@ -55,13 +55,14 @@ import api, {
   getApiErrorMessage,
   reportsApi,
   type AdviceItem,
-  type AnalyticsQuestion,
-  type AnalyticsReport,
-  type AnalyticsReportRequest,
   type DictionaryItem,
   type FormDetail,
   type StatisticsFilters,
   type TeacherItem,
+  type AnalyticsByPeriodRequest,
+  type GetAnalyticsByPeriodsRequest,
+  type GetAnalyticsByGroupsRequest,
+  type PeriodAnalyticsResponse,
 } from "../../api";
 import {
   Card,
@@ -141,7 +142,7 @@ function getPreviousPeriodRange(): RangeState {
 export const AdminStatsPage = () => {
   const { id } = useParams();
   const [form, setForm] = useState<FormDetail | null>(null);
-  const [report, setReport] = useState<AnalyticsReport | null>(null);
+  const [report, setReport] = useState<PeriodAnalyticsResponse[] | null>(null);
   const [advices, setAdvices] = useState<AdviceItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -152,8 +153,7 @@ export const AdminStatsPage = () => {
   const [specializations, setSpecializations] = useState<DictionaryItem[]>([]);
   const [mode, setMode] = useState<Mode>("single");
   const [filters, setFilters] = useState<StatisticsFilters>({});
-  const [singleRange, setSingleRange] =
-    useState<RangeState>(getSemesterRange());
+  const [singleRange, setSingleRange] = useState<RangeState>(getSemesterRange());
   const [periods, setPeriods] = useState<RangeState[]>([
     getSemesterRange(),
     getPreviousPeriodRange(),
@@ -280,57 +280,149 @@ export const AdminStatsPage = () => {
     return next;
   };
 
-  const buildRequest = (): AnalyticsReportRequest | null => {
+  const buildRequest = ():
+    | AnalyticsByPeriodRequest
+    | GetAnalyticsByPeriodsRequest
+    | GetAnalyticsByGroupsRequest
+    | null => {
     if (!id) return null;
-    if (mode === "single")
+
+    if (mode === "single") {
       return {
         formId: id,
-        slices: [
-          {
-            label: singleRange.label,
-            dateFrom: singleRange.dateFrom,
-            dateTo: singleRange.dateTo,
-            ...filters,
-          },
-        ],
-      };
-    if (mode === "periods")
+        fromDate: new Date(singleRange.dateFrom).toISOString(),
+        toDate: new Date(singleRange.dateTo).toISOString(),
+        filterSet: filters,
+      } satisfies AnalyticsByPeriodRequest;
+    }
+
+    if (mode === "periods") {
+      const validPeriods = periods.filter(
+        (item) => item.dateFrom && item.dateTo,
+      );
+      if (validPeriods.length === 0) return null;
+
       return {
         formId: id,
-        slices: periods
-          .filter((item) => item.dateFrom && item.dateTo)
-          .map((item, index) => ({
-            label: item.label || `Период ${index + 1}`,
-            dateFrom: item.dateFrom,
-            dateTo: item.dateTo,
-            ...filters,
-          })),
-      };
+        periods: validPeriods.map((item) => ({
+          label: item.label,
+          dateFrom: new Date(item.dateFrom).toISOString(),
+          dateTo: new Date(item.dateTo).toISOString(),
+          filterSet: filters,
+        })),
+      } satisfies GetAnalyticsByPeriodsRequest;
+    }
+
     if (selectedIds.length === 0) return null;
+
+    const groupByMapping: Record<CompareField, GetAnalyticsByGroupsRequest["groupBy"]> = {
+      departmentId: "Department",
+      disciplineId: "Discipline",
+      specialityId: "Speciality",
+      specializationId: "Specialization",
+      teacherId: "Teacher",
+    };
+
     return {
       formId: id,
-      slices: selectedIds.map((value) => ({
-        label: labelFor(compareField, value),
-        dateFrom: singleRange.dateFrom,
-        dateTo: singleRange.dateTo,
-        ...baseFilters(compareField, value),
-      })),
-    };
+      fromDate: new Date(singleRange.dateFrom).toISOString(),
+      toDate: new Date(singleRange.dateTo).toISOString(),
+      groupBy: groupByMapping[compareField],
+      filterSet: filters,
+    } satisfies GetAnalyticsByGroupsRequest;
   };
 
   const loadReport = async () => {
     const request = buildRequest();
-    if (!request || request.slices.length === 0 || !id) {
+    if (!request || !id) {
       setReport(null);
       setAdvices([]);
       return;
     }
+
     setRefreshing(true);
     try {
-      const [reportResponse, advicesResponse] = await Promise.all([
-        reportsApi.getAnalytics(request),
-        reportsApi.getAdvices(id, filters.teacherId),
-      ]);
+      let reportResponse: { data: PeriodAnalyticsResponse[] };
+
+      if (mode === "single") {
+        const singleResponse = await reportsApi.getAnalyticsByPeriod(
+          request as AnalyticsByPeriodRequest,
+        );
+        const stats = singleResponse.data;
+        const totalSubmissions = stats.length > 0 ? stats[0].responseCount : 0;
+        const overallAverage = stats.length > 0 
+          ? stats.reduce((sum, q) => sum + q.mean, 0) / stats.length 
+          : 0;
+        const overallStandardDeviation = stats.length > 0
+          ? Math.sqrt(stats.reduce((sum, q) => sum + q.standardDeviation ** 2, 0) / stats.length)
+          : 0;
+        
+        reportResponse = {
+          data: [
+            {
+              label: singleRange.label,
+              periodStart: singleRange.dateFrom,
+              periodEnd: singleRange.dateTo,
+              questionStatistics: stats,
+              totalSubmissions,
+              overallAverage,
+              overallStandardDeviation,
+            },
+          ],
+        };
+      } else if (mode === "periods") {
+        reportResponse = await reportsApi.getAnalyticsByPeriods(
+          request as GetAnalyticsByPeriodsRequest,
+        );
+        // Add computed overall metrics
+        reportResponse.data = reportResponse.data.map(period => {
+          const stats = period.questionStatistics;
+          const totalSubmissions = stats.length > 0 ? stats[0].responseCount : 0;
+          const overallAverage = stats.length > 0
+            ? stats.reduce((sum, q) => sum + q.mean, 0) / stats.length
+            : 0;
+          const overallStandardDeviation = stats.length > 0
+            ? Math.sqrt(stats.reduce((sum, q) => sum + q.standardDeviation ** 2, 0) / stats.length)
+            : 0;
+          return {
+            ...period,
+            totalSubmissions,
+            overallAverage,
+            overallStandardDeviation,
+          };
+        });
+      } else {
+        const groupsResponse = await reportsApi.getAnalyticsByGroups(
+          request as GetAnalyticsByGroupsRequest,
+        );
+        reportResponse = {
+          data: groupsResponse.data.map((item) => {
+            const stats = item.questionStatistics;
+            const totalSubmissions = stats.length > 0 ? stats[0].responseCount : 0;
+            const overallAverage = stats.length > 0
+              ? stats.reduce((sum, q) => sum + q.mean, 0) / stats.length
+              : 0;
+            const overallStandardDeviation = stats.length > 0
+              ? Math.sqrt(stats.reduce((sum, q) => sum + q.standardDeviation ** 2, 0) / stats.length)
+              : 0;
+            
+            return {
+              label: item.groupName,
+              periodStart: singleRange.dateFrom,
+              periodEnd: singleRange.dateTo,
+              questionStatistics: stats,
+              totalSubmissions,
+              overallAverage,
+              overallStandardDeviation,
+            };
+          }),
+        };
+      }
+
+      const advicesResponse = await reportsApi.getAdvices(
+        id,
+        filters.teacherId,
+      );
 
       setReport(reportResponse.data);
       setAdvices(
@@ -353,25 +445,11 @@ export const AdminStatsPage = () => {
   }, [loading, form, mode]);
 
   const exportReport = async () => {
-    const request = buildRequest();
-    if (!request) return;
-    try {
-      const response = await reportsApi.downloadAnalyticsWord(request);
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `analytics_${request.formId}.docx`);
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Не удалось экспортировать отчет"));
-    }
+    toast.error("Экспорт временно недоступен. Функция в разработке.");
   };
 
   const questions = report
-    ? [...report.questions].sort((a, b) => a.order - b.order)
+    ? report[0].questionStatistics
     : [];
   const availableLinkedOptions = getLinkedFilterOptions(filters, {
     departments,
@@ -384,8 +462,9 @@ export const AdminStatsPage = () => {
       name: `В${index + 1}`,
       fullName: question.questionText,
     };
-    question.sliceMetrics.forEach((metric, metricIndex) => {
-      row[`slice_${metricIndex}`] = metric.resultScore;
+    report?.forEach((period, periodIndex) => {
+      const metric = period.questionStatistics.find((q) => q.questionId === question.questionId);
+      row[`slice_${periodIndex}`] = metric?.mean ?? 0;
     });
     return row;
   });
@@ -431,14 +510,14 @@ export const AdminStatsPage = () => {
   ];
 
   const renderCards = () =>
-    report?.slices.length === 1 ? (
+    report?.length === 1 ? (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <Card>
           <CardHeader>
             <CardTitle>Всего анкет</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl">
-            {String(report.slices[0].totalSubmissions)}
+            {String(report[0].totalSubmissions ?? 0)}
           </CardContent>
         </Card>
         <Card>
@@ -446,7 +525,7 @@ export const AdminStatsPage = () => {
             <CardTitle>Средний балл</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl">
-            {report.slices[0].overallAverage.toFixed(2)}
+            {(report[0].overallAverage ?? 0).toFixed(2)}
           </CardContent>
         </Card>
         <Card>
@@ -454,22 +533,22 @@ export const AdminStatsPage = () => {
             <CardTitle>Отклонение</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl">
-            {report.slices[0].overallStandardDeviation.toFixed(2)}
+            {(report[0].overallStandardDeviation ?? 0).toFixed(2)}
           </CardContent>
         </Card>
       </div>
     ) : (
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
-        {report?.slices.map((slice, index) => (
-          <Card key={`${slice.label}-${index}`}>
+        {report?.map((period, index) => (
+          <Card key={`${period.label}-${index}`}>
             <CardHeader>
-              <CardTitle>{slice.label}</CardTitle>
+              <CardTitle>{period.label}</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl">
-              {`${slice.overallAverage.toFixed(2)} / ${slice.totalSubmissions}`}
+              {`${(period.overallAverage ?? 0).toFixed(2)} / ${period.totalSubmissions ?? 0}`}
             </CardContent>
             <CardFooter className="text-xs">
-              {`${slice.dateFrom.slice(0, 10)} - ${slice.dateTo.slice(0, 10)}`}
+              {`${period.periodStart.slice(0, 10)} - ${period.periodEnd.slice(0, 10)}`}
             </CardFooter>
           </Card>
         ))}
@@ -859,11 +938,11 @@ export const AdminStatsPage = () => {
                         />
                       }
                     />
-                    {report.slices.map((slice, index) => (
+                    {report.map((period, index) => (
                       <Bar
-                        key={`${slice.label}-${index}`}
+                        key={`${period.label}-${index}`}
                         dataKey={`slice_${index}`}
-                        name={slice.label}
+                        name={period.label}
                         fill={colors[index % colors.length]}
                         radius={[4, 4, 0, 0]}
                         maxBarSize={40}
@@ -875,7 +954,7 @@ export const AdminStatsPage = () => {
             ) : null}
 
             {report ? (
-              <QuestionsTable questions={questions} slices={report.slices} />
+              <QuestionsTable questions={questions} periods={report} />
             ) : null}
 
             {report ? (
@@ -1010,10 +1089,10 @@ function AnalyticsField({
 
 function QuestionsTable({
   questions,
-  slices,
+  periods,
 }: {
-  questions: AnalyticsQuestion[];
-  slices: AnalyticsReport["slices"];
+  questions: PeriodAnalyticsResponse["questionStatistics"];
+  periods: PeriodAnalyticsResponse[];
 }) {
   return (
     <div className="mb-8 overflow-hidden border bg-card shadow-sm">
@@ -1028,19 +1107,21 @@ function QuestionsTable({
             <TableRow>
               <TableHead className="text-center">№</TableHead>
               <TableHead className="text-left">Вопрос</TableHead>
-              {slices.length === 1 ? (
+              {periods.length === 1 ? (
                 <>
+                  <TableHead className="text-right">Медиана</TableHead>
                   <TableHead className="text-right">Среднее</TableHead>
-                  <TableHead className="text-right">Итог</TableHead>
+                  <TableHead className="text-right">Мода</TableHead>
                   <TableHead className="text-right">Отклонение</TableHead>
+                  <TableHead className="text-right">Ответов</TableHead>
                 </>
               ) : (
-                slices.map((slice, index) => (
+                periods.map((period, index) => (
                   <TableHead
-                    key={`${slice.label}-${index}`}
+                    key={`${period.label}-${index}`}
                     className="text-right"
                   >
-                    {slice.label}
+                    {period.label}
                   </TableHead>
                 ))
               )}
@@ -1051,28 +1132,38 @@ function QuestionsTable({
               <TableRow key={question.questionId}>
                 <TableCell className="text-center">{index + 1}</TableCell>
                 <TableCell>{question.questionText}</TableCell>
-                {slices.length === 1 ? (
+                {periods.length === 1 ? (
                   <>
                     <TableCell className="text-right">
-                      {question.sliceMetrics[0]?.averageScore.toFixed(2) ?? "-"}
+                      {question.median.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right">
-                      {question.sliceMetrics[0]?.resultScore.toFixed(2) ?? "-"}
+                      {question.mean.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right">
-                      {question.sliceMetrics[0]?.standardDeviation.toFixed(2) ??
-                        "-"}
+                      {question.mode.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {question.standardDeviation.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {question.responseCount}
                     </TableCell>
                   </>
                 ) : (
-                  question.sliceMetrics.map((metric, metricIndex) => (
-                    <TableCell
-                      key={`${question.questionId}-${metricIndex}`}
-                      className="text-right"
-                    >
-                      {metric.resultScore.toFixed(2)}
-                    </TableCell>
-                  ))
+                  periods.map((period, periodIndex) => {
+                    const metric = period.questionStatistics.find(
+                      (q) => q.questionId === question.questionId,
+                    );
+                    return (
+                      <TableCell
+                        key={`${question.questionId}-${periodIndex}`}
+                        className="text-right"
+                      >
+                        {metric?.mean.toFixed(2) ?? "-"}
+                      </TableCell>
+                    );
+                  })
                 )}
               </TableRow>
             ))}

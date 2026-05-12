@@ -85,8 +85,76 @@ export interface StatisticsFilters {
   specialityId?: string;
   specializationId?: string;
   organizationName?: string;
+  educationForm?: string;
+  employeeCategory?: string;
+  position?: string;
 }
 
+// New API types
+export interface QuestionStatistics {
+  questionId: string;
+  questionText: string;
+  median: number;
+  mean: number;
+  mode: number;
+  standardDeviation: number;
+  responseCount: number;
+}
+
+export interface AnalyticsByPeriodRequest {
+  formId: string;
+  fromDate: string;
+  toDate: string;
+  filterSet: StatisticsFilters;
+}
+
+export interface AnalyticsByPeriodResponse {
+  questionId: string;
+  questionText: string;
+  median: number;
+  mean: number;
+  mode: number;
+  standardDeviation: number;
+  responseCount: number;
+}
+
+export interface PeriodRequest {
+  label: string;
+  dateFrom: string;
+  dateTo: string;
+  filterSet: StatisticsFilters;
+}
+
+export interface GetAnalyticsByPeriodsRequest {
+  formId: string;
+  periods: PeriodRequest[];
+}
+
+export interface PeriodAnalyticsResponse {
+  label: string;
+  periodStart: string;
+  periodEnd: string;
+  questionStatistics: QuestionStatistics[];
+  totalSubmissions?: number;
+  overallAverage?: number;
+  overallStandardDeviation?: number;
+}
+
+export interface GetAnalyticsByGroupsRequest {
+  formId: string;
+  fromDate: string;
+  toDate: string;
+  groupBy: 'Department' | 'Discipline' | 'Speciality' | 'Specialization' | 'EducationForm' | 'EmployeeCategory' | 'Teacher';
+  filterSet: StatisticsFilters;
+}
+
+export interface GroupAnalyticsResponse {
+  groupKey: string;
+  groupName: string;
+  questionStatistics: QuestionStatistics[];
+}
+
+// Old API types (deprecated)
 export interface AnalyticsSliceRequest extends StatisticsFilters {
   label: string;
   dateFrom: string;
@@ -217,6 +285,17 @@ export const submissionsApi = {
 };
 
 export const reportsApi = {
+  // New analytics endpoints
+  getAnalyticsByPeriod: (payload: AnalyticsByPeriodRequest) =>
+    api.post<AnalyticsByPeriodResponse[]>("/reports/analytics/period", payload),
+
+  getAnalyticsByPeriods: (payload: GetAnalyticsByPeriodsRequest) =>
+    api.post<PeriodAnalyticsResponse[]>("/reports/analytics/periods", payload),
+
+  getAnalyticsByGroups: (payload: GetAnalyticsByGroupsRequest) =>
+    api.post<GroupAnalyticsResponse[]>("/reports/analytics/groups", payload),
+
+  // Old endpoint (deprecated)
   getAnalytics: (payload: AnalyticsReportRequest) =>
     api.post<AnalyticsReport>("/reports/analytics", payload),
 
@@ -225,8 +304,7 @@ export const reportsApi = {
       params: { teacherId },
     }),
 
-  downloadAnalyticsWord: (payload: AnalyticsReportRequest) =>
-    api.post("/reports/word", payload, { responseType: "blob" }),
+  // Removed: downloadAnalyticsWord (old endpoint deleted)
 };
 
 export const getApiErrorMessage = (

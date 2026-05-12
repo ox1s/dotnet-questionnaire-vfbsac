@@ -1,4 +1,4 @@
-namespace Application.Reports.Queries.GetAnalytics;
+namespace Application.Reports.Queries.Shared;
 
 public sealed record AnalyticsFilterSet(
     Guid? DisciplineId = null,
@@ -6,4 +6,7 @@ public sealed record AnalyticsFilterSet(
     Guid? DepartmentId = null,
     Guid? SpecialityId = null,
     Guid? SpecializationId = null,
-    string? OrganizationName = null);
+    string? OrganizationName = null,
+    string? EducationForm = null,
+    string? EmployeeCategory = null,
+    string? Position = null);

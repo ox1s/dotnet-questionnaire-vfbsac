@@ -15,6 +15,7 @@ internal sealed class CreateSubmissionCommandHandler(
     public async Task<Result<Guid>> Handle(CreateSubmissionCommand command, CancellationToken cancellationToken)
     {
         Form? form = await context.Forms
+            .Include(f => f.Questions)
             .FirstOrDefaultAsync(f => f.Id == command.FormId, cancellationToken);
         
         if (form is null)
@@ -83,6 +84,24 @@ internal sealed class CreateSubmissionCommandHandler(
 
         foreach (AnswerRequest answerRequest in command.Answers)
         {
+            Question? question = form.Questions.FirstOrDefault(q => q.Id == answerRequest.QuestionId);
+            
+            if (question is null)
+            {
+                return Result.Failure<Guid>(QuestionErrors.NotFound(answerRequest.QuestionId));
+            }
+
+            Result validationResult = ValidateAnswerForQuestionType(
+                question.Type,
+                answerRequest.Value,
+                answerRequest.NumericValue,
+                answerRequest.Weight);
+
+            if (validationResult.IsFailure)
+            {
+                return Result.Failure<Guid>(validationResult.Error);
+            }
+
             Result<Answer> answerResult = submission.AddAnswer(
                 answerRequest.QuestionId,
                 answerRequest.Value,
@@ -99,5 +118,37 @@ internal sealed class CreateSubmissionCommandHandler(
         await context.SaveChangesAsync(cancellationToken);
 
         return submission.Id;
+    }
+
+    private static Result ValidateAnswerForQuestionType(
+        QuestionType questionType,
+        string? value,
+        decimal? numericValue,
+        decimal? weight)
+    {
+        return questionType switch
+        {
+            QuestionType.Text => value is not null && numericValue is null && weight is null
+                ? Result.Success()
+                : Result.Failure(AnswerErrors.InvalidTypeForText),
+
+            QuestionType.Number => numericValue is not null && value is null && weight is null
+                ? Result.Success()
+                : Result.Failure(AnswerErrors.InvalidTypeForNumber),
+
+            QuestionType.WeightedRating => numericValue is not null && weight is not null && value is null
+                ? Result.Success()
+                : Result.Failure(AnswerErrors.InvalidTypeForWeightedRating),
+
+            QuestionType.MultipleChoice => value is not null && numericValue is null && weight is null
+                ? Result.Success()
+                : Result.Failure(AnswerErrors.InvalidTypeForMultipleChoice),
+
+            QuestionType.SingleChoice => value is not null && numericValue is null && weight is null
+                ? Result.Success()
+                : Result.Failure(AnswerErrors.InvalidTypeForSingleChoice),
+
+            _ => Result.Failure(AnswerErrors.UnknownQuestionType)
+        };
     }
 }

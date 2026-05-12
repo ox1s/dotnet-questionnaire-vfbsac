@@ -64,6 +64,8 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
 
         var submissionIds = submissionsWithGrouping.Select(s => s.Id).ToList();
 
+        // Get numeric answers grouped by question
+        // For weighted ratings, normalize to 0-10 scale: (NumericValue / Weight) * 10
         var answersGroupedByQuestion = await context.Answers
             .AsNoTracking()
             .Where(a => submissionIds.Contains(a.SubmissionId) &&
@@ -74,7 +76,9 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
             {
                 g.Key.SubmissionId,
                 g.Key.QuestionId,
-                Value = g.Select(a => a.NumericValue!.Value).First()
+                Value = g.Select(a => a.Weight.HasValue && a.Weight.Value > 0
+                    ? a.NumericValue!.Value / a.Weight.Value * 10
+                    : a.NumericValue!.Value).First()
             })
             .ToListAsync(cancellationToken);
 

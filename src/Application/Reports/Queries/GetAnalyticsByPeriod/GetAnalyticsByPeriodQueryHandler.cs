@@ -48,6 +48,7 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
 
         // Step 5: Get numeric answers grouped by question
         // Only select answers with NumericValue (Number, WeightedRating question types)
+        // For weighted ratings, normalize to 0-10 scale: (NumericValue / Weight) * 10
         var answersGrouped = await context.Answers
             .AsNoTracking()
             .Where(a => filteredByDate.Select(s => s.Id).Contains(a.SubmissionId) &&
@@ -57,7 +58,9 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
             .Select(g => new
             {
                 QuestionId = g.Key,
-                Values = g.Select(a => a.NumericValue!.Value).ToList()
+                Values = g.Select(a => a.Weight.HasValue && a.Weight.Value > 0
+                    ? a.NumericValue!.Value / a.Weight.Value * 10
+                    : a.NumericValue!.Value).ToList()
             })
             .ToListAsync(cancellationToken);
 

@@ -239,18 +239,26 @@ export const AdminStatsPage = () => {
   };
 
   const optionsFor = () => {
-    const compareOptions = getLinkedFilterOptions(baseFilters(compareField), {
+    const filtersWithoutCompareField = baseFilters(compareField);
+    const compareOptions = getLinkedFilterOptions(filtersWithoutCompareField, {
       departments,
       disciplines,
       specialities,
       specializations,
     });
 
-    if (compareField === "teacherId")
-      return teachers.map((item) => ({
+    if (compareField === "teacherId") {
+      // Filter teachers by department if department filter is set
+      const filteredTeachers = filtersWithoutCompareField.departmentId
+        ? teachers.filter((t) => t.departmentId === filtersWithoutCompareField.departmentId)
+        : teachers;
+      
+      return filteredTeachers.map((item) => ({
         value: item.id,
         label: teacherLabel(item),
       }));
+    }
+    
     const sets: Record<Exclude<CompareField, "teacherId">, DictionaryItem[]> = {
       departmentId: compareOptions.departments,
       disciplineId: compareOptions.disciplines,
@@ -264,11 +272,15 @@ export const AdminStatsPage = () => {
   };
 
   useEffect(() => {
+    // Don't clear selectedIds when filters change in groups mode
+    // Users should be able to compare groups even if they're filtered out
+    if (mode !== "groups") return;
+    
     const allowedIds = new Set(optionsFor().map((item) => item.value));
     setSelectedIds((previous) =>
       previous.filter((value) => allowedIds.has(value)),
     );
-  }, [compareField, filters, departments, disciplines, specialities, specializations]);
+  }, [compareField, departments, disciplines, specialities, specializations]);
 
   const baseFilters = (
     field?: CompareField,
@@ -335,7 +347,12 @@ export const AdminStatsPage = () => {
   const loadReport = async () => {
     const request = buildRequest();
     if (!request || !id) {
-      setReport(null);
+      // In groups mode, if no groups selected, show empty report instead of null
+      if (mode === "groups" && id) {
+        setReport([]);
+      } else {
+        setReport(null);
+      }
       setAdvices([]);
       return;
     }
@@ -395,8 +412,14 @@ export const AdminStatsPage = () => {
         const groupsResponse = await reportsApi.getAnalyticsByGroups(
           request as GetAnalyticsByGroupsRequest,
         );
+        
+        // Filter groups by selectedIds
+        const filteredGroups = groupsResponse.data.filter((item) =>
+          selectedIds.includes(item.groupKey)
+        );
+        
         reportResponse = {
-          data: groupsResponse.data.map((item) => {
+          data: filteredGroups.map((item) => {
             const stats = item.questionStatistics;
             const totalSubmissions = stats.length > 0 ? stats[0].responseCount : 0;
             const overallAverage = stats.length > 0
@@ -448,7 +471,7 @@ export const AdminStatsPage = () => {
     toast.error("Экспорт временно недоступен. Функция в разработке.");
   };
 
-  const questions = report
+  const questions = report && report.length > 0
     ? report[0].questionStatistics
     : [];
   const availableLinkedOptions = getLinkedFilterOptions(filters, {
@@ -891,15 +914,21 @@ export const AdminStatsPage = () => {
                 <RefreshCw className="animate-spin" size={24} />
               </div>
             ) : null}
-            {report ? (
+            {report !== null && report.length > 0 ? (
               renderCards()
+            ) : report !== null && report.length === 0 ? (
+              <div className="border bg-card p-10 text-center text-muted-foreground">
+                {mode === "groups" 
+                  ? "Выберите группы для сравнения из списка выше."
+                  : "Нет данных для отображения."}
+              </div>
             ) : (
               <div className="border bg-card p-10 text-center text-muted-foreground">
                 Настройте период и срезы для аналитики.
               </div>
             )}
 
-            {report && chartData.length > 0 ? (
+            {report && report.length > 0 && chartData.length > 0 ? (
               <div>
                 <ChartContainer config={chartConfig} className="h-50 w-full">
                   <BarChart
@@ -953,11 +982,11 @@ export const AdminStatsPage = () => {
               </div>
             ) : null}
 
-            {report ? (
+            {report && report.length > 0 ? (
               <QuestionsTable questions={questions} periods={report} />
             ) : null}
 
-            {report ? (
+            {report && report.length > 0 ? (
               <AdvicesSection
                 advices={advices}
                 teacherFilterId={filters.teacherId}

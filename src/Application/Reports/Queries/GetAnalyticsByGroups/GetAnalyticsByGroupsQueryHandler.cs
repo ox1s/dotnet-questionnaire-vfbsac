@@ -56,7 +56,11 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
             return new List<GetAnalyticsByGroupsQueryResponse>();
         }
 
-        List<SubmissionGroup> groupedSubmissions = GroupSubmissions(submissionsWithGrouping, query.GroupBy);
+        List<SubmissionGroup> groupedSubmissions = await GroupSubmissionsAsync(
+            submissionsWithGrouping, 
+            query.GroupBy, 
+            context, 
+            cancellationToken);
 
         var submissionIds = submissionsWithGrouping.Select(s => s.Id).ToList();
 
@@ -115,44 +119,20 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
         return responses;
     }
 
-    private static List<SubmissionGroup> GroupSubmissions(
+    private static async Task<List<SubmissionGroup>> GroupSubmissionsAsync(
         List<SubmissionProjection> submissions,
-        GroupingType groupBy)
+        GroupingType groupBy,
+        IApplicationDbContext context,
+        CancellationToken cancellationToken)
     {
         return groupBy switch
         {
-            GroupingType.Department => submissions
-                .GroupBy(s => s.DepartmentId ?? Guid.Empty)
-                .Select(g => new SubmissionGroup(
-                    g.Key.ToString(),
-                    $"Department {g.Key}",
-                    g.Select(s => s.Id).ToList()))
-                .ToList(),
-
-            GroupingType.Discipline => submissions
-                .GroupBy(s => s.DisciplineId ?? Guid.Empty)
-                .Select(g => new SubmissionGroup(
-                    g.Key.ToString(),
-                    $"Discipline {g.Key}",
-                    g.Select(s => s.Id).ToList()))
-                .ToList(),
-
-            GroupingType.Speciality => submissions
-                .GroupBy(s => s.SpecialityId ?? Guid.Empty)
-                .Select(g => new SubmissionGroup(
-                    g.Key.ToString(),
-                    $"Speciality {g.Key}",
-                    g.Select(s => s.Id).ToList()))
-                .ToList(),
-
-            GroupingType.Specialization => submissions
-                .GroupBy(s => s.SpecializationId ?? Guid.Empty)
-                .Select(g => new SubmissionGroup(
-                    g.Key.ToString(),
-                    $"Specialization {g.Key}",
-                    g.Select(s => s.Id).ToList()))
-                .ToList(),
-
+            GroupingType.Department => await GroupByDepartmentAsync(submissions, context, cancellationToken),
+            GroupingType.Discipline => await GroupByDisciplineAsync(submissions, context, cancellationToken),
+            GroupingType.Speciality => await GroupBySpecialityAsync(submissions, context, cancellationToken),
+            GroupingType.Specialization => await GroupBySpecializationAsync(submissions, context, cancellationToken),
+            GroupingType.Teacher => await GroupByTeacherAsync(submissions, context, cancellationToken),
+            
             GroupingType.EducationForm => submissions
                 .GroupBy(s => s.EducationForm ?? "Unknown")
                 .Select(g => new SubmissionGroup(
@@ -169,16 +149,143 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
                     g.Select(s => s.Id).ToList()))
                 .ToList(),
 
-            GroupingType.Teacher => submissions
-                .GroupBy(s => s.TeacherId ?? Guid.Empty)
-                .Select(g => new SubmissionGroup(
-                    g.Key.ToString(),
-                    $"Teacher {g.Key}",
-                    g.Select(s => s.Id).ToList()))
-                .ToList(),
-
             _ => throw new ArgumentOutOfRangeException(nameof(groupBy))
         };
+    }
+
+    private static async Task<List<SubmissionGroup>> GroupByDepartmentAsync(
+        List<SubmissionProjection> submissions,
+        IApplicationDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var departmentIds = submissions
+            .Select(s => s.DepartmentId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        Dictionary<Guid, string> departments = await context.Departments
+            .AsNoTracking()
+            .Where(d => departmentIds.Contains(d.Id))
+            .Select(d => new { d.Id, d.Name })
+            .ToDictionaryAsync(d => d.Id, d => d.Name, cancellationToken);
+
+        return submissions
+            .GroupBy(s => s.DepartmentId ?? Guid.Empty)
+            .Select(g => new SubmissionGroup(
+                g.Key.ToString(),
+                g.Key == Guid.Empty ? "Не указано" : departments.GetValueOrDefault(g.Key) ?? g.Key.ToString(),
+                g.Select(s => s.Id).ToList()))
+            .ToList();
+    }
+
+    private static async Task<List<SubmissionGroup>> GroupByDisciplineAsync(
+        List<SubmissionProjection> submissions,
+        IApplicationDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var disciplineIds = submissions
+            .Select(s => s.DisciplineId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        Dictionary<Guid, string> disciplines = await context.Disciplines
+            .AsNoTracking()
+            .Where(d => disciplineIds.Contains(d.Id))
+            .Select(d => new { d.Id, d.Name })
+            .ToDictionaryAsync(d => d.Id, d => d.Name, cancellationToken);
+
+        return submissions
+            .GroupBy(s => s.DisciplineId ?? Guid.Empty)
+            .Select(g => new SubmissionGroup(
+                g.Key.ToString(),
+                g.Key == Guid.Empty ? "Не указано" : disciplines.GetValueOrDefault(g.Key) ?? g.Key.ToString(),
+                g.Select(s => s.Id).ToList()))
+            .ToList();
+    }
+
+    private static async Task<List<SubmissionGroup>> GroupBySpecialityAsync(
+        List<SubmissionProjection> submissions,
+        IApplicationDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var specialityIds = submissions
+            .Select(s => s.SpecialityId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        Dictionary<Guid, string> specialities = await context.Specialities
+            .AsNoTracking()
+            .Where(s => specialityIds.Contains(s.Id))
+            .Select(s => new { s.Id, s.Name })
+            .ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken);
+
+        return submissions
+            .GroupBy(s => s.SpecialityId ?? Guid.Empty)
+            .Select(g => new SubmissionGroup(
+                g.Key.ToString(),
+                g.Key == Guid.Empty ? "Не указано" : specialities.GetValueOrDefault(g.Key) ?? g.Key.ToString(),
+                g.Select(s => s.Id).ToList()))
+            .ToList();
+    }
+
+    private static async Task<List<SubmissionGroup>> GroupBySpecializationAsync(
+        List<SubmissionProjection> submissions,
+        IApplicationDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var specializationIds = submissions
+            .Select(s => s.SpecializationId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        Dictionary<Guid, string> specializations = await context.Specializations
+            .AsNoTracking()
+            .Where(s => specializationIds.Contains(s.Id))
+            .Select(s => new { s.Id, s.Name })
+            .ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken);
+
+        return submissions
+            .GroupBy(s => s.SpecializationId ?? Guid.Empty)
+            .Select(g => new SubmissionGroup(
+                g.Key.ToString(),
+                g.Key == Guid.Empty ? "Не указано" : specializations.GetValueOrDefault(g.Key) ?? g.Key.ToString(),
+                g.Select(s => s.Id).ToList()))
+            .ToList();
+    }
+
+    private static async Task<List<SubmissionGroup>> GroupByTeacherAsync(
+        List<SubmissionProjection> submissions,
+        IApplicationDbContext context,
+        CancellationToken cancellationToken)
+    {
+        var teacherIds = submissions
+            .Select(s => s.TeacherId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value)
+            .Distinct()
+            .ToList();
+
+        Dictionary<Guid, string> teachers = await context.Teachers
+            .AsNoTracking()
+            .Where(t => teacherIds.Contains(t.Id))
+            .Select(t => new { t.Id, t.FullName })
+            .ToDictionaryAsync(t => t.Id, t => t.FullName, cancellationToken);
+
+        return submissions
+            .GroupBy(s => s.TeacherId ?? Guid.Empty)
+            .Select(g => new SubmissionGroup(
+                g.Key.ToString(),
+                g.Key == Guid.Empty ? "Не указано" : teachers.GetValueOrDefault(g.Key) ?? g.Key.ToString(),
+                g.Select(s => s.Id).ToList()))
+            .ToList();
     }
 
     private sealed record SubmissionProjection(

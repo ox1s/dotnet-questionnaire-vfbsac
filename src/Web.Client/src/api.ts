@@ -295,6 +295,22 @@ export const reportsApi = {
   getAnalyticsByGroups: (payload: GetAnalyticsByGroupsRequest) =>
     api.post<GroupAnalyticsResponse[]>("/reports/analytics/groups", payload),
 
+  // Export endpoints
+  exportAnalyticsByPeriod: (payload: AnalyticsByPeriodRequest) =>
+    api.post("/reports/analytics/period/export", payload, {
+      responseType: "blob",
+    }),
+
+  exportAnalyticsByPeriods: (payload: GetAnalyticsByPeriodsRequest) =>
+    api.post("/reports/analytics/periods/export", payload, {
+      responseType: "blob",
+    }),
+
+  exportAnalyticsByGroups: (payload: GetAnalyticsByGroupsRequest) =>
+    api.post("/reports/analytics/groups/export", payload, {
+      responseType: "blob",
+    }),
+
   // Old endpoint (deprecated)
   getAnalytics: (payload: AnalyticsReportRequest) =>
     api.post<AnalyticsReport>("/reports/analytics", payload),
@@ -303,8 +319,6 @@ export const reportsApi = {
     api.get<AdviceItem[]>(`/reports/forms/${formId}/advices`, {
       params: { teacherId },
     }),
-
-  // Removed: downloadAnalyticsWord (old endpoint deleted)
 };
 
 export const getApiErrorMessage = (

@@ -1,4 +1,5 @@
 using Aspire.Hosting.DevTunnels;
+using Aspire.Hosting.JavaScript;
 
 IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder(args);
 
@@ -18,8 +19,7 @@ IResourceBuilder<ProjectResource> backend = builder.AddProject<Projects.Web_Api>
     .WaitFor(database);
 
 
-IResourceBuilder<NodeAppResource> frontend = builder.AddViteApp("frontend", "../Web.Client")
-    .WithNpmPackageInstallation()
+IResourceBuilder<ViteAppResource> frontend = builder.AddViteApp("frontend", "../Web.Client")
     .WithExternalHttpEndpoints();
 
 builder.AddDevTunnel("public-api")

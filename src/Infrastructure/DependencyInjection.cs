@@ -14,7 +14,7 @@ using Quartz;
 using StackExchange.Redis;
 using SharedKernel;
 using System.Text;
-// using Infrastructure.Reports;
+using Infrastructure.Reports;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Application.Abstractions.Reports;
 using Infrastructure.Users;
@@ -40,7 +40,7 @@ public static class DependencyInjection
         {
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
-            // services.AddScoped<IReportGenerator, WordReportGenerator>();
+            services.AddScoped<IWordReportGenerator, WordReportGenerator>();
             services.AddScoped<DemoDataGenerator>();
 
             services.AddScoped<DbInitializer>();

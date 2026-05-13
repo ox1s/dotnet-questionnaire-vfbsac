@@ -222,22 +222,6 @@ export const AdminStatsPage = () => {
   const getDepartmentName = (departmentId?: string) =>
     departments.find((department) => department.id === departmentId)?.name;
 
-  const labelFor = (field: CompareField, value: string) => {
-    if (field === "teacherId")
-    {
-      const teacher = teachers.find((item) => item.id === value);
-      return teacher ? teacherLabel(teacher) : value;
-    }
-
-    const sets: Record<Exclude<CompareField, "teacherId">, DictionaryItem[]> = {
-      departmentId: departments,
-      disciplineId: disciplines,
-      specialityId: specialities,
-      specializationId: specializations,
-    };
-    return sets[field].find((item) => item.id === value)?.name ?? value;
-  };
-
   const optionsFor = () => {
     const filtersWithoutCompareField = baseFilters(compareField);
     const compareOptions = getLinkedFilterOptions(filtersWithoutCompareField, {
@@ -468,7 +452,47 @@ export const AdminStatsPage = () => {
   }, [loading, form, mode]);
 
   const exportReport = async () => {
-    toast.error("Экспорт временно недоступен. Функция в разработке.");
+    const request = buildRequest();
+    if (!request) {
+      toast.error("Настройте параметры отчета перед экспортом");
+      return;
+    }
+
+    try {
+      let response;
+      let filename = `analytics-${format(new Date(), "yyyy-MM-dd")}.docx`;
+
+      if (mode === "single") {
+        response = await reportsApi.exportAnalyticsByPeriod(
+          request as AnalyticsByPeriodRequest,
+        );
+        filename = `analytics-period-${format(new Date(), "yyyy-MM-dd")}.docx`;
+      } else if (mode === "periods") {
+        response = await reportsApi.exportAnalyticsByPeriods(
+          request as GetAnalyticsByPeriodsRequest,
+        );
+        filename = `analytics-periods-${format(new Date(), "yyyy-MM-dd")}.docx`;
+      } else {
+        response = await reportsApi.exportAnalyticsByGroups(
+          request as GetAnalyticsByGroupsRequest,
+        );
+        filename = `analytics-groups-${format(new Date(), "yyyy-MM-dd")}.docx`;
+      }
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", filename);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast.success("Отчет успешно экспортирован");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Не удалось экспортировать отчет"));
+    }
   };
 
   const questions = report && report.length > 0

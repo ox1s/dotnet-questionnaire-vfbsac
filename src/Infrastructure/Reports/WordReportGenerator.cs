@@ -1,245 +1,469 @@
-// using System.Globalization;
-// using Application.Abstractions.Data;
-// using Application.Abstractions.Reports;
-// using Application.Reports.Queries.GetAnalytics;
-// using DocumentFormat.OpenXml;
-// using DocumentFormat.OpenXml.Packaging;
-// using DocumentFormat.OpenXml.Wordprocessing;
-// using Microsoft.EntityFrameworkCore;
-// using A = DocumentFormat.OpenXml.Wordprocessing;
-//
-// namespace Infrastructure.Reports;
-// TODO : CHANGE
-// public sealed class WordReportGenerator(IApplicationDbContext context) : IReportGenerator
-// {
-//     public async Task<byte[]> GenerateAnalyticsReport(AnalyticsReportResponse analyticsReport,
-//         CancellationToken cancellationToken = default)
-//     {
-//         ReportDictionaries dictionaries = await LoadDisplayNamesAsync(analyticsReport, cancellationToken);
-//
-//         using MemoryStream stream = new();
-//
-//         using (var wordDocument = WordprocessingDocument.Create(stream, WordprocessingDocumentType.Document))
-//         {
-//             MainDocumentPart mainPart = wordDocument.AddMainDocumentPart();
-//             mainPart.Document = new A.Document();
-//             Body body = mainPart.Document.AppendChild(new Body());
-//
-//             Run titleRun = new();
-//             titleRun.AppendChild(new A.Text($"Отчет по форме: {analyticsReport.FormTitle}"));
-//
-//             RunProperties titleProps = new();
-//             titleProps.AppendChild(new Bold());
-//             titleProps.AppendChild(new FontSize { Val = "32" });
-//
-//             titleRun.PrependChild(titleProps);
-//
-//             Paragraph titlePara = new();
-//             titlePara.AppendChild(titleRun);
-//             body.AppendChild(titlePara);
-//
-//             AddParagraph(body, $"Количество срезов: {analyticsReport.Slices.Count}");
-//             body.AppendChild(new Paragraph());
-//
-//             foreach (AnalyticsSliceResponse slice in analyticsReport.Slices)
-//             {
-//                 AddParagraph(body, $"Срез: {slice.Label}");
-//                 AddParagraph(
-//                     body,
-//                     $"Период: {slice.DateFrom:yyyy-MM-dd} - {slice.DateTo:yyyy-MM-dd}");
-//                 AddParagraph(body, $"Всего анкет: {slice.TotalSubmissions}");
-//                 AddParagraph(
-//                     body,
-//                     $"Средний балл (общий): {slice.OverallAverage.ToString("F2", CultureInfo.InvariantCulture)}");
-//                 AddParagraph(
-//                     body,
-//                     $"Отклонение: {slice.OverallStandardDeviation.ToString("F2", CultureInfo.InvariantCulture)}");
-//
-//                 string filtersLine = BuildFiltersLine(slice.Filters, dictionaries);
-//                 if (!string.IsNullOrWhiteSpace(filtersLine))
-//                 {
-//                     AddParagraph(body, $"Фильтры: {filtersLine}");
-//                 }
-//
-//                 body.AppendChild(new Paragraph());
-//             }
-//
-//             A.Table table = new();
-//
-//             TableProperties tblProps = new();
-//             TableBorders borders = new();
-//
-//             EnumValue<BorderValues> borderType = new(BorderValues.Single);
-//             UInt32Value borderSize = 4;
-//
-//             borders.AppendChild(new TopBorder { Val = borderType, Size = borderSize });
-//             borders.AppendChild(new BottomBorder { Val = borderType, Size = borderSize });
-//             borders.AppendChild(new LeftBorder { Val = borderType, Size = borderSize });
-//             borders.AppendChild(new RightBorder { Val = borderType, Size = borderSize });
-//             borders.AppendChild(new InsideHorizontalBorder { Val = borderType, Size = borderSize });
-//             borders.AppendChild(new InsideVerticalBorder { Val = borderType, Size = borderSize });
-//
-//             tblProps.AppendChild(borders);
-//             tblProps.AppendChild(new TableWidth { Width = "5000", Type = TableWidthUnitValues.Pct });
-//
-//             table.AppendChild(tblProps);
-//
-//             TableRow trHeader = new();
-//             trHeader.AppendChild(CreateCell("№", true));
-//             trHeader.AppendChild(CreateCell("Вопрос", true));
-//             foreach (AnalyticsSliceResponse slice in analyticsReport.Slices)
-//             {
-//                 trHeader.AppendChild(CreateCell($"{slice.Label} (итог)", true));
-//                 trHeader.AppendChild(CreateCell($"{slice.Label} (ср.)", true));
-//                 trHeader.AppendChild(CreateCell($"{slice.Label} (sigma)", true));
-//             }
-//
-//             table.AppendChild(trHeader);
-//
-//             var orderedQuestions = analyticsReport.Questions
-//                 .OrderBy(question => question.Order)
-//                 .ToList();
-//
-//             for (int i = 0; i < orderedQuestions.Count; i++)
-//             {
-//                 AnalyticsQuestionResponse question = orderedQuestions[i];
-//                 TableRow tr = new();
-//
-//                 tr.AppendChild(CreateCell((i + 1).ToString(CultureInfo.InvariantCulture)));
-//                 tr.AppendChild(CreateCell(question.QuestionText));
-//
-//                 foreach (AnalyticsQuestionSliceMetricResponse metric in question.SliceMetrics)
-//                 {
-//                     tr.AppendChild(CreateCell(metric.ResultScore.ToString("F2", CultureInfo.InvariantCulture)));
-//                     tr.AppendChild(CreateCell(metric.AverageScore.ToString("F2", CultureInfo.InvariantCulture)));
-//                     tr.AppendChild(CreateCell(metric.StandardDeviation.ToString("F2", CultureInfo.InvariantCulture)));
-//                 }
-//
-//                 table.AppendChild(tr);
-//             }
-//
-//             body.AppendChild(table);
-//             mainPart.Document.Save();
-//         }
-//
-//         return stream.ToArray();
-//     }
-//
-//     private sealed record ReportDictionaries(
-//         Dictionary<Guid, string> Teachers,
-//         Dictionary<Guid, string> Disciplines,
-//         Dictionary<Guid, string> Departments,
-//         Dictionary<Guid, string> Specialities,
-//         Dictionary<Guid, string> Specializations);
-//
-//     private async Task<ReportDictionaries> LoadDisplayNamesAsync(
-//         AnalyticsReportResponse report,
-//         CancellationToken ct)
-//     {
-//         var teacherIds = report.Slices.Select(s => s.Filters.TeacherId).OfType<Guid>().Distinct().ToList();
-//         var disciplineIds = report.Slices.Select(s => s.Filters.DisciplineId).OfType<Guid>().Distinct().ToList();
-//         var departmentIds = report.Slices.Select(s => s.Filters.DepartmentId).OfType<Guid>().Distinct().ToList();
-//         var specialityIds = report.Slices.Select(s => s.Filters.SpecialityId).OfType<Guid>().Distinct().ToList();
-//         var specializationIds =
-//             report.Slices.Select(s => s.Filters.SpecializationId).OfType<Guid>().Distinct().ToList();
-//
-//         Dictionary<Guid, string> teachers = teacherIds.Count != 0
-//             ? await context.Teachers.Where(t => teacherIds.Contains(t.Id))
-//                 .ToDictionaryAsync(t => t.Id, t => t.FullName, ct)
-//             : [];
-//
-//         Dictionary<Guid, string> disciplines = disciplineIds.Count != 0
-//             ? await context.Disciplines.Where(d => disciplineIds.Contains(d.Id))
-//                 .ToDictionaryAsync(d => d.Id, d => d.Name, ct)
-//             : [];
-//
-//         Dictionary<Guid, string> departments = departmentIds.Count != 0
-//             ? await context.Departments.Where(d => departmentIds.Contains(d.Id))
-//                 .ToDictionaryAsync(d => d.Id, d => d.Name, ct)
-//             : [];
-//
-//         Dictionary<Guid, string> specialities = specialityIds.Count != 0
-//             ? await context.Specialities.Where(s => specialityIds.Contains(s.Id))
-//                 .ToDictionaryAsync(s => s.Id, s => s.Name, ct)
-//             : [];
-//
-//         Dictionary<Guid, string> specializations = specializationIds.Count != 0
-//             ? await context.Specializations.Where(s => specializationIds.Contains(s.Id))
-//                 .ToDictionaryAsync(s => s.Id, s => s.Name, ct)
-//             : [];
-//
-//         return new ReportDictionaries(teachers, disciplines, departments, specialities, specializations);
-//     }
-//
-//     private static string BuildFiltersLine(AnalyticsFilterSet filters, ReportDictionaries dicts)
-//     {
-//         List<string> parts = [];
-//         
-//         if (filters.TeacherId.HasValue)
-//         {
-//             parts.Add($"Преподаватель={dicts.Teachers.GetValueOrDefault(filters.TeacherId.Value, filters.TeacherId.Value.ToString())}");
-//         }
-//
-//         if (filters.DisciplineId.HasValue)
-//         {
-//             parts.Add($"Дисциплина={dicts.Disciplines.GetValueOrDefault(filters.DisciplineId.Value, filters.DisciplineId.Value.ToString())}");
-//         }
-//
-//         if (filters.DepartmentId.HasValue)
-//         {
-//             parts.Add($"Кафедра={dicts.Departments.GetValueOrDefault(filters.DepartmentId.Value, filters.DepartmentId.Value.ToString())}");
-//         }
-//
-//         if (filters.SpecialityId.HasValue)
-//         {
-//             parts.Add($"Специальность={dicts.Specialities.GetValueOrDefault(filters.SpecialityId.Value, filters.SpecialityId.Value.ToString())}");
-//         }
-//
-//         if (filters.SpecializationId.HasValue)
-//         {
-//             parts.Add($"Специализация={dicts.Specializations.GetValueOrDefault(filters.SpecializationId.Value, filters.SpecializationId.Value.ToString())}");
-//         }
-//
-//         if (!string.IsNullOrWhiteSpace(filters.OrganizationName))
-//         {
-//             parts.Add($"Организация={filters.OrganizationName}");
-//         }
-//
-//         return string.Join(", ", parts);
-//     }
-//
-//     private static void AddParagraph(Body body, string text)
-//     {
-//         Paragraph p = new();
-//         Run r = new();
-//         r.AppendChild(new A.Text(text));
-//         p.AppendChild(r);
-//         body.AppendChild(p);
-//     }
-//
-//     private static TableCell CreateCell(string text, bool bold = false)
-//     {
-//         Run run = new();
-//         run.AppendChild(new A.Text(text));
-//
-//         if (bold)
-//         {
-//             RunProperties props = new();
-//             props.AppendChild(new Bold());
-//             run.PrependChild(props);
-//         }
-//
-//         Paragraph p = new();
-//         p.AppendChild(run);
-//
-//         TableCell cell = new();
-//
-//         TableCellProperties cellProps = new();
-//         cellProps.AppendChild(new TableCellWidth { Type = TableWidthUnitValues.Dxa, Width = "2400" });
-//         cell.AppendChild(cellProps);
-//
-//         cell.AppendChild(p);
-//
-//         return cell;
-//     }
-// }
+using System.Globalization;
+using Application.Abstractions.Reports;
+using Application.Reports.Queries.GetAnalyticsByGroups;
+using Application.Reports.Queries.GetAnalyticsByPeriod;
+using Application.Reports.Queries.GetAnalyticsByPeriods;
+using DocumentFormat.OpenXml;
+using DocumentFormat.OpenXml.Packaging;
+using DocumentFormat.OpenXml.Wordprocessing;
+using Microsoft.Extensions.Logging;
+
+namespace Infrastructure.Reports;
+
+public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : IWordReportGenerator
+{
+    public Task<byte[]> GeneratePeriodReportAsync(
+        string formTitle,
+        DateTime periodStart,
+        DateTime periodEnd,
+        Dictionary<string, string> resolvedFilters,
+        List<GetAnalyticsByPeriodQueryResponse> statistics,
+        CancellationToken cancellationToken = default)
+    {
+        MemoryStream? memoryStream = null;
+        WordprocessingDocument? document = null;
+
+        try
+        {
+            memoryStream = new MemoryStream();
+            document = WordprocessingDocument.Create(
+                memoryStream,
+                WordprocessingDocumentType.Document);
+
+            MainDocumentPart mainPart = document.AddMainDocumentPart();
+            mainPart.Document = new Document();
+            Body body = mainPart.Document.AppendChild(new Body());
+
+            // Add title
+            AddTitle(body, formTitle);
+
+            // Add period information
+            AddMetadataLine(
+                body,
+                "Период",
+                $"{periodStart:dd.MM.yyyy} - {periodEnd:dd.MM.yyyy}");
+
+            // Add filters
+            foreach (KeyValuePair<string, string> filter in resolvedFilters)
+            {
+                AddMetadataLine(body, filter.Key, filter.Value);
+            }
+
+            AddEmptyLine(body);
+
+            // Create table
+            if (statistics.Count == 0)
+            {
+                Paragraph noDataParagraph = new();
+                Run noDataRun = new();
+                noDataRun.Append(new Text("Нет данных для отображения"));
+                noDataParagraph.Append(noDataRun);
+                body.Append(noDataParagraph);
+            }
+            else
+            {
+                Table table = new();
+
+                // Set table width to 100%
+                TableProperties tableProperties = new();
+                TableWidth tableWidth = new() { Width = "5000", Type = TableWidthUnitValues.Pct };
+                tableProperties.Append(tableWidth);
+                table.Append(tableProperties);
+
+                // Add header row
+                TableRow headerRow = new();
+                headerRow.Append(CreateCell("№", true));
+                headerRow.Append(CreateCell("Вопрос", true));
+                headerRow.Append(CreateCell("Медиана", true));
+                headerRow.Append(CreateCell("Среднее", true));
+                headerRow.Append(CreateCell("Мода", true));
+                headerRow.Append(CreateCell("Ст. откл.", true));
+                headerRow.Append(CreateCell("Кол-во ответов", true));
+                table.Append(headerRow);
+
+                // Add data rows
+                int rowNumber = 1;
+                foreach (GetAnalyticsByPeriodQueryResponse stat in statistics)
+                {
+                    TableRow dataRow = new();
+                    dataRow.Append(CreateCell(rowNumber.ToString()));
+                    dataRow.Append(CreateCell(stat.QuestionText));
+                    dataRow.Append(CreateCell(FormatNumber(stat.Median)));
+                    dataRow.Append(CreateCell(FormatNumber(stat.Mean)));
+                    dataRow.Append(CreateCell(FormatNumber(stat.Mode)));
+                    dataRow.Append(CreateCell(FormatNumber(stat.StandardDeviation)));
+                    dataRow.Append(CreateCell(stat.ResponseCount.ToString()));
+                    table.Append(dataRow);
+                    rowNumber++;
+                }
+
+                body.Append(table);
+            }
+
+            // Save and return
+            document.Save();
+            document.Dispose();
+            document = null;
+
+            return Task.FromResult(memoryStream.ToArray());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error creating Word document for form {FormTitle}",
+                formTitle);
+            throw;
+        }
+        finally
+        {
+            document?.Dispose();
+            memoryStream?.Dispose();
+        }
+    }
+
+    public Task<byte[]> GeneratePeriodsComparisonReportAsync(
+        string formTitle,
+        List<GetAnalyticsByPeriodsQueryResponse> periodsData,
+        CancellationToken cancellationToken = default)
+    {
+        MemoryStream? memoryStream = null;
+        WordprocessingDocument? document = null;
+
+        try
+        {
+            memoryStream = new MemoryStream();
+            document = WordprocessingDocument.Create(
+                memoryStream,
+                WordprocessingDocumentType.Document);
+
+            MainDocumentPart mainPart = document.AddMainDocumentPart();
+            mainPart.Document = new Document();
+            Body body = mainPart.Document.AppendChild(new Body());
+
+            // Add title
+            AddTitle(body, "Сравнительный отчет по периодам");
+
+            // Add form name
+            AddMetadataLine(body, "Форма", formTitle);
+
+            AddEmptyLine(body);
+
+            // Create table
+            if (periodsData.Count == 0)
+            {
+                Paragraph noDataParagraph = new();
+                Run noDataRun = new();
+                noDataRun.Append(new Text("Нет данных для отображения"));
+                noDataParagraph.Append(noDataRun);
+                body.Append(noDataParagraph);
+            }
+            else
+            {
+                Table table = new();
+
+                // Set table width to 100%
+                TableProperties tableProperties = new();
+                TableWidth tableWidth = new() { Width = "5000", Type = TableWidthUnitValues.Pct };
+                tableProperties.Append(tableWidth);
+                table.Append(tableProperties);
+
+                // Add header row with dynamic columns
+                TableRow headerRow = new();
+                headerRow.Append(CreateCell("№", true));
+                headerRow.Append(CreateCell("Вопрос", true));
+
+                foreach (GetAnalyticsByPeriodsQueryResponse period in periodsData)
+                {
+                    string periodLabel = $"{period.Label} ({period.PeriodStart:dd.MM.yyyy} - {period.PeriodEnd:dd.MM.yyyy})";
+                    headerRow.Append(CreateCell(periodLabel, true));
+                    headerRow.Append(CreateCell("Медиана", true));
+                    headerRow.Append(CreateCell("Среднее", true));
+                    headerRow.Append(CreateCell("Мода", true));
+                    headerRow.Append(CreateCell("Ст. откл.", true));
+                    headerRow.Append(CreateCell("Кол-во", true));
+                }
+
+                table.Append(headerRow);
+
+                // Get all unique questions
+                Dictionary<Guid, string> allQuestions = new();
+                foreach (GetAnalyticsByPeriodsQueryResponse period in periodsData)
+                {
+                    foreach (Application.Reports.Queries.Shared.QuestionStatistics stat in period.QuestionStatistics)
+                    {
+                        if (!allQuestions.ContainsKey(stat.QuestionId))
+                        {
+                            allQuestions[stat.QuestionId] = stat.QuestionText;
+                        }
+                    }
+                }
+
+                // Add data rows
+                int rowNumber = 1;
+                foreach (KeyValuePair<Guid, string> question in allQuestions)
+                {
+                    TableRow dataRow = new();
+                    dataRow.Append(CreateCell(rowNumber.ToString()));
+                    dataRow.Append(CreateCell(question.Value));
+
+                    foreach (GetAnalyticsByPeriodsQueryResponse period in periodsData)
+                    {
+                        Application.Reports.Queries.Shared.QuestionStatistics? stat = period.QuestionStatistics
+                            .FirstOrDefault(s => s.QuestionId == question.Key);
+
+                        if (stat is not null)
+                        {
+                            dataRow.Append(CreateCell(FormatNumber(stat.Median)));
+                            dataRow.Append(CreateCell(FormatNumber(stat.Mean)));
+                            dataRow.Append(CreateCell(FormatNumber(stat.Mode)));
+                            dataRow.Append(CreateCell(FormatNumber(stat.StandardDeviation)));
+                            dataRow.Append(CreateCell(stat.ResponseCount.ToString()));
+                        }
+                        else
+                        {
+                            dataRow.Append(CreateCell("-"));
+                            dataRow.Append(CreateCell("-"));
+                            dataRow.Append(CreateCell("-"));
+                            dataRow.Append(CreateCell("-"));
+                            dataRow.Append(CreateCell("-"));
+                        }
+                    }
+
+                    table.Append(dataRow);
+                    rowNumber++;
+                }
+
+                body.Append(table);
+            }
+
+            // Save and return
+            document.Save();
+            document.Dispose();
+            document = null;
+
+            return Task.FromResult(memoryStream.ToArray());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error creating periods comparison Word document for form {FormTitle}",
+                formTitle);
+            throw;
+        }
+        finally
+        {
+            document?.Dispose();
+            memoryStream?.Dispose();
+        }
+    }
+
+    public Task<byte[]> GenerateGroupsComparisonReportAsync(
+        string formTitle,
+        List<GetAnalyticsByGroupsQueryResponse> groupsData,
+        CancellationToken cancellationToken = default)
+    {
+        MemoryStream? memoryStream = null;
+        WordprocessingDocument? document = null;
+
+        try
+        {
+            memoryStream = new MemoryStream();
+            document = WordprocessingDocument.Create(
+                memoryStream,
+                WordprocessingDocumentType.Document);
+
+            MainDocumentPart mainPart = document.AddMainDocumentPart();
+            mainPart.Document = new Document();
+            Body body = mainPart.Document.AppendChild(new Body());
+
+            // Add title
+            AddTitle(body, "Сравнительный отчет по группам");
+
+            // Add form name
+            AddMetadataLine(body, "Форма", formTitle);
+
+            AddEmptyLine(body);
+
+            // Create table
+            if (groupsData.Count == 0)
+            {
+                Paragraph noDataParagraph = new();
+                Run noDataRun = new();
+                noDataRun.Append(new Text("Нет данных для отображения"));
+                noDataParagraph.Append(noDataRun);
+                body.Append(noDataParagraph);
+            }
+            else
+            {
+                Table table = new();
+
+                // Set table width to 100%
+                TableProperties tableProperties = new();
+                TableWidth tableWidth = new() { Width = "5000", Type = TableWidthUnitValues.Pct };
+                tableProperties.Append(tableWidth);
+                table.Append(tableProperties);
+
+                // Add header row with dynamic columns
+                TableRow headerRow = new();
+                headerRow.Append(CreateCell("№", true));
+                headerRow.Append(CreateCell("Вопрос", true));
+
+                foreach (GetAnalyticsByGroupsQueryResponse group in groupsData)
+                {
+                    headerRow.Append(CreateCell(group.GroupName, true));
+                    headerRow.Append(CreateCell("Медиана", true));
+                    headerRow.Append(CreateCell("Среднее", true));
+                    headerRow.Append(CreateCell("Мода", true));
+                    headerRow.Append(CreateCell("Ст. откл.", true));
+                    headerRow.Append(CreateCell("Кол-во", true));
+                }
+
+                table.Append(headerRow);
+
+                // Get all unique questions
+                Dictionary<Guid, string> allQuestions = new();
+                foreach (GetAnalyticsByGroupsQueryResponse group in groupsData)
+                {
+                    foreach (Application.Reports.Queries.Shared.QuestionStatistics stat in group.QuestionStatistics)
+                    {
+                        if (!allQuestions.ContainsKey(stat.QuestionId))
+                        {
+                            allQuestions[stat.QuestionId] = stat.QuestionText;
+                        }
+                    }
+                }
+
+                // Add data rows
+                int rowNumber = 1;
+                foreach (KeyValuePair<Guid, string> question in allQuestions)
+                {
+                    TableRow dataRow = new();
+                    dataRow.Append(CreateCell(rowNumber.ToString()));
+                    dataRow.Append(CreateCell(question.Value));
+
+                    foreach (GetAnalyticsByGroupsQueryResponse group in groupsData)
+                    {
+                        Application.Reports.Queries.Shared.QuestionStatistics? stat = group.QuestionStatistics
+                            .FirstOrDefault(s => s.QuestionId == question.Key);
+
+                        if (stat is not null)
+                        {
+                            dataRow.Append(CreateCell(FormatNumber(stat.Median)));
+                            dataRow.Append(CreateCell(FormatNumber(stat.Mean)));
+                            dataRow.Append(CreateCell(FormatNumber(stat.Mode)));
+                            dataRow.Append(CreateCell(FormatNumber(stat.StandardDeviation)));
+                            dataRow.Append(CreateCell(stat.ResponseCount.ToString()));
+                        }
+                        else
+                        {
+                            dataRow.Append(CreateCell("-"));
+                            dataRow.Append(CreateCell("-"));
+                            dataRow.Append(CreateCell("-"));
+                            dataRow.Append(CreateCell("-"));
+                            dataRow.Append(CreateCell("-"));
+                        }
+                    }
+
+                    table.Append(dataRow);
+                    rowNumber++;
+                }
+
+                body.Append(table);
+            }
+
+            // Save and return
+            document.Save();
+            document.Dispose();
+            document = null;
+
+            return Task.FromResult(memoryStream.ToArray());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error creating groups comparison Word document for form {FormTitle}",
+                formTitle);
+            throw;
+        }
+        finally
+        {
+            document?.Dispose();
+            memoryStream?.Dispose();
+        }
+    }
+
+    private static void AddTitle(Body body, string title)
+    {
+        Paragraph paragraph = new();
+        Run run = new();
+        RunProperties runProperties = new();
+        Bold bold = new();
+        FontSize fontSize = new() { Val = "32" }; // 16pt = 32 half-points
+
+        runProperties.Append(bold);
+        runProperties.Append(fontSize);
+        run.Append(runProperties);
+        run.Append(new Text(title));
+        paragraph.Append(run);
+        body.Append(paragraph);
+    }
+
+    private static void AddMetadataLine(Body body, string label, string value)
+    {
+        Paragraph paragraph = new();
+        Run run = new();
+        run.Append(new Text($"{label}: {value}"));
+        paragraph.Append(run);
+        body.Append(paragraph);
+    }
+
+    private static void AddEmptyLine(Body body)
+    {
+        Paragraph paragraph = new();
+        body.Append(paragraph);
+    }
+
+    private static TableCell CreateCell(string text, bool isBold = false)
+    {
+        TableCell cell = new();
+        Paragraph paragraph = new();
+        Run run = new();
+
+        if (isBold)
+        {
+            RunProperties runProperties = new();
+            Bold bold = new();
+            runProperties.Append(bold);
+            run.Append(runProperties);
+        }
+
+        run.Append(new Text(text));
+        paragraph.Append(run);
+        cell.Append(paragraph);
+        cell.Append(CreateCellProperties());
+
+        return cell;
+    }
+
+    private static TableCellProperties CreateCellProperties()
+    {
+        TableCellProperties properties = new();
+        TableCellBorders borders = new()
+        {
+            TopBorder = new TopBorder { Val = BorderValues.Single, Size = 4 },
+            BottomBorder = new BottomBorder { Val = BorderValues.Single, Size = 4 },
+            LeftBorder = new LeftBorder { Val = BorderValues.Single, Size = 4 },
+            RightBorder = new RightBorder { Val = BorderValues.Single, Size = 4 }
+        };
+        properties.Append(borders);
+        return properties;
+    }
+
+    private static string FormatNumber(decimal value)
+    {
+        return value.ToString("F2", CultureInfo.InvariantCulture);
+    }
+}

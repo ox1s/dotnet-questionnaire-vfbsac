@@ -162,18 +162,15 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
         IApplicationDbContext context,
         CancellationToken cancellationToken)
     {
-        var departmentIds = submissions
+        IEnumerable<Guid> departmentIds = submissions
             .Select(s => s.DepartmentId)
             .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
+            .Select(id => id!.Value);
 
-        Dictionary<Guid, string> departments = await context.Departments
-            .AsNoTracking()
-            .Where(d => departmentIds.Contains(d.Id))
-            .Select(d => new { d.Id, d.Name })
-            .ToDictionaryAsync(d => d.Id, d => d.Name, cancellationToken);
+        Dictionary<Guid, string> departments = await EntityNameResolver.ResolveDepartmentNamesAsync(
+            departmentIds,
+            context,
+            cancellationToken);
 
         return submissions
             .GroupBy(s => s.DepartmentId ?? Guid.Empty)
@@ -189,18 +186,15 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
         IApplicationDbContext context,
         CancellationToken cancellationToken)
     {
-        var disciplineIds = submissions
+        IEnumerable<Guid> disciplineIds = submissions
             .Select(s => s.DisciplineId)
             .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
+            .Select(id => id!.Value);
 
-        Dictionary<Guid, string> disciplines = await context.Disciplines
-            .AsNoTracking()
-            .Where(d => disciplineIds.Contains(d.Id))
-            .Select(d => new { d.Id, d.Name })
-            .ToDictionaryAsync(d => d.Id, d => d.Name, cancellationToken);
+        Dictionary<Guid, string> disciplines = await EntityNameResolver.ResolveDisciplineNamesAsync(
+            disciplineIds,
+            context,
+            cancellationToken);
 
         return submissions
             .GroupBy(s => s.DisciplineId ?? Guid.Empty)
@@ -216,18 +210,15 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
         IApplicationDbContext context,
         CancellationToken cancellationToken)
     {
-        var specialityIds = submissions
+        IEnumerable<Guid> specialityIds = submissions
             .Select(s => s.SpecialityId)
             .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
+            .Select(id => id!.Value);
 
-        Dictionary<Guid, string> specialities = await context.Specialities
-            .AsNoTracking()
-            .Where(s => specialityIds.Contains(s.Id))
-            .Select(s => new { s.Id, s.Name })
-            .ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken);
+        Dictionary<Guid, string> specialities = await EntityNameResolver.ResolveSpecialityNamesAsync(
+            specialityIds,
+            context,
+            cancellationToken);
 
         return submissions
             .GroupBy(s => s.SpecialityId ?? Guid.Empty)
@@ -243,18 +234,15 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
         IApplicationDbContext context,
         CancellationToken cancellationToken)
     {
-        var specializationIds = submissions
+        IEnumerable<Guid> specializationIds = submissions
             .Select(s => s.SpecializationId)
             .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
+            .Select(id => id!.Value);
 
-        Dictionary<Guid, string> specializations = await context.Specializations
-            .AsNoTracking()
-            .Where(s => specializationIds.Contains(s.Id))
-            .Select(s => new { s.Id, s.Name })
-            .ToDictionaryAsync(s => s.Id, s => s.Name, cancellationToken);
+        Dictionary<Guid, string> specializations = await EntityNameResolver.ResolveSpecializationNamesAsync(
+            specializationIds,
+            context,
+            cancellationToken);
 
         return submissions
             .GroupBy(s => s.SpecializationId ?? Guid.Empty)
@@ -270,18 +258,15 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
         IApplicationDbContext context,
         CancellationToken cancellationToken)
     {
-        var teacherIds = submissions
+        IEnumerable<Guid> teacherIds = submissions
             .Select(s => s.TeacherId)
             .Where(id => id.HasValue)
-            .Select(id => id!.Value)
-            .Distinct()
-            .ToList();
+            .Select(id => id!.Value);
 
-        Dictionary<Guid, string> teachers = await context.Teachers
-            .AsNoTracking()
-            .Where(t => teacherIds.Contains(t.Id))
-            .Select(t => new { t.Id, t.FullName })
-            .ToDictionaryAsync(t => t.Id, t => t.FullName, cancellationToken);
+        Dictionary<Guid, string> teachers = await EntityNameResolver.ResolveTeacherNamesAsync(
+            teacherIds,
+            context,
+            cancellationToken);
 
         return submissions
             .GroupBy(s => s.TeacherId ?? Guid.Empty)

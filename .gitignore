@@ -402,3 +402,5 @@ FodyWeavers.xsd
 *.txt
 
 *.lscache
+
+.kiro/*

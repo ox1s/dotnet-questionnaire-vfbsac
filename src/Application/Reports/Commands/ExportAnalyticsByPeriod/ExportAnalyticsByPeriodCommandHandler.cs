@@ -9,7 +9,7 @@ using SharedKernel;
 
 namespace Application.Reports.Commands.ExportAnalyticsByPeriod;
 
-internal sealed class ExportAnalyticsByPeriodCommandHandler(
+internal sealed partial class ExportAnalyticsByPeriodCommandHandler(
     IApplicationDbContext dbContext,
     IWordReportGenerator reportGenerator,
     ILogger<ExportAnalyticsByPeriodCommandHandler> logger,
@@ -48,9 +48,7 @@ internal sealed class ExportAnalyticsByPeriodCommandHandler(
             // 3. Handle empty data
             if (analyticsResult.Value.Count == 0)
             {
-                logger.LogInformation(
-                    "No analytics data for form {FormId}, generating empty report",
-                    command.FormId);
+                LogNoAnalyticsDataForFormForMidGeneratingEmptyReport(logger, command.FormId);
             }
 
             // 4. Resolve filter names
@@ -69,10 +67,7 @@ internal sealed class ExportAnalyticsByPeriodCommandHandler(
                 analyticsResult.Value,
                 cancellationToken);
 
-            logger.LogInformation(
-                "Generated period report for form {FormId} with {QuestionCount} questions",
-                command.FormId,
-                analyticsResult.Value.Count);
+            LogGeneratedPeriodReportForFormForMidWithQuestionCountQuestions(logger, command.FormId, analyticsResult.Value.Count);
 
             return documentBytes;
         }
@@ -80,15 +75,21 @@ internal sealed class ExportAnalyticsByPeriodCommandHandler(
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            logger.LogError(
-                ex,
-                "Error generating period report for form {FormId}",
-                command.FormId);
+            LogErrorGeneratingPeriodReportForFormForMid(logger, command.FormId);
 
             return Result.Failure<byte[]>(
                 Error.Failure("Report.GenerationFailed", "Failed to generate report"));
         }
     }
+
+    [LoggerMessage(LogLevel.Information, "No analytics data for form {formId}, generating empty report")]
+    static partial void LogNoAnalyticsDataForFormForMidGeneratingEmptyReport(ILogger<ExportAnalyticsByPeriodCommandHandler> logger, Guid formId);
+
+    [LoggerMessage(LogLevel.Information, "Generated period report for form {formId} with {questionCount} questions")]
+    static partial void LogGeneratedPeriodReportForFormForMidWithQuestionCountQuestions(ILogger<ExportAnalyticsByPeriodCommandHandler> logger, Guid formId, int questionCount);
+
+    [LoggerMessage(LogLevel.Error, "Error generating period report for form {formId}")]
+    static partial void LogErrorGeneratingPeriodReportForFormForMid(ILogger<ExportAnalyticsByPeriodCommandHandler> logger, Guid formId);
 }

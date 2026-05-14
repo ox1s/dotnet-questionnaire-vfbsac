@@ -9,7 +9,7 @@ using SharedKernel;
 
 namespace Application.Reports.Commands.ExportAnalyticsByGroups;
 
-internal sealed class ExportAnalyticsByGroupsCommandHandler(
+internal sealed partial class ExportAnalyticsByGroupsCommandHandler(
     IApplicationDbContext dbContext,
     IWordReportGenerator reportGenerator,
     ILogger<ExportAnalyticsByGroupsCommandHandler> logger,
@@ -49,9 +49,7 @@ internal sealed class ExportAnalyticsByGroupsCommandHandler(
             // 3. Handle empty data
             if (analyticsResult.Value.Count == 0)
             {
-                logger.LogInformation(
-                    "No analytics data for form {FormId}, generating empty report",
-                    command.FormId);
+                LogNoAnalyticsDataForFormForMidGeneratingEmptyReport(logger, command.FormId);
             }
 
             // 4. Generate document
@@ -60,10 +58,7 @@ internal sealed class ExportAnalyticsByGroupsCommandHandler(
                 analyticsResult.Value,
                 cancellationToken);
 
-            logger.LogInformation(
-                "Generated groups comparison report for form {FormId} with {GroupCount} groups",
-                command.FormId,
-                analyticsResult.Value.Count);
+            LogGeneratedGroupsComparisonReportForFormForMidWithGroupCountGroups(logger, command.FormId, analyticsResult.Value.Count);
 
             return documentBytes;
         }
@@ -82,4 +77,10 @@ internal sealed class ExportAnalyticsByGroupsCommandHandler(
                 Error.Failure("Report.GenerationFailed", "Failed to generate report"));
         }
     }
+
+    [LoggerMessage(LogLevel.Information, "No analytics data for form {formId}, generating empty report")]
+    static partial void LogNoAnalyticsDataForFormForMidGeneratingEmptyReport(ILogger<ExportAnalyticsByGroupsCommandHandler> logger, Guid formId);
+
+    [LoggerMessage(LogLevel.Information, "Generated groups comparison report for form {formId} with {groupCount} groups")]
+    static partial void LogGeneratedGroupsComparisonReportForFormForMidWithGroupCountGroups(ILogger<ExportAnalyticsByGroupsCommandHandler> logger, Guid formId, int groupCount);
 }

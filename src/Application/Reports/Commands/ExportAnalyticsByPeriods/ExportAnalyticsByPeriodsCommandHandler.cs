@@ -9,7 +9,7 @@ using SharedKernel;
 
 namespace Application.Reports.Commands.ExportAnalyticsByPeriods;
 
-internal sealed class ExportAnalyticsByPeriodsCommandHandler(
+internal sealed partial class ExportAnalyticsByPeriodsCommandHandler(
     IApplicationDbContext dbContext,
     IWordReportGenerator reportGenerator,
     ILogger<ExportAnalyticsByPeriodsCommandHandler> logger,
@@ -46,9 +46,7 @@ internal sealed class ExportAnalyticsByPeriodsCommandHandler(
             // 3. Handle empty data
             if (analyticsResult.Value.Count == 0)
             {
-                logger.LogInformation(
-                    "No analytics data for form {FormId}, generating empty report",
-                    command.FormId);
+                LogNoAnalyticsDataForFormForMidGeneratingEmptyReport(logger, command.FormId);
             }
 
             // 4. Generate document
@@ -57,10 +55,7 @@ internal sealed class ExportAnalyticsByPeriodsCommandHandler(
                 analyticsResult.Value,
                 cancellationToken);
 
-            logger.LogInformation(
-                "Generated periods comparison report for form {FormId} with {PeriodCount} periods",
-                command.FormId,
-                analyticsResult.Value.Count);
+            LogGeneratedPeriodsComparisonReportForFormForMidWithPeriodCountPeriods(logger, command.FormId, analyticsResult.Value.Count);
 
             return documentBytes;
         }
@@ -70,13 +65,27 @@ internal sealed class ExportAnalyticsByPeriodsCommandHandler(
         }
         catch (Exception ex)
         {
-            logger.LogError(
-                ex,
-                "Error generating periods comparison report for form {FormId}",
-                command.FormId);
+            LogErrorGeneratingPeriodsComparisonReportForFormForMid(logger, ex, command.FormId);
 
             return Result.Failure<byte[]>(
                 Error.Failure("Report.GenerationFailed", "Failed to generate report"));
         }
     }
+
+    [LoggerMessage(LogLevel.Information, "No analytics data for form {formId}, generating empty report")]
+    static partial void LogNoAnalyticsDataForFormForMidGeneratingEmptyReport(
+        ILogger<ExportAnalyticsByPeriodsCommandHandler> logger,
+        Guid formId);
+
+    [LoggerMessage(LogLevel.Information, "Generated periods comparison report for form {formId} with {periodCount} periods")]
+    static partial void LogGeneratedPeriodsComparisonReportForFormForMidWithPeriodCountPeriods(
+        ILogger<ExportAnalyticsByPeriodsCommandHandler> logger,
+        Guid formId,
+        int periodCount);
+
+    [LoggerMessage(LogLevel.Error, "Error generating periods comparison report for form {formId}")]
+    static partial void LogErrorGeneratingPeriodsComparisonReportForFormForMid(
+        ILogger<ExportAnalyticsByPeriodsCommandHandler> logger,
+        Exception exception,
+        Guid formId);
 }

@@ -68,25 +68,14 @@ internal sealed class GetAnalyticsByPeriodsQueryHandler(
         // Step 2: Apply filters in DB query
         submissionsQuery = SubmissionFilterHelper.ApplyFilters(submissionsQuery, period.FilterSet);
 
-        // Step 3: Get submission IDs from DB
-        List<Guid> submissionIds = await submissionsQuery
-            .Select(s => s.Id)
-            .ToListAsync(cancellationToken);
-
-        if (submissionIds.Count == 0)
-        {
-            return new GetAnalyticsByPeriodsQueryResponse(
-                Label: period.Label,
-                PeriodStart: period.DateFrom,
-                PeriodEnd: period.DateTo,
-                QuestionStatistics: []);
-        }
+        // Step 3: Use submission query as subquery (no materialization)
+        IQueryable<Guid> submissionIdsQuery = submissionsQuery.Select(s => s.Id);
 
         // Step 4: Get numeric answers grouped by question from DB
         // For weighted ratings, normalize to 0-10 scale: (NumericValue / Weight) * 10
         var answersGrouped = await context.Answers
             .AsNoTracking()
-            .Where(a => submissionIds.Contains(a.SubmissionId) &&
+            .Where(a => submissionIdsQuery.Contains(a.SubmissionId) &&
                        a.Value == null &&
                        a.NumericValue != null)
             .GroupBy(a => a.QuestionId)

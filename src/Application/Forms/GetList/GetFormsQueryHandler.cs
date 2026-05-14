@@ -6,14 +6,14 @@ using SharedKernel;
 namespace Application.Forms.GetList;
 
 internal sealed class GetFormsQueryHandler(IApplicationDbContext context)
-    : IQueryHandler<GetFormsQuery, List<FormListItemResponse>>
+    : IQueryHandler<GetFormsQuery, List<GetFormsQueryResponse>>
 {
-    public async Task<Result<List<FormListItemResponse>>> Handle(GetFormsQuery query, CancellationToken cancellationToken)
+    public async Task<Result<List<GetFormsQueryResponse>>> Handle(GetFormsQuery query, CancellationToken cancellationToken)
     {
-        List<FormListItemResponse> forms = await context.Forms
+        List<GetFormsQueryResponse> forms = await context.Forms
             .Where(f => query.IsActive == null || f.IsActive == query.IsActive)
             .OrderBy(f => f.Title)
-            .Select(f => new FormListItemResponse
+            .Select(f => new GetFormsQueryResponse
             {
                 Id = f.Id,
                 Title = f.Title,

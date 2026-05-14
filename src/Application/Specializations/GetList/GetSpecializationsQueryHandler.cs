@@ -6,18 +6,18 @@ using SharedKernel;
 namespace Application.Specializations.GetList;
 
 internal sealed class GetSpecializationsQueryHandler(IApplicationDbContext context)
-    : IQueryHandler<GetSpecializationsQuery, List<GetSpecializationQueryResponse>>
+    : IQueryHandler<GetSpecializationsQuery, List<GetSpecializationsQueryResponse>>
 {
-    public async Task<Result<List<GetSpecializationQueryResponse>>> Handle(
+    public async Task<Result<List<GetSpecializationsQueryResponse>>> Handle(
         GetSpecializationsQuery query,
         CancellationToken cancellationToken)
     {
-        List<GetSpecializationQueryResponse> specializations = await context.Specializations
+        List<GetSpecializationsQueryResponse> specializations = await context.Specializations
             .IgnoreQueryFilters()
             .AsNoTracking()
             .OrderBy(s => s.IsDeleted)
             .ThenBy(s => s.Name)
-            .Select(s => new GetSpecializationQueryResponse(s.Id, s.Name, s.SpecialityId, s.IsDeleted))
+            .Select(s => new GetSpecializationsQueryResponse(s.Id, s.Name, s.SpecialityId, s.IsDeleted))
             .ToListAsync(cancellationToken);
 
         return specializations;

@@ -7,15 +7,15 @@ using SharedKernel;
 namespace Application.Users.GetGroups;
 
 internal sealed class GetGroupsQueryHandler(IApplicationDbContext context)
-    : IQueryHandler<GetGroupsQuery, List<GroupResponse>>
+    : IQueryHandler<GetGroupsQuery, List<GetGroupsQueryResponse>>
 {
-    public async Task<Result<List<GroupResponse>>> Handle(GetGroupsQuery query, CancellationToken cancellationToken)
+    public async Task<Result<List<GetGroupsQueryResponse>>> Handle(GetGroupsQuery query, CancellationToken cancellationToken)
     {
-        List<GroupResponse> groups = await context.Users
+        List<GetGroupsQueryResponse> groups = await context.Users
             .AsNoTracking() 
             .Where(u => u.Role == UserRole.StudentGroup)
             .OrderBy(u => u.Login.Value)
-            .Select(u => new GroupResponse(
+            .Select(u => new GetGroupsQueryResponse(
                 u.Id,
                 u.Login.Value,
                 u.DisplayName))

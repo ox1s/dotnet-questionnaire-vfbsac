@@ -7,9 +7,9 @@ using SharedKernel;
 namespace Application.Submissions.GetList;
 
 internal sealed class GetSubmissionsQueryHandler(IApplicationDbContext context)
-    : IQueryHandler<GetSubmissionsQuery, List<GetSubmissionQueryResponse>>
+    : IQueryHandler<GetSubmissionsQuery, List<GetSubmissionsQueryResponse>>
 {
-    public async Task<Result<List<GetSubmissionQueryResponse>>> Handle(
+    public async Task<Result<List<GetSubmissionsQueryResponse>>> Handle(
         GetSubmissionsQuery query, 
         CancellationToken cancellationToken)
     {
@@ -71,10 +71,10 @@ internal sealed class GetSubmissionsQueryHandler(IApplicationDbContext context)
             submissionsQuery = submissionsQuery.Where(s => s.SubmittedAt <= query.SubmittedTo.Value);
         }
 
-        List<GetSubmissionQueryResponse> submissions = await submissionsQuery
+        List<GetSubmissionsQueryResponse> submissions = await submissionsQuery
             .Include(s => s.Answers)
             .OrderByDescending(s => s.SubmittedAt)
-            .Select(s => new GetSubmissionQueryResponse
+            .Select(s => new GetSubmissionsQueryResponse
             {
                 Id = s.Id,
                 FormId = s.FormId,

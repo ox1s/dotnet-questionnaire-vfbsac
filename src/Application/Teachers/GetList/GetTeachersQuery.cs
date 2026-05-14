@@ -2,4 +2,4 @@ using Application.Abstractions.Messaging;
 
 namespace Application.Teachers.GetList;
 
-public sealed record GetTeachersQuery() : IQuery<List<GetTeacherQueryResponse>>;
+public sealed record GetTeachersQuery() : IQuery<List<GetTeachersQueryResponse>>;

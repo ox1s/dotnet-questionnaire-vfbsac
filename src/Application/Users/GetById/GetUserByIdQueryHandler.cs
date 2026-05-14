@@ -9,13 +9,13 @@ namespace Application.Users.GetById;
 
 internal sealed class GetUserByIdQueryHandler(
     IApplicationDbContext context)
-    : IQueryHandler<GetUserByIdQuery, UserResponse>
+    : IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse>
 {
-    public async Task<Result<UserResponse>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
+    public async Task<Result<GetUserByIdQueryResponse>> Handle(GetUserByIdQuery query, CancellationToken cancellationToken)
     {
-        UserResponse? user = await context.Users
+        GetUserByIdQueryResponse? user = await context.Users
             .Where(u => u.Id == query.UserId)
-            .Select(u => new UserResponse
+            .Select(u => new GetUserByIdQueryResponse
             {
                 Id = u.Id,
                 Login = u.Login.Value,
@@ -25,7 +25,7 @@ internal sealed class GetUserByIdQueryHandler(
 
         if (user is null)
         {
-            return Result.Failure<UserResponse>(UserErrors.NotFound(query.UserId));
+            return Result.Failure<GetUserByIdQueryResponse>(UserErrors.NotFound(query.UserId));
         }
 
         return user;

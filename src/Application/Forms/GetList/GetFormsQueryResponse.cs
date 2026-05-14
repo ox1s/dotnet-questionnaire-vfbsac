@@ -2,7 +2,7 @@ using Domain.Questionnaires.Forms;
 
 namespace Application.Forms.GetList;
 
-public sealed record FormListItemResponse
+public sealed record GetFormsQueryResponse
 {
     public Guid Id { get; init; }
     public string Title { get; init; } = string.Empty;

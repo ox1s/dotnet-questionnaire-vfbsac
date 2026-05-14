@@ -11,12 +11,12 @@ internal sealed class GetGroups : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("users/groups", async (
-            IQueryHandler<GetGroupsQuery, List<GroupResponse>> handler,
+            IQueryHandler<GetGroupsQuery, List<GetGroupsQueryResponse>> handler,
             CancellationToken cancellationToken) =>
         {
             var query = new GetGroupsQuery();
 
-            Result<List<GroupResponse>> result = await handler.Handle(query, cancellationToken);
+            Result<List<GetGroupsQueryResponse>> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })

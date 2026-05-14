@@ -14,4 +14,4 @@ public sealed record GetSubmissionsQuery(
     string? OrganizationName = null,
     DateTime? SubmittedFrom = null,
     DateTime? SubmittedTo = null)
-    : IQuery<List<GetSubmissionQueryResponse>>;
+    : IQuery<List<GetSubmissionsQueryResponse>>;

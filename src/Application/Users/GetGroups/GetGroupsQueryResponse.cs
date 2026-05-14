@@ -1,6 +1,6 @@
 namespace Application.Users.GetGroups;
 
-public sealed record GroupResponse(
+public sealed record GetGroupsQueryResponse(
     Guid Id,
     string Login,
     string DisplayName);

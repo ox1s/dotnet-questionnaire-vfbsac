@@ -1,6 +1,6 @@
 ﻿namespace Application.Users.GetById;
 
-public sealed record UserResponse
+public sealed record GetUserByIdQueryResponse
 {
     public Guid Id { get; init; }
     public string Login { get; init; }

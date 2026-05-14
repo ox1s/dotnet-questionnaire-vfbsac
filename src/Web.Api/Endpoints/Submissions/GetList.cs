@@ -13,10 +13,10 @@ internal sealed class GetList : IEndpoint
     {
         app.MapGet("submissions", async (
             [AsParameters] GetSubmissionsQuery query,
-            IQueryHandler<GetSubmissionsQuery, List<GetSubmissionQueryResponse>> handler,
+            IQueryHandler<GetSubmissionsQuery, List<GetSubmissionsQueryResponse>> handler,
             CancellationToken cancellationToken) =>
         {
-            Result<List<GetSubmissionQueryResponse>> result = await handler.Handle(query, cancellationToken);
+            Result<List<GetSubmissionsQueryResponse>> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })

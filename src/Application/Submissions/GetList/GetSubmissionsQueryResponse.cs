@@ -1,6 +1,6 @@
 namespace Application.Submissions.GetList;
 
-public sealed record GetSubmissionQueryResponse
+public sealed record GetSubmissionsQueryResponse
 {
     public Guid Id { get; init; }
     public Guid FormId { get; init; }

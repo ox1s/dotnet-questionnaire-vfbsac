@@ -12,12 +12,12 @@ internal sealed class GetById : IEndpoint
     {
         app.MapGet("users/{userId:guid}", async (
             Guid userId,
-            IQueryHandler<GetUserByIdQuery, UserResponse> handler,
+            IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> handler,
             CancellationToken cancellationToken) =>
         {
             var query = new GetUserByIdQuery(userId);
 
-            Result<UserResponse> result = await handler.Handle(query, cancellationToken);
+            Result<GetUserByIdQueryResponse> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })

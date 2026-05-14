@@ -11,11 +11,11 @@ internal sealed class GetDisciplines : IEndpoint
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapGet("dictionaries/disciplines", async (
-            IQueryHandler<GetDisciplinesQuery, List<GetDisciplineQueryResponse>> handler,
+            IQueryHandler<GetDisciplinesQuery, List<GetDisciplinesQueryResponse>> handler,
             CancellationToken cancellationToken) =>
         {
             var query = new GetDisciplinesQuery();
-            Result<List<GetDisciplineQueryResponse>> result = await handler.Handle(query, cancellationToken);
+            Result<List<GetDisciplinesQueryResponse>> result = await handler.Handle(query, cancellationToken);
             return result.Match(Results.Ok, CustomResults.Problem);
         })
         .WithTags("Dictionaries")

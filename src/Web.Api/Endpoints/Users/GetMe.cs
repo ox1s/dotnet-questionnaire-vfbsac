@@ -13,14 +13,14 @@ internal sealed class GetMe : IEndpoint
     {
         app.MapGet("users/me", async (
             IUserContext userContext,
-            IQueryHandler<GetUserByIdQuery, UserResponse> handler,
+            IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> handler,
             CancellationToken cancellationToken) =>
         {
             Guid currentUserId = userContext.UserId;
 
             var query = new GetUserByIdQuery(currentUserId);
 
-            Result<UserResponse> result = await handler.Handle(query, cancellationToken);
+            Result<GetUserByIdQueryResponse> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })

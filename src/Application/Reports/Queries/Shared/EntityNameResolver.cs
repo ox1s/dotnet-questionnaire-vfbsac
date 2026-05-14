@@ -187,7 +187,7 @@ public static class EntityNameResolver
         IApplicationDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
-        var ids = departmentIds.Distinct().ToList();
+        IEnumerable<Guid> ids = departmentIds.Distinct();
 
         return await dbContext.Departments
             .AsNoTracking()
@@ -201,7 +201,7 @@ public static class EntityNameResolver
         IApplicationDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
-        var ids = disciplineIds.Distinct().ToList();
+        IEnumerable<Guid> ids = disciplineIds.Distinct();
 
         return await dbContext.Disciplines
             .AsNoTracking()
@@ -215,7 +215,7 @@ public static class EntityNameResolver
         IApplicationDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
-        var ids = specialityIds.Distinct().ToList();
+        IEnumerable<Guid> ids = specialityIds.Distinct();
 
         return await dbContext.Specialities
             .AsNoTracking()
@@ -229,7 +229,7 @@ public static class EntityNameResolver
         IApplicationDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
-        var ids = specializationIds.Distinct().ToList();
+        IEnumerable<Guid> ids = specializationIds.Distinct();
 
         return await dbContext.Specializations
             .AsNoTracking()
@@ -243,7 +243,7 @@ public static class EntityNameResolver
         IApplicationDbContext dbContext,
         CancellationToken cancellationToken = default)
     {
-        var ids = teacherIds.Distinct().ToList();
+        IEnumerable<Guid> ids = teacherIds.Distinct();
 
         return await dbContext.Teachers
             .AsNoTracking()

@@ -62,7 +62,7 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
             context, 
             cancellationToken);
 
-        var submissionIds = submissionsWithGrouping.Select(s => s.Id).ToList();
+        IEnumerable<Guid> submissionIds = submissionsWithGrouping.Select(s => s.Id);
 
         // Get numeric answers grouped by question
         // For weighted ratings, normalize to 0-10 scale: (NumericValue / Weight) * 10
@@ -82,7 +82,7 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
             })
             .ToListAsync(cancellationToken);
 
-        var questionIds = answersGroupedByQuestion.Select(a => a.QuestionId).Distinct().ToList();
+        IEnumerable<Guid> questionIds = answersGroupedByQuestion.Select(a => a.QuestionId).Distinct();
 
         Dictionary<Guid, string> questions = await context.Questions
             .AsNoTracking()

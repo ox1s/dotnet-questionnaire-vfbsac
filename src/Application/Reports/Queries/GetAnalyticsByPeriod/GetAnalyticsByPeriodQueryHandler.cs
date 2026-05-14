@@ -61,8 +61,7 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
                 Values = g.Select(a => a.Weight.HasValue && a.Weight.Value > 0
                     ? a.NumericValue!.Value / a.Weight.Value * 10
                     : a.NumericValue!.Value).ToList()
-            })
-            .ToListAsync(cancellationToken);
+            }).ToListAsync(cancellationToken);
 
         if (answersGrouped.Count == 0)
         {
@@ -70,7 +69,7 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
         }
 
         // Step 6: Get question texts from database
-        var questionIds = answersGrouped.Select(g => g.QuestionId).ToList();
+        IEnumerable<Guid> questionIds = answersGrouped.Select(g => g.QuestionId);
 
         var questions = await context.Questions
             .AsNoTracking()

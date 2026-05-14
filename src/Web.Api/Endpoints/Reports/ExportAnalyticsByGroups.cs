@@ -20,8 +20,8 @@ internal sealed class ExportAnalyticsByGroups : IEndpoint
             return result.Match(
                 bytes => Results.File(
                     bytes,
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    $"analytics-groups-{DateTime.UtcNow:yyyy-MM-dd}.docx"),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"analytics-groups-{DateTime.UtcNow:yyyy-MM-dd}.xlsx"),
                 CustomResults.Problem);
         })
         .WithTags("Reports")

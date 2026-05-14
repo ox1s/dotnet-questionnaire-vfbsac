@@ -40,7 +40,8 @@ public static class DependencyInjection
         {
             services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
 
-            services.AddScoped<IWordReportGenerator, WordReportGenerator>();
+            // services.AddScoped<IReportGenerator, WordReportGenerator>();
+            services.AddScoped<IReportGenerator, ExcelReportGenerator>();
             services.AddScoped<DemoDataGenerator>();
 
             services.AddScoped<DbInitializer>();

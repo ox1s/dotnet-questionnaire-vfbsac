@@ -20,8 +20,8 @@ internal sealed class ExportAnalyticsByPeriod : IEndpoint
             return result.Match(
                 bytes => Results.File(
                     bytes,
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    $"analytics-period-{DateTime.UtcNow:yyyy-MM-dd}.docx"),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"analytics-period-{DateTime.UtcNow:yyyy-MM-dd}.xlsx"),
                 CustomResults.Problem);
         })
         .WithTags("Reports")

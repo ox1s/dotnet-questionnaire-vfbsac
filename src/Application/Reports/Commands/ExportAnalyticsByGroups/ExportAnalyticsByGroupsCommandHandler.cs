@@ -11,7 +11,7 @@ namespace Application.Reports.Commands.ExportAnalyticsByGroups;
 
 internal sealed partial class ExportAnalyticsByGroupsCommandHandler(
     IApplicationDbContext dbContext,
-    IWordReportGenerator reportGenerator,
+    IReportGenerator reportGenerator,
     ILogger<ExportAnalyticsByGroupsCommandHandler> logger,
     IQueryHandler<GetAnalyticsByGroupsQuery, List<GetAnalyticsByGroupsQueryResponse>> analyticsQueryHandler)
     : ICommandHandler<ExportAnalyticsByGroupsCommand, byte[]>

@@ -11,7 +11,7 @@ namespace Application.Reports.Commands.ExportAnalyticsByPeriod;
 
 internal sealed partial class ExportAnalyticsByPeriodCommandHandler(
     IApplicationDbContext dbContext,
-    IWordReportGenerator reportGenerator,
+    IReportGenerator reportGenerator,
     ILogger<ExportAnalyticsByPeriodCommandHandler> logger,
     IQueryHandler<GetAnalyticsByPeriodQuery, List<GetAnalyticsByPeriodQueryResponse>> analyticsQueryHandler)
     : ICommandHandler<ExportAnalyticsByPeriodCommand, byte[]>

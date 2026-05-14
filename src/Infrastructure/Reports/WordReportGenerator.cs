@@ -13,7 +13,7 @@ namespace Infrastructure.Reports;
 
 [SuppressMessage("SonarLint", "S3220:Method calls should not resolve ambiguously to overloads with params", Justification = "OpenXml Append params overload is intentional")]
 
-public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : IWordReportGenerator
+public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : IReportGenerator
 {
     public Task<byte[]> GeneratePeriodReportAsync(
         string formTitle,

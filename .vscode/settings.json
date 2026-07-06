@@ -1,3 +1,15 @@
 {
-    "rest-client.excludeHostsForProxy": []
+    "python-envs.defaultEnvManager": "ms-python.python:system",
+    "python-envs.pythonProjects": [],
+    "kiroAgent.trustedCommands": [
+        "git *",
+        "dotnet *",
+        "& \"$env:USERPROFILE\\.dotnet\\tools\\dotnet-ef.exe\" migrations list --project src/Infrastructure --startup-project src/Web.Api --no-build",
+        "Get-Content *",
+        "dotnet build",
+        "dotnet test *",
+        "New-Item *",
+        "tsc *",
+        "npm *"
+    ]
 }

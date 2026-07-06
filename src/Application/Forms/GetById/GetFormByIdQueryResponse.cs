@@ -1,0 +1,12 @@
+using Domain.Questionnaires.Forms;
+
+namespace Application.Forms.GetById;
+
+public sealed record GetFormByIdQueryResponse
+{
+    public Guid Id { get; init; }
+    public string Title { get; init; } = string.Empty;
+    public bool IsActive { get; init; }
+    public List<FilterField>? RequiredFilters { get; init; }
+    public List<QuestionResponse> Questions { get; init; } = [];
+}

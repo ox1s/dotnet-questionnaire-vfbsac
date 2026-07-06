@@ -1,0 +1,9 @@
+<Solution>
+  <Project Path="Application/Application.csproj" />
+  <Project Path="Aspire.AppHost/Aspire.AppHost.csproj" />
+  <Project Path="Aspire.ServiceDefaults/Aspire.ServiceDefaults.csproj" />
+  <Project Path="Domain/Domain.csproj" />
+  <Project Path="Infrastructure/Infrastructure.csproj" />
+  <Project Path="SharedKernel/SharedKernel.csproj" />
+  <Project Path="Web.Api/Web.Api.csproj" />
+</Solution>

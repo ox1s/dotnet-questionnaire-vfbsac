@@ -1,0 +1,30 @@
+using Application.Abstractions.Authentication;
+using Application.Abstractions.Messaging;
+using Application.Users.GetById;
+using SharedKernel;
+using Web.Api.Extensions;
+using Web.Api.Infrastructure;
+
+namespace Web.Api.Endpoints.Users;
+
+internal sealed class GetMe : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("users/me", async (
+            IUserContext userContext,
+            IQueryHandler<GetUserByIdQuery, GetUserByIdQueryResponse> handler,
+            CancellationToken cancellationToken) =>
+        {
+            Guid currentUserId = userContext.UserId;
+
+            var query = new GetUserByIdQuery(currentUserId);
+
+            Result<GetUserByIdQueryResponse> result = await handler.Handle(query, cancellationToken);
+
+            return result.Match(Results.Ok, CustomResults.Problem);
+        })
+        .WithTags(Tags.Users)
+        .RequireAuthorization();
+    }
+}

@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Users_NotFound" xml:space="preserve">
+    <value>Пользователь с таким id не найден</value>
+  </data>
+  <data name="Users_NotFoundByLogin" xml:space="preserve">
+    <value>Пользователь с таким логином не найден</value>
+  </data>
+  <data name="Users_Unauthorized" xml:space="preserve">
+    <value>Вы не авторизованы для выполняния этого действия</value>
+  </data>
+  <data name="Users_InvalidResetToken" xml:space="preserve">
+    <value>Невалидный либо прошедшний Reset Token</value>
+  </data>
+  <data name="Users_ExpiredResetToken" xml:space="preserve">
+    <value>Время жини reset tokenа прошло </value>
+  </data>
+  <data name="Users_UserExist" xml:space="preserve">
+    <value>Пользователь уже существует</value>
+  </data>
+  <data name="Users_GroupExists" xml:space="preserve">
+    <value>Группа с таким логином уже существует</value>
+  </data>
+  <data name="Users_GroupNameInvalid" xml:space="preserve">
+    <value>Название группы не валидно (должно быть меньше 5 символов)</value>
+  </data>
+  <data name="Forms_NotFound" xml:space="preserve">
+    <value>Анкета с данным id не существует</value>
+  </data>
+  <data name="Departments_NotFound" xml:space="preserve">
+    <value>Кафедра с таким id не найдена</value>
+  </data>
+  <data name="Departments_Duplicate" xml:space="preserve">
+    <value>Кафедра с таким названием уже существует</value>
+  </data>
+  <data name="Departments_HasTeachers" xml:space="preserve">
+    <value>К кафедре привязаны преподаватели, поэтому сначала уберите их</value>
+  </data>
+  <data name="Departments_HasDisciplines" xml:space="preserve">
+    <value>К кафедре привязаны дисциплины, поэтому сначала уберите их</value>
+  </data>
+  <data name="Departments_HasUsers" xml:space="preserve">
+    <value>К кафедре привязаны пользователи, поэтому сначала уберите их</value>
+  </data>
+  <data name="Disciplines_NotFound" xml:space="preserve">
+    <value>Дисциплина с таким id не найдена</value>
+  </data>
+  <data name="Disciplines_DepartmentDeleted" xml:space="preserve">
+    <value>Нельзя восстановить дисциплину, пока кафедра удалена</value>
+  </data>
+  <data name="Teachers_NotFound" xml:space="preserve">
+    <value>Преподаватель с таким id не найден</value>
+  </data>
+  <data name="Teachers_HasUsers" xml:space="preserve">
+    <value>К преподавателю привязаны пользователи, поэтому сначала уберите их</value>
+  </data>
+  <data name="Specialities_NotFound" xml:space="preserve">
+    <value>Специальность с таким id не найдена</value>
+  </data>
+  <data name="Specialities_HasSpecializations" xml:space="preserve">
+    <value>К специальности привязаны специализации, поэтому сначала уберите их</value>
+  </data>
+  <data name="Specializations_NotFound" xml:space="preserve">
+    <value>Специализация с таким id не найдена</value>
+  </data>
+  <data name="Specializations_SpecialityDeleted" xml:space="preserve">
+    <value>Нельзя восстановить специализацию, пока специальность удалена</value>
+  </data>
+  <data name="Forms_QuestionNotFound" xml:space="preserve">
+    <value>Вопрос с таким id не найден</value>
+  </data>
+  <data name="Forms_Inactive" xml:space="preserve">
+    <value>Анкета неактивна</value>
+  </data>
+  <data name="Forms_QuestionOrderExists" xml:space="preserve">
+    <value>Вопрос с таким порядком уже существует</value>
+  </data>
+  <data name="Forms_AlreadyActive" xml:space="preserve">
+    <value>Анкета уже активна</value>
+  </data>
+  <data name="Forms_AlreadyDeactivated" xml:space="preserve">
+    <value>Анкета уже деактивирована</value>
+  </data>
+  <data name="Questions_EmptyField" xml:space="preserve">
+    <value>Текст не может быть пустым</value>
+  </data>
+  <data name="Questions_OrderInvalid" xml:space="preserve">
+    <value>Порядок должен быть неотрицательным</value>
+  </data>
+  <data name="Answers_NotFound" xml:space="preserve">
+    <value>Ответ с таким id не найден</value>
+  </data>
+  <data name="Answers_ValueRequired" xml:space="preserve">
+    <value>Должно быть указано либо текстовое значение, либо числовое</value>
+  </data>
+  <data name="Answers_InvalidScore" xml:space="preserve">
+    <value>Оценка должна быть в допустимом диапазоне</value>
+  </data>
+  <data name="Answers.InvalidWeight" xml:space="preserve">
+    <value>Вес должен быть в допустимом диапазоне</value>
+  </data>
+  <data name="Submissions_NotFound" xml:space="preserve">
+    <value>Отправка с таким id не найдена</value>
+  </data>
+  <data name="Submissions_AnswerNotFound" xml:space="preserve">
+    <value>Ответ с таким id не найден</value>
+  </data>
+  <data name="Submissions_InvalidWeight" xml:space="preserve">
+    <value>Значение не может быть больше веса для вопроса</value>
+  </data>
+  <data name="Submissions_AlreadySubmitted" xml:space="preserve">
+    <value>Вы уже отправляли ответ на эту анкету с выбранными параметрами</value>
+  </data>
+  <data name="Submissions_AnswerExists" xml:space="preserve">
+    <value>Уже есть ответ на вопрос</value>
+  </data>
+  <data name="Disciplines_Duplicate" xml:space="preserve">
+    <value>Уже существует такая дисциплина</value>
+  </data>
+  <data name="Specialities_Duplicate" xml:space="preserve">
+    <value>Специальность с таким именем уже существует</value>
+  </data>
+  <data name="Specializations_Duplicate" xml:space="preserve">
+    <value>Специаизация с таким же именем уже существует</value>
+  </data>
+  <data name="Question_NotFound" xml:space="preserve">
+    <value>Вопрос не найден</value>
+  </data>
+</root>

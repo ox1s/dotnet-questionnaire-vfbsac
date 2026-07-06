@@ -14,5 +14,5 @@
 - [ ] закрытие/открытие анкет
 
 
-
+[Jira](https://ox1ssworkspace-41562297.atlassian.net/?continue=https%3A%2F%2Fox1ssworkspace-41562297.atlassian.net%2Fwelcome%2Fsoftware%3FprojectId%3D10000&atlOrigin=eyJpIjoiODRkMzcxZTlkMjI0NDk1NDhhMmMzM2Y0MTk5ZjA5YTIiLCJwIjoiamlyYS1zb2Z0d2FyZSJ9)
 

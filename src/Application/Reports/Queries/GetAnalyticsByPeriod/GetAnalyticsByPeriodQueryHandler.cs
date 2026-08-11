@@ -10,7 +10,8 @@ namespace Application.Reports.Queries.GetAnalyticsByPeriod;
 
 /// <summary>
 /// Handles analytics query for a specific time period.
-/// Returns statistical metrics (median, mean, mode, standard deviation) for each numeric question.
+/// Returns consumer-satisfaction metrics (satisfaction %, average score, standard deviation, rating)
+/// for each numeric question, per "Методика оценки удовлетворенности потребителей".
 /// </summary>
 internal sealed class GetAnalyticsByPeriodQueryHandler(
     IApplicationDbContext context)
@@ -48,7 +49,7 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
 
         // Step 5: Get numeric answers grouped by question
         // Only select answers with NumericValue (Number, WeightedRating question types)
-        // For weighted ratings, normalize to 0-10 scale: (NumericValue / Weight) * 10
+        // Weight defaults to 10 (max importance) when the question has no explicit importance weight
         var answersGrouped = await context.Answers
             .AsNoTracking()
             .Where(a => filteredByDate.Select(s => s.Id).Contains(a.SubmissionId) &&
@@ -58,9 +59,7 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
             .Select(g => new
             {
                 QuestionId = g.Key,
-                Values = g.Select(a => a.Weight.HasValue && a.Weight.Value > 0
-                    ? a.NumericValue!.Value / a.Weight.Value * 10
-                    : a.NumericValue!.Value).ToList()
+                Ratings = g.Select(a => new { Score = a.NumericValue!.Value, Weight = a.Weight ?? 10m }).ToList()
             }).ToListAsync(cancellationToken);
 
         if (answersGrouped.Count == 0)
@@ -81,14 +80,21 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
 
         // Step 7: Calculate statistics for each question in-memory
         var responses = answersGrouped
-            .Select(group => new GetAnalyticsByPeriodQueryResponse(
-                QuestionId: group.QuestionId,
-                QuestionText: questionDict.GetValueOrDefault(group.QuestionId) ?? string.Empty,
-                Median: StatisticsCalculator.CalculateMedian(group.Values),
-                Mean: StatisticsCalculator.CalculateMean(group.Values),
-                Mode: StatisticsCalculator.CalculateMode(group.Values),
-                StandardDeviation: StatisticsCalculator.CalculateStandardDeviation(group.Values),
-                ResponseCount: group.Values.Count))
+            .Select(group =>
+            {
+                var scores = group.Ratings.Select(r => r.Score).ToList();
+                var ratioPairs = group.Ratings.Select(r => (r.Score, r.Weight)).ToList();
+                decimal satisfactionPercentage = StatisticsCalculator.CalculateSatisfactionPercentage(ratioPairs);
+
+                return new GetAnalyticsByPeriodQueryResponse(
+                    QuestionId: group.QuestionId,
+                    QuestionText: questionDict.GetValueOrDefault(group.QuestionId) ?? string.Empty,
+                    SatisfactionPercentage: satisfactionPercentage,
+                    AverageScore: StatisticsCalculator.CalculateAverageScore(scores),
+                    StandardDeviation: StatisticsCalculator.CalculateStandardDeviation(scores),
+                    Rating: StatisticsCalculator.ClassifySatisfaction(satisfactionPercentage),
+                    ResponseCount: scores.Count);
+            })
             .ToList();
 
         return responses;

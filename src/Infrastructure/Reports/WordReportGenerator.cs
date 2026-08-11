@@ -4,6 +4,7 @@ using Application.Abstractions.Reports;
 using Application.Reports.Queries.GetAnalyticsByGroups;
 using Application.Reports.Queries.GetAnalyticsByPeriod;
 using Application.Reports.Queries.GetAnalyticsByPeriods;
+using Application.Reports.Queries.Shared;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
@@ -78,10 +79,10 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                 headerRow.Append(
                     CreateCell("№", true),
                     CreateCell("Вопрос", true),
-                    CreateCell("Медиана", true),
-                    CreateCell("Среднее", true),
-                    CreateCell("Мода", true),
+                    CreateCell("Удовл. потреб., %", true),
+                    CreateCell("Средний балл", true),
                     CreateCell("Ст. откл.", true),
+                    CreateCell("Оценка", true),
                     CreateCell("Кол-во ответов", true)
                 );
                 table.Append(headerRow);
@@ -94,10 +95,10 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                     dataRow.Append(
                         CreateCell(rowNumber.ToString(CultureInfo.InvariantCulture)),
                         CreateCell(stat.QuestionText),
-                        CreateCell(FormatNumber(stat.Median)),
-                        CreateCell(FormatNumber(stat.Mean)),
-                        CreateCell(FormatNumber(stat.Mode)),
+                        CreateCell(FormatNumber(stat.SatisfactionPercentage)),
+                        CreateCell(FormatNumber(stat.AverageScore)),
                         CreateCell(FormatNumber(stat.StandardDeviation)),
+                        CreateCell(FormatRating(stat.Rating)),
                         CreateCell(stat.ResponseCount.ToString(CultureInfo.InvariantCulture))
                     );
                     table.Append(dataRow);
@@ -187,10 +188,10 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                     string periodLabel = $"{period.Label} ({period.PeriodStart:dd.MM.yyyy} - {period.PeriodEnd:dd.MM.yyyy})";
                     headerRow.Append(
                         CreateCell(periodLabel, true),
-                        CreateCell("Медиана", true),
-                        CreateCell("Среднее", true),
-                        CreateCell("Мода", true),
+                        CreateCell("Удовл. потреб., %", true),
+                        CreateCell("Средний балл", true),
                         CreateCell("Ст. откл.", true),
+                        CreateCell("Оценка", true),
                         CreateCell("Кол-во", true)
                     );
                 }
@@ -201,7 +202,7 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                 Dictionary<Guid, string> allQuestions = new();
                 foreach (GetAnalyticsByPeriodsQueryResponse period in periodsData)
                 {
-                    foreach (Application.Reports.Queries.Shared.QuestionStatistics stat in period.QuestionStatistics)
+                    foreach (QuestionStatistics stat in period.QuestionStatistics)
                     {
                         if (!allQuestions.ContainsKey(stat.QuestionId))
                         {
@@ -220,16 +221,16 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
 
                     foreach (GetAnalyticsByPeriodsQueryResponse period in periodsData)
                     {
-                        Application.Reports.Queries.Shared.QuestionStatistics? stat = period.QuestionStatistics
+                        QuestionStatistics? stat = period.QuestionStatistics
                             .FirstOrDefault(s => s.QuestionId == question.Key);
 
                         if (stat is not null)
                         {
                             dataRow.Append(
-                                CreateCell(FormatNumber(stat.Median)),
-                                CreateCell(FormatNumber(stat.Mean)),
-                                CreateCell(FormatNumber(stat.Mode)),
+                                CreateCell(FormatNumber(stat.SatisfactionPercentage)),
+                                CreateCell(FormatNumber(stat.AverageScore)),
                                 CreateCell(FormatNumber(stat.StandardDeviation)),
+                                CreateCell(FormatRating(stat.Rating)),
                                 CreateCell(stat.ResponseCount.ToString(CultureInfo.InvariantCulture))
                             );
                         }
@@ -331,10 +332,10 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                 {
                     headerRow.Append(
                         CreateCell(group.GroupName, true),
-                        CreateCell("Медиана", true),
-                        CreateCell("Среднее", true),
-                        CreateCell("Мода", true),
+                        CreateCell("Удовл. потреб., %", true),
+                        CreateCell("Средний балл", true),
                         CreateCell("Ст. откл.", true),
+                        CreateCell("Оценка", true),
                         CreateCell("Кол-во", true)
                     );
                 }
@@ -345,7 +346,7 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                 Dictionary<Guid, string> allQuestions = new();
                 foreach (GetAnalyticsByGroupsQueryResponse group in groupsData)
                 {
-                    foreach (Application.Reports.Queries.Shared.QuestionStatistics stat in group.QuestionStatistics)
+                    foreach (QuestionStatistics stat in group.QuestionStatistics)
                     {
                         if (!allQuestions.ContainsKey(stat.QuestionId))
                         {
@@ -364,16 +365,16 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
 
                     foreach (GetAnalyticsByGroupsQueryResponse group in groupsData)
                     {
-                        Application.Reports.Queries.Shared.QuestionStatistics? stat = group.QuestionStatistics
+                        QuestionStatistics? stat = group.QuestionStatistics
                             .FirstOrDefault(s => s.QuestionId == question.Key);
 
                         if (stat is not null)
                         {
                             dataRow.Append(
-                                CreateCell(FormatNumber(stat.Median)),
-                                CreateCell(FormatNumber(stat.Mean)),
-                                CreateCell(FormatNumber(stat.Mode)),
+                                CreateCell(FormatNumber(stat.SatisfactionPercentage)),
+                                CreateCell(FormatNumber(stat.AverageScore)),
                                 CreateCell(FormatNumber(stat.StandardDeviation)),
+                                CreateCell(FormatRating(stat.Rating)),
                                 CreateCell(stat.ResponseCount.ToString(CultureInfo.InvariantCulture))
                             );
                         }
@@ -487,5 +488,16 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
     private static string FormatNumber(decimal value)
     {
         return value.ToString("F2", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatRating(SatisfactionRating rating)
+    {
+        return rating switch
+        {
+            SatisfactionRating.Excellent => "отлично",
+            SatisfactionRating.Good => "хорошо",
+            SatisfactionRating.Satisfactory => "удовлетворительно",
+            _ => "неудовлетворительно"
+        };
     }
 }

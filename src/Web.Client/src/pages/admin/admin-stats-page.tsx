@@ -63,6 +63,7 @@ import api, {
   type GetAnalyticsByPeriodsRequest,
   type GetAnalyticsByGroupsRequest,
   type PeriodAnalyticsResponse,
+  type SatisfactionRating,
 } from "../../api";
 import {
   Card,
@@ -94,6 +95,23 @@ const colors = [
   "var(--chart-2)",
   "var(--chart-1)",
 ];
+
+// Table 1 thresholds from "Методика оценки удовлетворенности потребителей" — mirrors
+// StatisticsCalculator.ClassifySatisfaction on the backend, used only for the client-computed
+// overall (across-questions) rating.
+function classifyRating(satisfactionPercentage: number): SatisfactionRating {
+  if (satisfactionPercentage < 40) return "Unsatisfactory";
+  if (satisfactionPercentage < 60) return "Satisfactory";
+  if (satisfactionPercentage < 80) return "Good";
+  return "Excellent";
+}
+
+const ratingLabels: Record<SatisfactionRating, string> = {
+  Excellent: "отлично",
+  Good: "хорошо",
+  Satisfactory: "удовлетворительно",
+  Unsatisfactory: "неудовлетворительно",
+};
 
 function asDateInput(date: Date) {
   return format(date, "yyyy-MM-dd");
@@ -351,13 +369,14 @@ export const AdminStatsPage = () => {
         );
         const stats = singleResponse.data;
         const totalSubmissions = stats.length > 0 ? stats[0].responseCount : 0;
-        const overallAverage = stats.length > 0 
-          ? stats.reduce((sum, q) => sum + q.mean, 0) / stats.length 
+        // Formula (6)/(5): overall % and average deviation are the mean across questions
+        const overallSatisfactionPercentage = stats.length > 0
+          ? stats.reduce((sum, q) => sum + q.satisfactionPercentage, 0) / stats.length
           : 0;
         const overallStandardDeviation = stats.length > 0
-          ? Math.sqrt(stats.reduce((sum, q) => sum + q.standardDeviation ** 2, 0) / stats.length)
+          ? stats.reduce((sum, q) => sum + q.standardDeviation, 0) / stats.length
           : 0;
-        
+
         reportResponse = {
           data: [
             {
@@ -366,8 +385,9 @@ export const AdminStatsPage = () => {
               periodEnd: singleRange.dateTo,
               questionStatistics: stats,
               totalSubmissions,
-              overallAverage,
+              overallSatisfactionPercentage,
               overallStandardDeviation,
+              overallRating: classifyRating(overallSatisfactionPercentage),
             },
           ],
         };
@@ -379,17 +399,18 @@ export const AdminStatsPage = () => {
         reportResponse.data = reportResponse.data.map(period => {
           const stats = period.questionStatistics;
           const totalSubmissions = stats.length > 0 ? stats[0].responseCount : 0;
-          const overallAverage = stats.length > 0
-            ? stats.reduce((sum, q) => sum + q.mean, 0) / stats.length
+          const overallSatisfactionPercentage = stats.length > 0
+            ? stats.reduce((sum, q) => sum + q.satisfactionPercentage, 0) / stats.length
             : 0;
           const overallStandardDeviation = stats.length > 0
-            ? Math.sqrt(stats.reduce((sum, q) => sum + q.standardDeviation ** 2, 0) / stats.length)
+            ? stats.reduce((sum, q) => sum + q.standardDeviation, 0) / stats.length
             : 0;
           return {
             ...period,
             totalSubmissions,
-            overallAverage,
+            overallSatisfactionPercentage,
             overallStandardDeviation,
+            overallRating: classifyRating(overallSatisfactionPercentage),
           };
         });
       } else {
@@ -406,21 +427,22 @@ export const AdminStatsPage = () => {
           data: filteredGroups.map((item) => {
             const stats = item.questionStatistics;
             const totalSubmissions = stats.length > 0 ? stats[0].responseCount : 0;
-            const overallAverage = stats.length > 0
-              ? stats.reduce((sum, q) => sum + q.mean, 0) / stats.length
+            const overallSatisfactionPercentage = stats.length > 0
+              ? stats.reduce((sum, q) => sum + q.satisfactionPercentage, 0) / stats.length
               : 0;
             const overallStandardDeviation = stats.length > 0
-              ? Math.sqrt(stats.reduce((sum, q) => sum + q.standardDeviation ** 2, 0) / stats.length)
+              ? stats.reduce((sum, q) => sum + q.standardDeviation, 0) / stats.length
               : 0;
-            
+
             return {
               label: item.groupName,
               periodStart: singleRange.dateFrom,
               periodEnd: singleRange.dateTo,
               questionStatistics: stats,
               totalSubmissions,
-              overallAverage,
+              overallSatisfactionPercentage,
               overallStandardDeviation,
+              overallRating: classifyRating(overallSatisfactionPercentage),
             };
           }),
         };
@@ -511,7 +533,7 @@ export const AdminStatsPage = () => {
     };
     report?.forEach((period, periodIndex) => {
       const metric = period.questionStatistics.find((q) => q.questionId === question.questionId);
-      row[`slice_${periodIndex}`] = metric?.mean ?? 0;
+      row[`slice_${periodIndex}`] = metric?.satisfactionPercentage ?? 0;
     });
     return row;
   });
@@ -569,10 +591,13 @@ export const AdminStatsPage = () => {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Средний балл</CardTitle>
+            <CardTitle>Удовлетворенность потребителей, %</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl">
-            {(report[0].overallAverage ?? 0).toFixed(2)}
+            {(report[0].overallSatisfactionPercentage ?? 0).toFixed(2)}
+            <span className="ml-2 text-sm font-normal text-muted-foreground">
+              {ratingLabels[report[0].overallRating ?? "Unsatisfactory"]}
+            </span>
           </CardContent>
         </Card>
         <Card>
@@ -580,7 +605,7 @@ export const AdminStatsPage = () => {
             <CardTitle>Отклонение</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl">
-            {(report[0].overallStandardDeviation ?? 0).toFixed(2)}
+            ± {(report[0].overallStandardDeviation ?? 0).toFixed(2)}
           </CardContent>
         </Card>
       </div>
@@ -592,7 +617,7 @@ export const AdminStatsPage = () => {
               <CardTitle>{period.label}</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl">
-              {`${(period.overallAverage ?? 0).toFixed(2)} / ${period.totalSubmissions ?? 0}`}
+              {`${(period.overallSatisfactionPercentage ?? 0).toFixed(2)}% / ${period.totalSubmissions ?? 0}`}
             </CardContent>
             <CardFooter className="text-xs">
               {`${period.periodStart.slice(0, 10)} - ${period.periodEnd.slice(0, 10)}`}
@@ -975,8 +1000,8 @@ export const AdminStatsPage = () => {
                       axisLine={false}
                       tickLine={false}
                       tick={{ fill: "var(--muted-foreground)", fontSize: 10 }}
-                      domain={[0, 10]}
-                      ticks={[0, 2, 4, 6, 8, 10]}
+                      domain={[0, 100]}
+                      ticks={[0, 20, 40, 60, 80, 100]}
                     />
                     <ChartTooltip
                       cursor={true}
@@ -1162,10 +1187,10 @@ function QuestionsTable({
               <TableHead className="text-left">Вопрос</TableHead>
               {periods.length === 1 ? (
                 <>
-                  <TableHead className="text-right">Медиана</TableHead>
-                  <TableHead className="text-right">Среднее</TableHead>
-                  <TableHead className="text-right">Мода</TableHead>
+                  <TableHead className="text-right">Удовл. потреб., %</TableHead>
+                  <TableHead className="text-right">Средний балл</TableHead>
                   <TableHead className="text-right">Отклонение</TableHead>
+                  <TableHead className="text-right">Оценка</TableHead>
                   <TableHead className="text-right">Ответов</TableHead>
                 </>
               ) : (
@@ -1188,16 +1213,16 @@ function QuestionsTable({
                 {periods.length === 1 ? (
                   <>
                     <TableCell className="text-right">
-                      {question.median.toFixed(2)}
+                      {question.satisfactionPercentage.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right">
-                      {question.mean.toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {question.mode.toFixed(2)}
+                      {question.averageScore.toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right">
                       {question.standardDeviation.toFixed(2)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      {ratingLabels[question.rating]}
                     </TableCell>
                     <TableCell className="text-right">
                       {question.responseCount}
@@ -1213,7 +1238,7 @@ function QuestionsTable({
                         key={`${question.questionId}-${periodIndex}`}
                         className="text-right"
                       >
-                        {metric?.mean.toFixed(2) ?? "-"}
+                        {metric?.satisfactionPercentage.toFixed(2) ?? "-"}
                       </TableCell>
                     );
                   })

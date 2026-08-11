@@ -91,13 +91,18 @@ export interface StatisticsFilters {
 }
 
 // New API types
+export type SatisfactionRating = "Unsatisfactory" | "Satisfactory" | "Good" | "Excellent";
+
+// Consumer-satisfaction metrics per "Методика оценки удовлетворенности потребителей":
+// satisfactionPercentage is the mean of (score / importance weight) across respondents, x100;
+// averageScore/standardDeviation are computed on the raw 1-10 scores; rating is the Table 1 bucket.
 export interface QuestionStatistics {
   questionId: string;
   questionText: string;
-  median: number;
-  mean: number;
-  mode: number;
+  satisfactionPercentage: number;
+  averageScore: number;
   standardDeviation: number;
+  rating: SatisfactionRating;
   responseCount: number;
 }
 
@@ -111,10 +116,10 @@ export interface AnalyticsByPeriodRequest {
 export interface AnalyticsByPeriodResponse {
   questionId: string;
   questionText: string;
-  median: number;
-  mean: number;
-  mode: number;
+  satisfactionPercentage: number;
+  averageScore: number;
   standardDeviation: number;
+  rating: SatisfactionRating;
   responseCount: number;
 }
 
@@ -136,8 +141,9 @@ export interface PeriodAnalyticsResponse {
   periodEnd: string;
   questionStatistics: QuestionStatistics[];
   totalSubmissions?: number;
-  overallAverage?: number;
+  overallSatisfactionPercentage?: number;
   overallStandardDeviation?: number;
+  overallRating?: SatisfactionRating;
 }
 
 export interface GetAnalyticsByGroupsRequest {

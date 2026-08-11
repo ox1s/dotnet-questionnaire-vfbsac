@@ -58,10 +58,10 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
             // Header row
             worksheet.Cell(currentRow, 1).Value = "№";
             worksheet.Cell(currentRow, 2).Value = "Вопрос";
-            worksheet.Cell(currentRow, 3).Value = "Медиана";
-            worksheet.Cell(currentRow, 4).Value = "Среднее";
-            worksheet.Cell(currentRow, 5).Value = "Мода";
-            worksheet.Cell(currentRow, 6).Value = "Ст. откл.";
+            worksheet.Cell(currentRow, 3).Value = "Удовл. потреб., %";
+            worksheet.Cell(currentRow, 4).Value = "Средний балл";
+            worksheet.Cell(currentRow, 5).Value = "Ст. откл.";
+            worksheet.Cell(currentRow, 6).Value = "Оценка";
             worksheet.Cell(currentRow, 7).Value = "Кол-во ответов";
 
             IXLRange headerRange = worksheet.Range(currentRow, 1, currentRow, 7);
@@ -78,10 +78,10 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
             {
                 worksheet.Cell(currentRow, 1).Value = rowNumber;
                 worksheet.Cell(currentRow, 2).Value = stat.QuestionText;
-                worksheet.Cell(currentRow, 3).Value = FormatNumber(stat.Median);
-                worksheet.Cell(currentRow, 4).Value = FormatNumber(stat.Mean);
-                worksheet.Cell(currentRow, 5).Value = FormatNumber(stat.Mode);
-                worksheet.Cell(currentRow, 6).Value = FormatNumber(stat.StandardDeviation);
+                worksheet.Cell(currentRow, 3).Value = FormatNumber(stat.SatisfactionPercentage);
+                worksheet.Cell(currentRow, 4).Value = FormatNumber(stat.AverageScore);
+                worksheet.Cell(currentRow, 5).Value = FormatNumber(stat.StandardDeviation);
+                worksheet.Cell(currentRow, 6).Value = FormatRating(stat.Rating);
                 worksheet.Cell(currentRow, 7).Value = stat.ResponseCount;
 
                 IXLRange dataRange = worksheet.Range(currentRow, 1, currentRow, 7);
@@ -175,7 +175,7 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
             // Data rows - 5 rows per question (one per stat)
             int rowNumber = 1;
-            string[] statNames = ["Медиана", "Среднее", "Мода", "Ст. откл.", "Кол-во"];
+            string[] statNames = ["Удовл. потреб., %", "Средний балл", "Ст. откл.", "Оценка", "Кол-во"];
 
             foreach (KeyValuePair<Guid, string> question in allQuestions)
             {
@@ -214,10 +214,10 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
                         {
                             string value = statIndex switch
                             {
-                                0 => FormatNumber(stat.Median),
-                                1 => FormatNumber(stat.Mean),
-                                2 => FormatNumber(stat.Mode),
-                                3 => FormatNumber(stat.StandardDeviation),
+                                0 => FormatNumber(stat.SatisfactionPercentage),
+                                1 => FormatNumber(stat.AverageScore),
+                                2 => FormatNumber(stat.StandardDeviation),
+                                3 => FormatRating(stat.Rating),
                                 4 => stat.ResponseCount.ToString(CultureInfo.InvariantCulture),
                                 _ => "-"
                             };
@@ -335,7 +335,7 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
             // Data rows - 5 rows per question (one per stat)
             int rowNumber = 1;
-            string[] statNames = ["Медиана", "Среднее", "Мода", "Ст. откл.", "Кол-во"];
+            string[] statNames = ["Удовл. потреб., %", "Средний балл", "Ст. откл.", "Оценка", "Кол-во"];
 
             foreach (KeyValuePair<Guid, string> question in allQuestions)
             {
@@ -374,10 +374,10 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
                         {
                             string value = statIndex switch
                             {
-                                0 => FormatNumber(stat.Median),
-                                1 => FormatNumber(stat.Mean),
-                                2 => FormatNumber(stat.Mode),
-                                3 => FormatNumber(stat.StandardDeviation),
+                                0 => FormatNumber(stat.SatisfactionPercentage),
+                                1 => FormatNumber(stat.AverageScore),
+                                2 => FormatNumber(stat.StandardDeviation),
+                                3 => FormatRating(stat.Rating),
                                 4 => stat.ResponseCount.ToString(CultureInfo.InvariantCulture),
                                 _ => "-"
                             };
@@ -431,5 +431,16 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
     private static string FormatNumber(decimal value)
     {
         return value.ToString("F2", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatRating(SatisfactionRating rating)
+    {
+        return rating switch
+        {
+            SatisfactionRating.Excellent => "отлично",
+            SatisfactionRating.Good => "хорошо",
+            SatisfactionRating.Satisfactory => "удовлетворительно",
+            _ => "неудовлетворительно"
+        };
     }
 }

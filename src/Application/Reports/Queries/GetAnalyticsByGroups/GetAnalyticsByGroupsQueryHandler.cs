@@ -65,7 +65,7 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
         IEnumerable<Guid> submissionIds = submissionsWithGrouping.Select(s => s.Id);
 
         // Get numeric answers grouped by question
-        // For weighted ratings, normalize to 0-10 scale: (NumericValue / Weight) * 10
+        // Weight defaults to 10 (max importance) when the question has no explicit importance weight
         var answersGroupedByQuestion = await context.Answers
             .AsNoTracking()
             .Where(a => submissionIds.Contains(a.SubmissionId) &&
@@ -76,9 +76,8 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
             {
                 g.Key.SubmissionId,
                 g.Key.QuestionId,
-                Value = g.Select(a => a.Weight.HasValue && a.Weight.Value > 0
-                    ? a.NumericValue!.Value / a.Weight.Value * 10
-                    : a.NumericValue!.Value).First()
+                Score = g.Select(a => a.NumericValue!.Value).First(),
+                Weight = g.Select(a => a.Weight ?? 10m).First()
             })
             .ToListAsync(cancellationToken);
 
@@ -100,16 +99,19 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
                     .GroupBy(a => a.QuestionId)
                     .Select(qGroup =>
                     {
-                        var values = qGroup.Select(a => a.Value).ToList();
+                        var scores = qGroup.Select(a => a.Score).ToList();
+                        var ratioPairs = qGroup.Select(a => (a.Score, a.Weight)).ToList();
+                        decimal satisfactionPercentage =
+                            StatisticsCalculator.CalculateSatisfactionPercentage(ratioPairs);
 
                         return new QuestionStatistics(
                             QuestionId: qGroup.Key,
                             QuestionText: questions.GetValueOrDefault(qGroup.Key) ?? string.Empty,
-                            Median: StatisticsCalculator.CalculateMedian(values),
-                            Mean: StatisticsCalculator.CalculateMean(values),
-                            Mode: StatisticsCalculator.CalculateMode(values),
-                            StandardDeviation: StatisticsCalculator.CalculateStandardDeviation(values),
-                            ResponseCount: values.Count);
+                            SatisfactionPercentage: satisfactionPercentage,
+                            AverageScore: StatisticsCalculator.CalculateAverageScore(scores),
+                            StandardDeviation: StatisticsCalculator.CalculateStandardDeviation(scores),
+                            Rating: StatisticsCalculator.ClassifySatisfaction(satisfactionPercentage),
+                            ResponseCount: scores.Count);
                     })
                     .ToList();
 

@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"find . -maxdepth 2 -iname \\\"nuget.config\\\"; echo \\\"---\\\"; grep -rn \\\"NoWarn\\\\|WarningsNotAsErrors\\\\|NU1903\\\" Directory.Build.props Directory.Packages.props tests/Application.UnitTests/Appl...",
+  "error": "Exit code 2\n---\n---packages---\ngrep: Directory.Packages.props: No such file or directory",
+  "timestamp": "2026-08-11T12:46:09.263Z",
+  "retry_count": 1
+}

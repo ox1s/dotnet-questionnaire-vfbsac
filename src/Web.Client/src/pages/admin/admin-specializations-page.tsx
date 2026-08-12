@@ -1,9 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {
-  dictionariesApi,
-  getApiErrorMessage,
-  type DictionaryItem,
-} from "../../api";
+import { useState } from "react";
+import { dictionariesApi, type DictionaryItem } from "../../api";
 import { Plus, Layers3 } from "lucide-react";
 import {
   AdminModal,
@@ -25,41 +21,63 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TableCell } from "@/components/ui/table";
-import { toast } from "sonner";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
 
 type SpecializationItem = DictionaryItem & {
   specialityId?: string;
 };
 
 export const AdminSpecializationsPage = () => {
-  const [specializations, setSpecializations] = useState<SpecializationItem[]>(
-    [],
-  );
-  const [specialities, setSpecialities] = useState<DictionaryItem[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [newName, setNewName] = useState("");
   const [selectedSpeciality, setSelectedSpeciality] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const loadData = async () => {
-    try {
+  const {
+    related: specialities,
+    filteredItems: filteredSpecializations,
+    searchQuery,
+    setSearchQuery,
+    isFormOpen,
+    closeModal,
+    openModal,
+    editingId,
+    name,
+    setName,
+    handleDelete,
+    handleRestore,
+    handleSubmit,
+  } = useDictionaryCrud<SpecializationItem, DictionaryItem>({
+    fetch: async () => {
       const [specializationsRes, specialitiesRes] = await Promise.all([
         dictionariesApi.getSpecializations(),
         dictionariesApi.getSpecialities(),
       ]);
 
-      setSpecializations(specializationsRes.data as SpecializationItem[]);
-      setSpecialities(specialitiesRes.data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
+      return {
+        items: specializationsRes.data as SpecializationItem[],
+        related: specialitiesRes.data,
+      };
+    },
+    searchText: (specialization) => specialization.name,
+    formName: (specialization) => specialization.name,
+    fillForm: (specialization) =>
+      setSelectedSpeciality(
+        specialization?.specialityId || specialization?.departmentId || "",
+      ),
+    submit: async (id) => {
+      if (id) {
+        await dictionariesApi.updateSpecialization(
+          id,
+          name,
+          selectedSpeciality,
+        );
+      } else {
+        await dictionariesApi.createSpecialization(name, selectedSpeciality);
+      }
+    },
+    remove: dictionariesApi.deleteSpecialization,
+    restore: dictionariesApi.restoreSpecialization,
+    restoreSuccessMessage: "Специализация успешно восстановлена.",
+  });
 
   useAdminPageConfig({
     title: "Справочники",
@@ -71,71 +89,9 @@ export const AdminSpecializationsPage = () => {
     ),
   });
 
-  const filteredSpecializations = specializations.filter((specialization) =>
-    specialization.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
   const getSpecialityName = (specialityId?: string) =>
     specialities.find((speciality) => speciality.id === specialityId)?.name ||
     "-";
-
-  const openModal = (specialization?: SpecializationItem) => {
-    if (specialization) {
-      setEditingId(specialization.id);
-      setNewName(specialization.name);
-      setSelectedSpeciality(
-        specialization.specialityId || specialization.departmentId || "",
-      );
-    } else {
-      setEditingId(null);
-      setNewName("");
-      setSelectedSpeciality("");
-    }
-
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await dictionariesApi.deleteSpecialization(id);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка удаления"));
-    }
-  };
-
-  const handleRestore = async (id: string) => {
-    try {
-      await dictionariesApi.restoreSpecialization(id);
-      loadData();
-      toast.success("Специализация успешно восстановлена.", {
-        style: { color: "green" },
-      });
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      if (editingId) {
-        await dictionariesApi.updateSpecialization(
-          editingId,
-          newName,
-          selectedSpeciality,
-        );
-      } else {
-        await dictionariesApi.createSpecialization(newName, selectedSpeciality);
-      }
-
-      setIsFormOpen(false);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка сохранения"));
-    }
-  };
 
   return (
     <>
@@ -175,8 +131,8 @@ export const AdminSpecializationsPage = () => {
               <AdminTableActions
                 isDeleted={specialization.isDeleted}
                 onEdit={() => openModal(specialization)}
-                onDelete={() => handleDelete(specialization.id)}
-                onRestore={() => handleRestore(specialization.id)}
+                onDelete={() => handleDelete(specialization)}
+                onRestore={() => handleRestore(specialization)}
                 deleteDescription={`Вы уверены, что хотите удалить специализацию "${specialization.name}"?`}
               />
             </TableCell>
@@ -186,15 +142,15 @@ export const AdminSpecializationsPage = () => {
 
       <AdminModal
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={closeModal}
         title={editingId ? "Редактирование" : "Новая специализация"}
         onSubmit={handleSubmit}
       >
         <div className="space-y-2">
           <Label>Название</Label>
           <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Введите название специализации..."
           />
         </div>

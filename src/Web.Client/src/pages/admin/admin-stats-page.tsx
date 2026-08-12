@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Download, RefreshCw } from "lucide-react";
@@ -164,16 +164,32 @@ export const AdminStatsPage = () => {
     }));
   };
 
+  // optionsFor reads `filters` internally, but this effect must NOT re-run
+  // merely because `filters` changed (see comment below) - it should only
+  // recompute the allowed id set when the comparison field, the entered
+  // mode, or the underlying dictionaries change. A ref keeps the callback
+  // reference used inside the effect stable across renders while still
+  // invoking the latest `optionsFor` closure, so we intentionally track it
+  // outside of the effect's dependency array instead of memoizing
+  // `optionsFor` itself (which is also used - and must stay fully live -
+  // for rendering options in AnalyticsFilterPanel).
+  const optionsForRef = useRef(optionsFor);
+  optionsForRef.current = optionsFor;
+
   useEffect(() => {
-    // Don't clear selectedIds when filters change in groups mode
-    // Users should be able to compare groups even if they're filtered out
+    // Don't clear selectedIds when filters change in groups mode - users
+    // should be able to compare groups even if they're filtered out. `mode`
+    // is a dependency here on purpose: switching modes (e.g. away from and
+    // back to "groups") re-derives the allowed id set from the current
+    // filters and prunes any selection that's no longer valid, even though
+    // a plain filter change while already in "groups" mode does not.
     if (mode !== "groups") return;
 
-    const allowedIds = new Set(optionsFor().map((item) => item.value));
+    const allowedIds = new Set(optionsForRef.current().map((item) => item.value));
     setSelectedIds((previous) =>
       previous.filter((value) => allowedIds.has(value)),
     );
-  }, [compareField, departments, disciplines, specialities, specializations]);
+  }, [mode, compareField, departments, disciplines, specialities, specializations]);
 
   const baseFilters = (
     field?: CompareField,
@@ -340,23 +356,24 @@ export const AdminStatsPage = () => {
 
     try {
       let response;
-      let filename = `analytics-${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+      const datePart = format(new Date(), "yyyy-MM-dd");
+      let filename: string;
 
       if (mode === "single") {
         response = await reportsApi.exportAnalyticsByPeriod(
           request as AnalyticsByPeriodRequest,
         );
-        filename = `analytics-period-${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+        filename = `analytics-period-${datePart}.xlsx`;
       } else if (mode === "periods") {
         response = await reportsApi.exportAnalyticsByPeriods(
           request as GetAnalyticsByPeriodsRequest,
         );
-        filename = `analytics-periods-${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+        filename = `analytics-periods-${datePart}.xlsx`;
       } else {
         response = await reportsApi.exportAnalyticsByGroups(
           request as GetAnalyticsByGroupsRequest,
         );
-        filename = `analytics-groups-${format(new Date(), "yyyy-MM-dd")}.xlsx`;
+        filename = `analytics-groups-${datePart}.xlsx`;
       }
 
       // Create download link
@@ -375,9 +392,8 @@ export const AdminStatsPage = () => {
     }
   };
 
-  const questions = report && report.length > 0
-    ? report[0].questionStatistics
-    : [];
+  const hasReportData = report !== null && report.length > 0;
+  const questions = hasReportData ? report[0].questionStatistics : [];
   const availableLinkedOptions = getLinkedFilterOptions(filters, {
     departments,
     disciplines,
@@ -461,7 +477,7 @@ export const AdminStatsPage = () => {
                 <RefreshCw className="animate-spin" size={24} />
               </div>
             ) : null}
-            {report !== null && report.length > 0 ? (
+            {hasReportData ? (
               <AnalyticsSummaryCards report={report} />
             ) : report !== null && report.length === 0 ? (
               <div className="border bg-card p-10 text-center text-muted-foreground">
@@ -475,15 +491,15 @@ export const AdminStatsPage = () => {
               </div>
             )}
 
-            {report && report.length > 0 ? (
+            {hasReportData ? (
               <AnalyticsChart report={report} questions={questions} />
             ) : null}
 
-            {report && report.length > 0 ? (
+            {hasReportData ? (
               <QuestionsTable questions={questions} periods={report} />
             ) : null}
 
-            {report && report.length > 0 ? (
+            {hasReportData ? (
               <AdvicesSection
                 advices={advices}
                 teacherFilterId={filters.teacherId}
@@ -493,7 +509,7 @@ export const AdminStatsPage = () => {
               />
             ) : null}
 
-            {report && report.length > 0 ? (
+            {hasReportData ? (
               <TextAnswersSection answers={textAnswers} />
             ) : null}
           </>

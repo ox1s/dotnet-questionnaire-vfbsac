@@ -22,7 +22,7 @@ All reusable React components, split into seven feature/role folders. `ui/` is t
 | `layout/nav-main.tsx` | `NavMain` — renders the collapsible sidebar sections from `AppSidebar`'s `data.navMain`; highlights the active route via `useLocation()` |
 | `layout/nav-projects.tsx` | `NavProjects` — generic shadcn-template "Projects" sidebar group; **not wired into `AppSidebar`'s actual nav data, effectively unused boilerplate from the shadcn dashboard template** |
 | `layout/team-switcher.tsx` | `TeamSwitcher` — generic shadcn-template team/org switcher dropdown; **also not referenced by `AppSidebar`, unused boilerplate** |
-| `layout/theme-provider.tsx` | `ThemeProvider`/`useTheme` — light/dark/system theme context, persists to `localStorage["vite-ui-theme"]`, toggles the `light`/`dark` class on `<html>`. Wraps the whole app in `App.tsx` |
+| `layout/theme-provider.tsx` | `ThemeProvider` — light/dark/system theme context, persists to `localStorage["vite-ui-theme"]`, toggles the `light`/`dark` class on `<html>`. Wraps the whole app in `App.tsx`. The paired `useTheme()` hook lives in `hooks/use-theme.ts` (moved out to keep this file component-only for Vite fast-refresh) |
 | **shared/** | |
 | `shared/filter-select.tsx` | `FilterSelect` — a `<Select>` wrapper that maps an internal `""` (all/no filter) sentinel to `"all"` for Radix (which can't have empty-string item values); used for the report filter dropdowns in `AdminStatsPage` |
 | `shared/mode-toggle.tsx` | `ModeToggle` — sun/moon icon button that flips `useTheme()` between light and dark (resolves `"system"` via `matchMedia` first) |
@@ -34,7 +34,7 @@ All reusable React components, split into seven feature/role folders. `ui/` is t
 ### Notable `ui/` internals
 - `button.tsx` — `cva`-driven variants (`default|outline|secondary|ghost|destructive|link`) × sizes (`default|xs|sm|lg|icon|icon-xs|icon-sm|icon-lg`); square corners (`rounded-none`) is the deliberate house style (`style: "radix-lyra"` in `components.json`), not a bug — don't "fix" it by adding rounded corners.
 - `chart.tsx` — thin Recharts wrapper (`ChartContainer`, `ChartTooltip`, `ChartTooltipContent`, `type ChartConfig`) that maps a config object to CSS custom properties for series colors; used only by `AdminStatsPage`'s `BarChart`.
-- `sidebar.tsx` — the full shadcn collapsible-sidebar system (`SidebarProvider`, `Sidebar`, `SidebarInset`, `SidebarTrigger`, `SidebarMenu*`, `useSidebar`, mobile sheet fallback via `use-mobile.ts`) that `AdminLayout` and `AppSidebar` are built on.
+- `sidebar.tsx` — the full shadcn collapsible-sidebar system (`SidebarProvider`, `Sidebar`, `SidebarInset`, `SidebarTrigger`, `SidebarMenu*`, mobile sheet fallback via `use-mobile.ts`) that `AdminLayout` and `AppSidebar` are built on. The paired `useSidebar()` hook lives in `hooks/use-sidebar.ts` (moved out to keep this file component-only for Vite fast-refresh).
 - `sonner.tsx` — theatrically thin wrapper binding the `sonner` `Toaster` to `next-themes`'s theme (note: the app's own `ThemeProvider` in `layout/theme-provider.tsx` is what's actually mounted in `App.tsx`, not `next-themes`'s provider — the two theme systems coexist but only the custom one drives `<html>`'s class).
 
 ## Subdirectories
@@ -53,7 +53,7 @@ All reusable React components, split into seven feature/role folders. `ui/` is t
 - **Component pattern**: functional components, typed via inline `interface Props` or `React.ComponentProps<typeof X>`; most are arrow-function `const X = (...) => {...}` exports, `ui/` ones are `function X(...) {...}` per shadcn convention. No class components.
 - **Styling**: Tailwind utility classes inline; use `cn()` from `@/lib/utils` when a class list needs conditional merging (variant/state classes) rather than string concatenation. Square/flat corners (`rounded-none`) and border-heavy cards are the house look — match it in new components.
 - **Icons**: `lucide-react` exclusively, sized via the `size={n}` prop (not Tailwind `size-*` classes) in feature components, though `ui/button.tsx` targets `svg` sizing via `[&_svg:not([class*='size-'])]:size-4`.
-- **Adding a new admin CRUD page**: reuse `AdminTable` + `AdminModal` + `AdminTableActions` from `admin/admin-shared.tsx` (see any `pages/admin/admin-*-page.tsx` for the copy-paste shape: `loadData` → `useEffect` → `AdminTable` with `renderRow` → `AdminModal` for create/edit) instead of hand-rolling a table.
+- **Adding a new admin CRUD page**: reuse `AdminTable` + `AdminModal` + `AdminTableActions` from `admin/admin-shared.tsx`, plus the shared `useDictionaryCrud` hook from `hooks/use-dictionary-crud.ts` for list loading, search filtering, and modal/save/delete/restore state (see any `pages/admin/admin-*-page.tsx` for the pattern) instead of hand-rolling a table or re-implementing that state.
 - **Before adding sidebar nav items**: `layout/nav-projects.tsx` and `layout/team-switcher.tsx` are unused shadcn template leftovers — don't assume they're wired up; the real nav data lives inline in `layout/app-sidebar.tsx`'s `data.navMain`.
 - **Adding shadcn primitives**: this project uses the `shadcn` CLI (`components.json`, style `radix-lyra`, base color `mist`) — new `ui/` components should be added via the CLI rather than hand-written to keep variant conventions (`data-slot`, `cva`) consistent with the existing set.
 

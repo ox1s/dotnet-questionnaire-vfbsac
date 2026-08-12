@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   dictionariesApi,
-  getApiErrorMessage,
   type DictionaryItem,
   type TeacherItem,
 } from "../../api";
@@ -18,36 +17,50 @@ import { Button } from "@/components/ui/button";
 import { TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 
 export const AdminTeachersPage = () => {
-  const [teachers, setTeachers] = useState<TeacherItem[]>([]);
-  const [departments, setDepartments] = useState<DictionaryItem[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [newName, setNewName] = useState("");
-  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<
-    string[]
-  >([]);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>(
+    [],
+  );
 
-  const loadData = async () => {
-    try {
+  const {
+    related: departments,
+    filteredItems: filteredTeachers,
+    searchQuery,
+    setSearchQuery,
+    isFormOpen,
+    closeModal,
+    openModal,
+    editingId,
+    name,
+    setName,
+    handleDelete,
+    handleRestore,
+    handleSubmit,
+  } = useDictionaryCrud<TeacherItem, DictionaryItem>({
+    fetch: async () => {
       const [teachersRes, departmentsRes] = await Promise.all([
         dictionariesApi.getTeachers(),
         dictionariesApi.getDepartments(),
       ]);
-      setTeachers(teachersRes.data);
-      setDepartments(departmentsRes.data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+      return { items: teachersRes.data, related: departmentsRes.data };
+    },
+    searchText: (t) => t.fullName,
+    formName: (t) => t.fullName,
+    fillForm: (t) => setSelectedDepartmentIds(t?.departmentIds ?? []),
+    submit: async (id) => {
+      if (id)
+        await dictionariesApi.updateTeacher(id, name, selectedDepartmentIds);
+      else await dictionariesApi.createTeacher(name, selectedDepartmentIds);
+    },
+    remove: dictionariesApi.deleteTeacher,
+    restore: dictionariesApi.restoreTeacher,
+    confirmDelete: () => "Вы уверены, что хотите удалить этого преподавателя?",
+    restoreSuccessMessage: "Преподаватель успешно восстановлен.",
+  });
 
-  useEffect(() => {
-    loadData();
-  }, []);
   useAdminPageConfig({
     title: "Справочники",
     subtitle: "Преподаватели",
@@ -57,10 +70,6 @@ export const AdminTeachersPage = () => {
       </Button>
     ),
   });
-
-  const filteredTeachers = teachers.filter((t) =>
-    t.fullName.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
 
   const getDepartmentName = (departmentId?: string) =>
     departments.find((department) => department.id === departmentId)?.name ??
@@ -82,60 +91,6 @@ export const AdminTeachersPage = () => {
         ? prev.filter((id) => id !== departmentId)
         : [...prev, departmentId],
     );
-  };
-
-  const openModal = (t?: TeacherItem) => {
-    if (t) {
-      setEditingId(t.id);
-      setNewName(t.fullName);
-      setSelectedDepartmentIds(t.departmentIds ?? []);
-    } else {
-      setEditingId(null);
-      setNewName("");
-      setSelectedDepartmentIds([]);
-    }
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Вы уверены, что хотите удалить этого преподавателя?"))
-      return;
-    try {
-      await dictionariesApi.deleteTeacher(id);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка удаления"));
-    }
-  };
-
-  const handleRestore = async (id: string) => {
-    try {
-      await dictionariesApi.restoreTeacher(id);
-      loadData();
-      toast.success("Преподаватель успешно восстановлен.", {
-        style: { color: "green" },
-      });
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingId)
-        await dictionariesApi.updateTeacher(
-          editingId,
-          newName,
-          selectedDepartmentIds,
-        );
-      else await dictionariesApi.createTeacher(newName, selectedDepartmentIds);
-
-      setIsFormOpen(false);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка сохранения"));
-    }
   };
 
   const truncateFirstWord = (fullName: string, maxLen: number = 10) => {
@@ -183,8 +138,8 @@ export const AdminTeachersPage = () => {
               <AdminTableActions
                 isDeleted={teacher.isDeleted}
                 onEdit={() => openModal(teacher)}
-                onDelete={() => handleDelete(teacher.id)}
-                onRestore={() => handleRestore(teacher.id)}
+                onDelete={() => handleDelete(teacher)}
+                onRestore={() => handleRestore(teacher)}
                 deleteDescription={`Вы уверены, что хотите удалить преподавателя "${formatTeacherLabel(teacher)}"?`}
               />
             </TableCell>
@@ -194,15 +149,15 @@ export const AdminTeachersPage = () => {
 
       <AdminModal
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={closeModal}
         title={editingId ? "Редактирование" : "Новый преподаватель"}
         onSubmit={handleSubmit}
       >
         <div className="space-y-2">
           <Label>ФИО</Label>
           <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Введите фио..."
           />
         </div>

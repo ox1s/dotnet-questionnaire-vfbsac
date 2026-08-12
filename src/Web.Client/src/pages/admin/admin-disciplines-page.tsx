@@ -1,9 +1,5 @@
-import React, { useEffect, useState } from "react";
-import {
-  dictionariesApi,
-  getApiErrorMessage,
-  type DictionaryItem,
-} from "../../api";
+import { useState } from "react";
+import { dictionariesApi, type DictionaryItem } from "../../api";
 import { Plus, Book } from "lucide-react";
 import {
   AdminModal,
@@ -16,9 +12,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
 import {
   Select,
   SelectContent,
@@ -29,30 +25,42 @@ import {
 } from "@/components/ui/select";
 
 export const AdminDisciplinesPage = () => {
-  const [disciplines, setDisciplines] = useState<DictionaryItem[]>([]);
-  const [departments, setDepartments] = useState<DictionaryItem[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [newName, setNewName] = useState("");
   const [selectedDept, setSelectedDept] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const loadData = async () => {
-    try {
+  const {
+    related: departments,
+    filteredItems: filteredDisciplines,
+    searchQuery,
+    setSearchQuery,
+    isFormOpen,
+    closeModal,
+    openModal,
+    editingId,
+    name,
+    setName,
+    handleDelete,
+    handleRestore,
+    handleSubmit,
+  } = useDictionaryCrud<DictionaryItem, DictionaryItem>({
+    fetch: async () => {
       const [discRes, deptsRes] = await Promise.all([
         dictionariesApi.getDisciplines(),
         dictionariesApi.getDepartments(),
       ]);
-      setDisciplines(discRes.data);
-      setDepartments(deptsRes.data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
+      return { items: discRes.data, related: deptsRes.data };
+    },
+    searchText: (d) => d.name,
+    formName: (d) => d.name,
+    fillForm: (d) => setSelectedDept(d?.departmentId || ""),
+    submit: async (id) => {
+      if (id) await dictionariesApi.updateDiscipline(id, name, selectedDept);
+      else await dictionariesApi.createDiscipline(name, selectedDept);
+    },
+    remove: dictionariesApi.deleteDiscipline,
+    restore: dictionariesApi.restoreDiscipline,
+    restoreSuccessMessage: "Предмет успешно восстановлен.",
+    saveErrorMessage: "Ошибка",
+  });
 
   useAdminPageConfig({
     title: "Справочники",
@@ -64,63 +72,8 @@ export const AdminDisciplinesPage = () => {
     ),
   });
 
-  const filteredDisciplines = disciplines.filter((d) =>
-    d.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
   const getDeptName = (deptId?: string) =>
     departments.find((d) => d.id === deptId)?.name || "-";
-
-  const openModal = (d?: DictionaryItem) => {
-    if (d) {
-      setEditingId(d.id);
-      setNewName(d.name);
-      setSelectedDept(d.departmentId || "");
-    } else {
-      setEditingId(null);
-      setNewName("");
-      setSelectedDept("");
-    }
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      await dictionariesApi.deleteDiscipline(id);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка удаления"));
-    }
-  };
-
-  const handleRestore = async (id: string) => {
-    try {
-      await dictionariesApi.restoreDiscipline(id);
-      loadData();
-      toast.success("Предмет успешно восстановлен.", {
-        style: { color: "green" },
-      });
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      if (editingId)
-        await dictionariesApi.updateDiscipline(
-          editingId,
-          newName,
-          selectedDept,
-        );
-      else await dictionariesApi.createDiscipline(newName, selectedDept);
-      setIsFormOpen(false);
-      loadData();
-    } catch (e) {
-      toast.error("Ошибка");
-    }
-  };
 
   return (
     <>
@@ -153,8 +106,8 @@ export const AdminDisciplinesPage = () => {
               <AdminTableActions
                 isDeleted={d.isDeleted}
                 onEdit={() => openModal(d)}
-                onDelete={() => handleDelete(d.id)}
-                onRestore={() => handleRestore(d.id)}
+                onDelete={() => handleDelete(d)}
+                onRestore={() => handleRestore(d)}
                 deleteDescription={`Вы уверены, что хотите удалить дисциплину "${d.name}"?`}
               />
             </TableCell>
@@ -164,13 +117,13 @@ export const AdminDisciplinesPage = () => {
 
       <AdminModal
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={closeModal}
         title={editingId ? "Редактирование" : "Новый предмет"}
         onSubmit={handleSubmit}
       >
         <div className="space-y-2">
           <Label>Название</Label>
-          <Input value={newName} onChange={(e) => setNewName(e.target.value)} />
+          <Input value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div className="space-y-2">
           <Label>Филиал кафедры</Label>

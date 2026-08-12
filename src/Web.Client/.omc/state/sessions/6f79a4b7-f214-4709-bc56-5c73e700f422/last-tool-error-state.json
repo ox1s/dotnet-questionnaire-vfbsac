@@ -1,0 +1,7 @@
+{
+  "tool_name": "PowerShell",
+  "tool_input_preview": "{\"command\":\"cd C:\\\\Users\\\\oadmin\\\\home\\\\resources\\\\projects\\\\dotnet-questionnaire-vfbsac\\\\src\\\\Web.Client; Select-String -Path src/api/*.ts,src/api/*.tsx -Pattern \\\"deleteDepartment|deleteUser|restore...",
+  "error": "Exit code 1\nSelect-String: Cannot find path 'C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac\\src\\Web.Client\\src\\api' because it does not exist.",
+  "timestamp": "2026-08-12T12:46:08.385Z",
+  "retry_count": 1
+}

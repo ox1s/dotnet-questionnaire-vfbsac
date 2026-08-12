@@ -1,0 +1,13 @@
+{
+  "active": true,
+  "iteration": 2,
+  "max_iterations": 100,
+  "started_at": "2026-08-12T12:51:00.814Z",
+  "prompt": "/oh-my-claudecode:ralph check code smells and bad practices in Web.Client application. Then fix it",
+  "session_id": "6f79a4b7-f214-4709-bc56-5c73e700f422",
+  "project_path": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac\\src\\Web.Client",
+  "linked_ultrawork": true,
+  "awaiting_confirmation": true,
+  "awaiting_confirmation_set_at": "2026-08-12T12:51:00.814Z",
+  "last_checked_at": "2026-08-12T13:00:12.341Z"
+}

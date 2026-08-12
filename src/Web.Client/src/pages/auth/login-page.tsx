@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api";
+import api, { getApiErrorMessage } from "../../api";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -31,7 +31,7 @@ export const LoginPage = () => {
       localStorage.setItem("token", response.data);
       navigate("/dashboard");
     } catch (err) {
-      setError("Неверный логин или пароль");
+      setError(getApiErrorMessage(err, "Неверный логин или пароль"));
     }
   };
 

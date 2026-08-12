@@ -1,7 +1,8 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import { Edit2, Trash2, RotateCcw, SearchIcon, Trash2Icon } from "lucide-react";
-import { useAdminPage, AdminPageProvider } from "@/contexts/admin-page-context";
+import { AdminPageProvider } from "@/contexts/admin-page-context";
+import { useAdminPage } from "@/hooks/use-admin-page";
 import {
   SidebarInset,
   SidebarProvider,

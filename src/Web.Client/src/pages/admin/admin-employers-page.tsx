@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import { getApiErrorMessage, usersApi, type EmployerUser } from "../../api";
 import {
   AdminModal,
@@ -12,8 +12,10 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Plus, Building2, Key, X, RefreshCw, Copy } from "lucide-react";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
 
-const PASSWORD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
+const PASSWORD_ALPHABET =
+  "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 
 const generateSecurePassword = (length = 12): string => {
   const randomValues = new Uint32Array(length);
@@ -25,19 +27,10 @@ const generateSecurePassword = (length = 12): string => {
 };
 
 export const AdminEmployersPage = () => {
-  const [employers, setEmployers] = useState<EmployerUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
   const [login, setLogin] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [organizationName, setOrganizationName] = useState("");
   const [password, setPassword] = useState("");
-
-  const [searchQuery, setSearchQuery] = useState("");
 
   const [lastCreated, setLastCreated] = useState<{
     login: string;
@@ -45,116 +38,51 @@ export const AdminEmployersPage = () => {
     link: string;
   } | null>(null);
 
-  const loadData = async () => {
-    try {
-      const res = await usersApi.getEmployers();
-      setEmployers(res.data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    filteredItems: filteredEmployers,
+    loading,
+    isSubmitting,
+    searchQuery,
+    setSearchQuery,
+    isFormOpen,
+    closeModal,
+    openModal,
+    editingId,
+    handleDelete,
+    handleSubmit,
+  } = useDictionaryCrud<EmployerUser>({
+    fetch: async () => ({ items: (await usersApi.getEmployers()).data }),
+    searchText: (e) => [e.login, e.displayName, e.organizationName ?? ""],
+    fillForm: (e) => {
+      setLogin(e?.login ?? "");
+      setDisplayName(e?.displayName ?? "");
+      setOrganizationName(e?.organizationName ?? "");
+      setPassword(e ? "" : generateSecurePassword());
+    },
+    validate: () => {
+      if (!login.trim() || !displayName.trim() || !organizationName.trim()) {
+        toast.error("Заполните логин, наименование и организацию");
+        return false;
+      }
 
-  useEffect(() => {
-    loadData();
-  }, []);
+      if (!editingId && !password.trim()) {
+        toast.error("Пароль обязателен при создании");
+        return false;
+      }
 
-  const generatePassword = () => {
-    setPassword(generateSecurePassword());
-  };
-
-  const openCreate = () => {
-    setEditingId(null);
-    setLogin("");
-    setDisplayName("");
-    setOrganizationName("");
-    setPassword(generateSecurePassword());
-    setIsFormOpen(true);
-  };
-
-  const openEdit = (e: EmployerUser) => {
-    setEditingId(e.id);
-    setLogin(e.login);
-    setDisplayName(e.displayName);
-    setOrganizationName(e.organizationName ?? "");
-    setPassword("");
-    setIsFormOpen(true);
-  };
-
-  useAdminPageConfig({
-    title: "Настройки",
-    subtitle: "Наниматели",
-    actions: (
-      <Button onClick={openCreate}>
-        <Plus size={18} className="mr-2" /> Добавить
-      </Button>
-    ),
-  });
-
-  const filteredEmployers = employers.filter(
-    (e) =>
-      e.login.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      e.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (e.organizationName ?? "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase()),
-  );
-
-  const handleDelete = async (id: string, name: string) => {
-    if (
-      !window.confirm(`Вы уверены, что хотите удалить нанимателя "${name}"?`)
-    )
-      return;
-    try {
-      await usersApi.deleteUser(id);
-      toast.success("Наниматель удален");
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка при удалении"));
-    }
-  };
-
-  const handleCopyCredentials = async (created: {
-    login: string;
-    pass: string;
-    link: string;
-  }) => {
-    const text = `Ссылка для входа: ${created.link}\nЛогин: ${created.login}\nПароль: ${created.pass}`;
-    try {
-      await navigator.clipboard.writeText(text);
-      toast.success("Данные для входа скопированы");
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Не удалось скопировать"));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!login.trim() || !displayName.trim() || !organizationName.trim()) {
-      toast.error("Заполните логин, наименование и организацию");
-      return;
-    }
-
-    if (!editingId && !password.trim()) {
-      toast.error("Пароль обязателен при создании");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      if (editingId) {
+      return true;
+    },
+    submit: async (id) => {
+      if (id) {
         await usersApi.updateUser(
-          editingId,
+          id,
           login.trim(),
           displayName.trim(),
           organizationName.trim(),
         );
 
         if (password.trim()) {
-          await usersApi.setPassword(editingId, password.trim());
+          await usersApi.setPassword(id, password.trim());
         }
         toast.success("Наниматель обновлен");
       } else {
@@ -172,21 +100,41 @@ export const AdminEmployersPage = () => {
         toast.success("Наниматель создан");
       }
 
-      setIsFormOpen(false);
       setLogin("");
       setDisplayName("");
       setOrganizationName("");
       setPassword("");
-      loadData();
+    },
+    remove: usersApi.deleteUser,
+    confirmDelete: (e) =>
+      `Вы уверены, что хотите удалить нанимателя "${e.displayName}"?`,
+    deleteSuccessMessage: "Наниматель удален",
+    deleteErrorMessage: "Ошибка при удалении",
+    saveErrorMessage:
+      "Ошибка. Возможно, логин занят или содержит недопустимые символы.",
+  });
+
+  useAdminPageConfig({
+    title: "Настройки",
+    subtitle: "Наниматели",
+    actions: (
+      <Button onClick={() => openModal()}>
+        <Plus size={18} className="mr-2" /> Добавить
+      </Button>
+    ),
+  });
+
+  const handleCopyCredentials = async (created: {
+    login: string;
+    pass: string;
+    link: string;
+  }) => {
+    const text = `Ссылка для входа: ${created.link}\nЛогин: ${created.login}\nПароль: ${created.pass}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Данные для входа скопированы");
     } catch (e) {
-      toast.error(
-        getApiErrorMessage(
-          e,
-          "Ошибка. Возможно, логин занят или содержит недопустимые символы.",
-        ),
-      );
-    } finally {
-      setIsSubmitting(false);
+      toast.error(getApiErrorMessage(e, "Не удалось скопировать"));
     }
   };
 
@@ -277,8 +225,8 @@ export const AdminEmployersPage = () => {
               </TableCell>
               <TableCell className="py-4 text-right">
                 <AdminTableActions
-                  onEdit={() => openEdit(e)}
-                  onDelete={() => handleDelete(e.id, e.displayName)}
+                  onEdit={() => openModal(e)}
+                  onDelete={() => handleDelete(e)}
                 />
               </TableCell>
             </TableRow>
@@ -288,7 +236,7 @@ export const AdminEmployersPage = () => {
 
       <AdminModal
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={closeModal}
         title={editingId ? "Редактирование нанимателя" : "Новый наниматель"}
         onSubmit={handleSubmit}
         submitText={isSubmitting ? "Сохранение..." : "Сохранить"}
@@ -332,7 +280,7 @@ export const AdminEmployersPage = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={generatePassword}
+              onClick={() => setPassword(generateSecurePassword())}
               className="h-8 px-3"
             >
               <RefreshCw size={14} className="mr-2" />

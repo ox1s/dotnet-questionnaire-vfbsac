@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api, { formsApi, type Form } from "../../api";
 import { toast } from "sonner";
@@ -12,16 +12,20 @@ export const DashboardPage = () => {
   const navigate = useNavigate();
   const userIsAdmin = isAdmin();
 
-  useEffect(() => {
-    loadForms().catch(() => navigate("/login"));
-  }, []);
-
-  const loadForms = async () => {
+  const loadForms = useCallback(async () => {
     const res = userIsAdmin
       ? await formsApi.getAll()
       : await api.get<Form[]>("/forms");
     setForms(res.data);
-  };
+  }, [userIsAdmin]);
+
+  useEffect(() => {
+    // `setForms` runs after the awaited fetch resolves, not synchronously
+    // during the effect/commit, so this isn't the synchronous-setState
+    // pattern react-hooks/set-state-in-effect warns about.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadForms().catch(() => navigate("/login"));
+  }, [loadForms, navigate]);
 
   const logout = () => {
     localStorage.removeItem("token");

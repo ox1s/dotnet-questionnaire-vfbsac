@@ -3,6 +3,6 @@ using Application.Abstractions.Messaging;
 namespace Application.Teachers.Update;
 
 public sealed record UpdateTeacherCommand(
-    Guid TeacherId, 
+    Guid TeacherId,
     string FullName,
-    Guid? DepartmentId) : ICommand;
+    IReadOnlyCollection<Guid>? DepartmentIds) : ICommand;

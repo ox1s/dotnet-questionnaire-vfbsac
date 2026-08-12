@@ -15,9 +15,9 @@ namespace Application.Reports.Queries.GetAnalyticsByPeriod;
 /// </summary>
 internal sealed class GetAnalyticsByPeriodQueryHandler(
     IApplicationDbContext context)
-    : IQueryHandler<GetAnalyticsByPeriodQuery, List<GetAnalyticsByPeriodQueryResponse>>
+    : IQueryHandler<GetAnalyticsByPeriodQuery, GetAnalyticsByPeriodQueryResult>
 {
-    public async Task<Result<List<GetAnalyticsByPeriodQueryResponse>>> Handle(
+    public async Task<Result<GetAnalyticsByPeriodQueryResult>> Handle(
         GetAnalyticsByPeriodQuery query,
         CancellationToken cancellationToken)
     {
@@ -27,7 +27,7 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
 
         if (!formExists)
         {
-            return Result.Failure<List<GetAnalyticsByPeriodQueryResponse>>(
+            return Result.Failure<GetAnalyticsByPeriodQueryResult>(
                 FormErrors.NotFound(query.FormId));
         }
 
@@ -43,9 +43,14 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
 
         // Step 4: Filter by date range (inclusive end date by adding 1 day)
         DateTime normalizedToDate = query.ToDate.AddDays(1);
-        
+
         IQueryable<Submission> filteredByDate = filteredQuery
             .Where(s => s.SubmittedAt >= query.FromDate && s.SubmittedAt < normalizedToDate);
+
+        // Step 4b: Distinct count of submissions matching the filters/date range, independent of
+        // whether they contain numeric answers (used for the "Всего анкет" total, not row 0's
+        // per-question response count).
+        int submissionCount = await filteredByDate.CountAsync(cancellationToken);
 
         // Step 5: Get numeric answers grouped by question
         // Only select answers with NumericValue (Number, WeightedRating question types)
@@ -64,7 +69,10 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
 
         if (answersGrouped.Count == 0)
         {
-            return new List<GetAnalyticsByPeriodQueryResponse>();
+            return new GetAnalyticsByPeriodQueryResult(
+                [],
+                StatisticsCalculator.CalculateOverallSatisfaction([], []),
+                submissionCount);
         }
 
         // Step 6: Get question texts from database
@@ -78,15 +86,15 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
 
         var questionDict = questions.ToDictionary(q => q.Id, q => q.Text);
 
-        // Step 7: Calculate statistics for each question in-memory
-        var responses = answersGrouped
+        // Step 7: Calculate per-question statistics in-memory
+        var questionStats = answersGrouped
             .Select(group =>
             {
                 var scores = group.Ratings.Select(r => r.Score).ToList();
                 var ratioPairs = group.Ratings.Select(r => (r.Score, r.Weight)).ToList();
                 decimal satisfactionPercentage = StatisticsCalculator.CalculateSatisfactionPercentage(ratioPairs);
 
-                return new GetAnalyticsByPeriodQueryResponse(
+                return new QuestionStatistics(
                     QuestionId: group.QuestionId,
                     QuestionText: questionDict.GetValueOrDefault(group.QuestionId) ?? string.Empty,
                     SatisfactionPercentage: satisfactionPercentage,
@@ -97,6 +105,22 @@ internal sealed class GetAnalyticsByPeriodQueryHandler(
             })
             .ToList();
 
-        return responses;
+        // Step 8: Calculate overall form/blank satisfaction (formulas 5 and 6)
+        OverallSatisfaction overall = StatisticsCalculator.CalculateOverallSatisfaction(
+            questionStats.Select(s => s.SatisfactionPercentage).ToList(),
+            questionStats.Select(s => s.StandardDeviation).ToList());
+
+        var responses = questionStats
+            .Select(stat => new GetAnalyticsByPeriodQueryResponse(
+                QuestionId: stat.QuestionId,
+                QuestionText: stat.QuestionText,
+                SatisfactionPercentage: stat.SatisfactionPercentage,
+                AverageScore: stat.AverageScore,
+                StandardDeviation: stat.StandardDeviation,
+                Rating: stat.Rating,
+                ResponseCount: stat.ResponseCount))
+            .ToList();
+
+        return new GetAnalyticsByPeriodQueryResult(responses, overall, submissionCount);
     }
 }

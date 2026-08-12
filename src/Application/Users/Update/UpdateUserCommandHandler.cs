@@ -41,6 +41,11 @@ internal sealed class UpdateUserCommandHandler(IApplicationDbContext context)
             return Result.Failure(updateUserDetailsResult.Error);
         }
 
+        if (!string.IsNullOrWhiteSpace(command.OrganizationName))
+        {
+            user.UpdateOrganizationName(command.OrganizationName);
+        }
+
         await context.SaveChangesAsync(cancellationToken);
 
         return Result.Success();

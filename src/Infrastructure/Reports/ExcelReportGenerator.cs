@@ -5,6 +5,7 @@ using Application.Reports.Queries.GetAnalyticsByPeriod;
 using Application.Reports.Queries.GetAnalyticsByPeriods;
 using Application.Reports.Queries.Shared;
 using ClosedXML.Excel;
+using Infrastructure.Resources;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Reports;
@@ -16,13 +17,14 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
         DateTime periodStart,
         DateTime periodEnd,
         Dictionary<string, string> resolvedFilters,
-        List<GetAnalyticsByPeriodQueryResponse> statistics,
+        GetAnalyticsByPeriodQueryResult analyticsResult,
         CancellationToken cancellationToken = default)
     {
+        List<GetAnalyticsByPeriodQueryResponse> statistics = analyticsResult.Questions;
         try
         {
             using var workbook = new XLWorkbook();
-            IXLWorksheet worksheet = workbook.Worksheets.Add("Отчет");
+            IXLWorksheet worksheet = workbook.Worksheets.Add(ReportResources.SheetTitle_Report);
 
             int currentRow = 1;
 
@@ -33,7 +35,7 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
             currentRow += 2;
 
             // Period
-            worksheet.Cell(currentRow, 1).Value = "Период:";
+            worksheet.Cell(currentRow, 1).Value = $"{ReportResources.Label_Period}:";
             worksheet.Cell(currentRow, 2).Value = $"{periodStart:dd.MM.yyyy} - {periodEnd:dd.MM.yyyy}";
             currentRow++;
 
@@ -49,20 +51,20 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
             if (statistics.Count == 0)
             {
-                worksheet.Cell(currentRow, 1).Value = "Нет данных для отображения";
+                worksheet.Cell(currentRow, 1).Value = ReportResources.NoDataMessage;
                 using var stream = new MemoryStream();
                 workbook.SaveAs(stream);
                 return Task.FromResult(stream.ToArray());
             }
 
             // Header row
-            worksheet.Cell(currentRow, 1).Value = "№";
-            worksheet.Cell(currentRow, 2).Value = "Вопрос";
-            worksheet.Cell(currentRow, 3).Value = "Удовл. потреб., %";
-            worksheet.Cell(currentRow, 4).Value = "Средний балл";
-            worksheet.Cell(currentRow, 5).Value = "Ст. откл.";
-            worksheet.Cell(currentRow, 6).Value = "Оценка";
-            worksheet.Cell(currentRow, 7).Value = "Кол-во ответов";
+            worksheet.Cell(currentRow, 1).Value = ReportResources.Header_Number;
+            worksheet.Cell(currentRow, 2).Value = ReportResources.Header_Question;
+            worksheet.Cell(currentRow, 3).Value = ReportResources.Header_SatisfactionPercent;
+            worksheet.Cell(currentRow, 4).Value = ReportResources.Header_AverageScore;
+            worksheet.Cell(currentRow, 5).Value = ReportResources.Header_StandardDeviation;
+            worksheet.Cell(currentRow, 6).Value = ReportResources.Header_Rating;
+            worksheet.Cell(currentRow, 7).Value = ReportResources.Header_ResponseCount;
 
             IXLRange headerRange = worksheet.Range(currentRow, 1, currentRow, 7);
             headerRange.Style.Font.Bold = true;
@@ -92,6 +94,9 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
                 rowNumber++;
             }
 
+            currentRow++;
+            AppendOverallSatisfactionSummary(worksheet, currentRow, analyticsResult.Overall);
+
             // Auto-fit columns
             worksheet.Columns().AdjustToContents();
 
@@ -114,24 +119,24 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
         try
         {
             using var workbook = new XLWorkbook();
-            IXLWorksheet worksheet = workbook.Worksheets.Add("Сравнение периодов");
+            IXLWorksheet worksheet = workbook.Worksheets.Add(ReportResources.SheetTitle_PeriodsComparison);
 
             int currentRow = 1;
 
             // Title
-            worksheet.Cell(currentRow, 1).Value = "Сравнительный отчет по периодам";
+            worksheet.Cell(currentRow, 1).Value = ReportResources.ReportTitle_PeriodsComparison;
             worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
             worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
             currentRow += 2;
 
             // Form name
-            worksheet.Cell(currentRow, 1).Value = "Форма:";
+            worksheet.Cell(currentRow, 1).Value = $"{ReportResources.Label_Form}:";
             worksheet.Cell(currentRow, 2).Value = formTitle;
             currentRow += 2;
 
             if (periodsData.Count == 0)
             {
-                worksheet.Cell(currentRow, 1).Value = "Нет данных для отображения";
+                worksheet.Cell(currentRow, 1).Value = ReportResources.NoDataMessage;
                 using var stream = new MemoryStream();
                 workbook.SaveAs(stream);
                 return Task.FromResult(stream.ToArray());
@@ -139,9 +144,9 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
             // Header row - vertical layout
             int col = 1;
-            worksheet.Cell(currentRow, col++).Value = "№";
-            worksheet.Cell(currentRow, col++).Value = "Вопрос";
-            worksheet.Cell(currentRow, col++).Value = "Статистика";
+            worksheet.Cell(currentRow, col++).Value = ReportResources.Header_Number;
+            worksheet.Cell(currentRow, col++).Value = ReportResources.Header_Question;
+            worksheet.Cell(currentRow, col++).Value = ReportResources.Header_Statistics;
 
             foreach (GetAnalyticsByPeriodsQueryResponse period in periodsData)
             {
@@ -175,7 +180,14 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
             // Data rows - 5 rows per question (one per stat)
             int rowNumber = 1;
-            string[] statNames = ["Удовл. потреб., %", "Средний балл", "Ст. откл.", "Оценка", "Кол-во"];
+            string[] statNames =
+            [
+                ReportResources.Header_SatisfactionPercent,
+                ReportResources.Header_AverageScore,
+                ReportResources.Header_StandardDeviation,
+                ReportResources.Header_Rating,
+                ReportResources.Header_ResponseCountShort
+            ];
 
             foreach (KeyValuePair<Guid, string> question in allQuestions)
             {
@@ -249,6 +261,13 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
                 rowNumber++;
             }
 
+            currentRow++;
+            AppendOverallSatisfactionComparisonSummary(
+                worksheet,
+                currentRow,
+                ReportResources.Label_Period,
+                periodsData.Select(p => (p.Label, p.Overall)).ToList());
+
             // Freeze first three columns (№, Вопрос, Статистика)
             worksheet.SheetView.FreezeColumns(3);
             worksheet.SheetView.FreezeRows(5); // Title + form + header
@@ -276,24 +295,24 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
         try
         {
             using var workbook = new XLWorkbook();
-            IXLWorksheet worksheet = workbook.Worksheets.Add("Сравнение групп");
+            IXLWorksheet worksheet = workbook.Worksheets.Add(ReportResources.SheetTitle_GroupsComparison);
 
             int currentRow = 1;
 
             // Title
-            worksheet.Cell(currentRow, 1).Value = "Сравнительный отчет по группам";
+            worksheet.Cell(currentRow, 1).Value = ReportResources.ReportTitle_GroupsComparison;
             worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
             worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
             currentRow += 2;
 
             // Form name
-            worksheet.Cell(currentRow, 1).Value = "Форма:";
+            worksheet.Cell(currentRow, 1).Value = $"{ReportResources.Label_Form}:";
             worksheet.Cell(currentRow, 2).Value = formTitle;
             currentRow += 2;
 
             if (groupsData.Count == 0)
             {
-                worksheet.Cell(currentRow, 1).Value = "Нет данных для отображения";
+                worksheet.Cell(currentRow, 1).Value = ReportResources.NoDataMessage;
                 using var stream = new MemoryStream();
                 workbook.SaveAs(stream);
                 return Task.FromResult(stream.ToArray());
@@ -301,9 +320,9 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
             // Header row - vertical layout
             int col = 1;
-            worksheet.Cell(currentRow, col++).Value = "№";
-            worksheet.Cell(currentRow, col++).Value = "Вопрос";
-            worksheet.Cell(currentRow, col++).Value = "Статистика";
+            worksheet.Cell(currentRow, col++).Value = ReportResources.Header_Number;
+            worksheet.Cell(currentRow, col++).Value = ReportResources.Header_Question;
+            worksheet.Cell(currentRow, col++).Value = ReportResources.Header_Statistics;
 
             foreach (GetAnalyticsByGroupsQueryResponse group in groupsData)
             {
@@ -335,7 +354,14 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
             // Data rows - 5 rows per question (one per stat)
             int rowNumber = 1;
-            string[] statNames = ["Удовл. потреб., %", "Средний балл", "Ст. откл.", "Оценка", "Кол-во"];
+            string[] statNames =
+            [
+                ReportResources.Header_SatisfactionPercent,
+                ReportResources.Header_AverageScore,
+                ReportResources.Header_StandardDeviation,
+                ReportResources.Header_Rating,
+                ReportResources.Header_ResponseCountShort
+            ];
 
             foreach (KeyValuePair<Guid, string> question in allQuestions)
             {
@@ -409,6 +435,13 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
                 rowNumber++;
             }
 
+            currentRow++;
+            AppendOverallSatisfactionComparisonSummary(
+                worksheet,
+                currentRow,
+                ReportResources.Header_GroupLabel,
+                groupsData.Select(g => (Label: g.GroupName, g.Overall)).ToList());
+
             // Freeze first three columns (№, Вопрос, Статистика)
             worksheet.SheetView.FreezeColumns(3);
             worksheet.SheetView.FreezeRows(5); // Title + form + header
@@ -428,6 +461,91 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
         }
     }
 
+    /// <summary>
+    /// Renders the formula (5)/(6) overall form/blank satisfaction as a small label/value block,
+    /// starting at <paramref name="startRow"/>.
+    /// </summary>
+    private static void AppendOverallSatisfactionSummary(
+        IXLWorksheet worksheet,
+        int startRow,
+        OverallSatisfaction overall)
+    {
+        int currentRow = startRow;
+
+        worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_Title;
+        worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+        currentRow++;
+
+        if (!overall.HasData)
+        {
+            worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_NoData;
+            return;
+        }
+
+        worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_MeanPercent;
+        worksheet.Cell(currentRow, 2).Value = FormatNumber(overall.MeanPercentage);
+        currentRow++;
+
+        worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_AvgStdDev;
+        worksheet.Cell(currentRow, 2).Value = FormatNumber(overall.AverageStandardDeviation);
+        currentRow++;
+
+        worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_Rating;
+        worksheet.Cell(currentRow, 2).Value = FormatRating(overall.Rating);
+    }
+
+    /// <summary>
+    /// Renders the formula (5)/(6) overall satisfaction for each compared period/group as a small
+    /// table, starting at <paramref name="startRow"/>.
+    /// </summary>
+    private static void AppendOverallSatisfactionComparisonSummary(
+        IXLWorksheet worksheet,
+        int startRow,
+        string entryLabelHeader,
+        List<(string Label, OverallSatisfaction Overall)> entries)
+    {
+        int currentRow = startRow;
+
+        worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_Title;
+        worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+        currentRow++;
+
+        int summaryHeaderRow = currentRow;
+        worksheet.Cell(currentRow, 1).Value = entryLabelHeader;
+        worksheet.Cell(currentRow, 2).Value = ReportResources.OverallSatisfaction_MeanPercent;
+        worksheet.Cell(currentRow, 3).Value = ReportResources.OverallSatisfaction_AvgStdDev;
+        worksheet.Cell(currentRow, 4).Value = ReportResources.OverallSatisfaction_Rating;
+
+        IXLRange summaryHeaderRange = worksheet.Range(summaryHeaderRow, 1, summaryHeaderRow, 4);
+        summaryHeaderRange.Style.Font.Bold = true;
+        summaryHeaderRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+        summaryHeaderRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+        summaryHeaderRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+        currentRow++;
+
+        foreach ((string label, OverallSatisfaction overall) in entries)
+        {
+            worksheet.Cell(currentRow, 1).Value = label;
+
+            if (overall.HasData)
+            {
+                worksheet.Cell(currentRow, 2).Value = FormatNumber(overall.MeanPercentage);
+                worksheet.Cell(currentRow, 3).Value = FormatNumber(overall.AverageStandardDeviation);
+                worksheet.Cell(currentRow, 4).Value = FormatRating(overall.Rating);
+            }
+            else
+            {
+                worksheet.Cell(currentRow, 2).Value = ReportResources.OverallSatisfaction_NoData;
+            }
+
+            IXLRange summaryRowRange = worksheet.Range(currentRow, 1, currentRow, 4);
+            summaryRowRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            summaryRowRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            currentRow++;
+        }
+    }
+
     private static string FormatNumber(decimal value)
     {
         return value.ToString("F2", CultureInfo.InvariantCulture);
@@ -437,10 +555,10 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
     {
         return rating switch
         {
-            SatisfactionRating.Excellent => "отлично",
-            SatisfactionRating.Good => "хорошо",
-            SatisfactionRating.Satisfactory => "удовлетворительно",
-            _ => "неудовлетворительно"
+            SatisfactionRating.Excellent => ReportResources.Rating_Excellent,
+            SatisfactionRating.Good => ReportResources.Rating_Good,
+            SatisfactionRating.Satisfactory => ReportResources.Rating_Satisfactory,
+            _ => ReportResources.Rating_Unsatisfactory
         };
     }
 }

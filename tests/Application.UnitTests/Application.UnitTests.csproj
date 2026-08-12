@@ -3,6 +3,11 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- Microsoft.EntityFrameworkCore.Sqlite 10.0.0 pulls in SQLitePCLRaw.lib.e_sqlite3 2.1.11,
+         which NuGet audit flags as a known vulnerability (GHSA-2m69-gcr7-jv3q). No patched
+         EFCore.Sqlite release is available yet, and TreatWarningsAsErrors would otherwise fail
+         restore for this test-only project. -->
+    <NoWarn>$(NoWarn);NU1903</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

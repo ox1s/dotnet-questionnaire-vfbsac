@@ -116,14 +116,110 @@
   "hotPaths": [
     {
       "path": "src/Web.Client/src/api.ts",
-      "accessCount": 6,
-      "lastAccessed": 1786451671205,
+      "accessCount": 25,
+      "lastAccessed": 1786517203954,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/dashboard/dashboard-content.tsx",
+      "accessCount": 5,
+      "lastAccessed": 1786515462514,
+      "type": "file"
+    },
+    {
+      "path": "src/Application/Departments/Delete/DeleteDepartmentCommandHandler.cs",
+      "accessCount": 5,
+      "lastAccessed": 1786516277756,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/App.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1786515282550,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/pages/dashboard/dashboard-page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1786515430007,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/dashboard/admin-dashboard.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1786515436869,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/pages/forms/create-form-page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1786516379200,
       "type": "file"
     },
     {
       "path": "src/AGENTS.md",
+      "accessCount": 3,
+      "lastAccessed": 1786454104954,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/survey/context-selector.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1786516482442,
+      "type": "file"
+    },
+    {
+      "path": "src/Domain/User/UserRole.cs",
       "accessCount": 2,
-      "lastAccessed": 1786450157305,
+      "lastAccessed": 1786454011740,
+      "type": "file"
+    },
+    {
+      "path": "src/Application/Forms/Create/CreateFormCommandValidator.cs",
+      "accessCount": 2,
+      "lastAccessed": 1786454141071,
+      "type": "file"
+    },
+    {
+      "path": "src/Domain/AGENTS.md",
+      "accessCount": 2,
+      "lastAccessed": 1786454793115,
+      "type": "file"
+    },
+    {
+      "path": "src/SharedKernel/Entity.cs",
+      "accessCount": 2,
+      "lastAccessed": 1786454825875,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/dashboard/user-dashboard.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786454831994,
+      "type": "file"
+    },
+    {
+      "path": "src/Domain/Domain.csproj",
+      "accessCount": 2,
+      "lastAccessed": 1786454869312,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/pages/auth/login-page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786454895793,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/package.json",
+      "accessCount": 2,
+      "lastAccessed": 1786516498987,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/utils/linked-filters.ts",
+      "accessCount": 2,
+      "lastAccessed": 1786517202265,
       "type": "file"
     },
     {
@@ -145,33 +241,9 @@
       "type": "file"
     },
     {
-      "path": "src/Domain/User/UserRole.cs",
-      "accessCount": 1,
-      "lastAccessed": 1786449327692,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/package.json",
-      "accessCount": 1,
-      "lastAccessed": 1786449334141,
-      "type": "file"
-    },
-    {
       "path": "src/Web.Client/vite.config.ts",
       "accessCount": 1,
       "lastAccessed": 1786449335084,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/src/App.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1786449336103,
-      "type": "file"
-    },
-    {
-      "path": "src/Domain/Domain.csproj",
-      "accessCount": 1,
-      "lastAccessed": 1786449336257,
       "type": "file"
     },
     {
@@ -184,12 +256,6 @@
       "path": "src/Web.Client/components.json",
       "accessCount": 1,
       "lastAccessed": 1786449338285,
-      "type": "file"
-    },
-    {
-      "path": "src/SharedKernel/Entity.cs",
-      "accessCount": 1,
-      "lastAccessed": 1786449344568,
       "type": "file"
     },
     {
@@ -247,12 +313,6 @@
       "type": "file"
     },
     {
-      "path": "src/Application/Departments/Delete/DeleteDepartmentCommandHandler.cs",
-      "accessCount": 1,
-      "lastAccessed": 1786449353053,
-      "type": "file"
-    },
-    {
       "path": "src/Web.Client/index.html",
       "accessCount": 1,
       "lastAccessed": 1786449354336,
@@ -268,12 +328,6 @@
       "path": "src/Application/Departments/GetList/GetDepartmentsQueryHandler.cs",
       "accessCount": 1,
       "lastAccessed": 1786449355683,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/src/utils/linked-filters.ts",
-      "accessCount": 1,
-      "lastAccessed": 1786449356242,
       "type": "file"
     },
     {
@@ -319,51 +373,9 @@
       "type": "file"
     },
     {
-      "path": "src/Web.Client/src/components/survey/context-selector.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1786449390154,
-      "type": "file"
-    },
-    {
       "path": "src/Web.Client/src/components/survey/weighted-rating-input.tsx",
       "accessCount": 1,
       "lastAccessed": 1786449390784,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/src/components/dashboard/admin-dashboard.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1786449396174,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/src/components/dashboard/dashboard-content.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1786449397352,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/src/components/dashboard/user-dashboard.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1786449397855,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/src/pages/auth/login-page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1786449403849,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/src/pages/dashboard/dashboard-page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1786449404329,
-      "type": "file"
-    },
-    {
-      "path": "src/Web.Client/src/pages/forms/create-form-page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1786449405126,
       "type": "file"
     },
     {
@@ -382,18 +394,6 @@
       "path": "src/Application/Forms/Create/CreateFormCommandHandler.cs",
       "accessCount": 1,
       "lastAccessed": 1786449408724,
-      "type": "file"
-    },
-    {
-      "path": "src/Application/Forms/Create/CreateFormCommandValidator.cs",
-      "accessCount": 1,
-      "lastAccessed": 1786449410582,
-      "type": "file"
-    },
-    {
-      "path": "src/Domain/AGENTS.md",
-      "accessCount": 1,
-      "lastAccessed": 1786449411516,
       "type": "file"
     },
     {

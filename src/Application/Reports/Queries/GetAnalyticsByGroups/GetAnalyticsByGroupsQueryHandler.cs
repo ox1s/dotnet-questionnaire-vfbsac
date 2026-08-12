@@ -115,10 +115,16 @@ internal sealed class GetAnalyticsByGroupsQueryHandler(
                     })
                     .ToList();
 
+                OverallSatisfaction overall = StatisticsCalculator.CalculateOverallSatisfaction(
+                    questionStats.Select(s => s.SatisfactionPercentage).ToList(),
+                    questionStats.Select(s => s.StandardDeviation).ToList());
+
                 return new GetAnalyticsByGroupsQueryResponse(
                     GroupKey: group.Key,
                     GroupName: group.Name,
-                    QuestionStatistics: questionStats);
+                    QuestionStatistics: questionStats,
+                    Overall: overall,
+                    SubmissionCount: group.SubmissionIds.Count);
             })
             .ToList();
 

@@ -13,7 +13,7 @@ internal sealed partial class ExportAnalyticsByPeriodCommandHandler(
     IApplicationDbContext dbContext,
     IReportGenerator reportGenerator,
     ILogger<ExportAnalyticsByPeriodCommandHandler> logger,
-    IQueryHandler<GetAnalyticsByPeriodQuery, List<GetAnalyticsByPeriodQueryResponse>> analyticsQueryHandler)
+    IQueryHandler<GetAnalyticsByPeriodQuery, GetAnalyticsByPeriodQueryResult> analyticsQueryHandler)
     : ICommandHandler<ExportAnalyticsByPeriodCommand, byte[]>
 {
     public async Task<Result<byte[]>> Handle(
@@ -29,7 +29,7 @@ internal sealed partial class ExportAnalyticsByPeriodCommandHandler(
                 command.ToDate,
                 command.FilterSet);
 
-            Result<List<GetAnalyticsByPeriodQueryResponse>> analyticsResult = await analyticsQueryHandler.Handle(analyticsQuery, cancellationToken);
+            Result<GetAnalyticsByPeriodQueryResult> analyticsResult = await analyticsQueryHandler.Handle(analyticsQuery, cancellationToken);
 
             if (analyticsResult.IsFailure)
             {
@@ -46,7 +46,7 @@ internal sealed partial class ExportAnalyticsByPeriodCommandHandler(
             }
 
             // 3. Handle empty data
-            if (analyticsResult.Value.Count == 0)
+            if (analyticsResult.Value.Questions.Count == 0)
             {
                 LogNoAnalyticsDataForFormForMidGeneratingEmptyReport(logger, command.FormId);
             }
@@ -67,7 +67,7 @@ internal sealed partial class ExportAnalyticsByPeriodCommandHandler(
                 analyticsResult.Value,
                 cancellationToken);
 
-            LogGeneratedPeriodReportForFormForMidWithQuestionCountQuestions(logger, command.FormId, analyticsResult.Value.Count);
+            LogGeneratedPeriodReportForFormForMidWithQuestionCountQuestions(logger, command.FormId, analyticsResult.Value.Questions.Count);
 
             return documentBytes;
         }

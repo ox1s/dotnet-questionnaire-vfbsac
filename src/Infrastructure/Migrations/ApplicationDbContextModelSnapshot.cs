@@ -141,10 +141,6 @@ namespace Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<Guid?>("DepartmentId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("department_id");
-
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -158,10 +154,26 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_teachers");
 
-                    b.HasIndex("DepartmentId")
-                        .HasDatabaseName("ix_teachers_department_id");
-
                     b.ToTable("teachers", "public");
+                });
+
+            modelBuilder.Entity("Domain.College.Teachers.TeacherDepartment", b =>
+                {
+                    b.Property<Guid>("TeacherId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("teacher_id");
+
+                    b.Property<Guid>("DepartmentId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("department_id");
+
+                    b.HasKey("TeacherId", "DepartmentId")
+                        .HasName("pk_teacher_departments");
+
+                    b.HasIndex("DepartmentId")
+                        .HasDatabaseName("ix_teacher_departments_department_id");
+
+                    b.ToTable("teacher_departments", "public");
                 });
 
             modelBuilder.Entity("Domain.Questionnaires.Forms.Form", b =>
@@ -384,13 +396,21 @@ namespace Infrastructure.Migrations
                         .HasConstraintName("fk_disciplines_departments_department_id");
                 });
 
-            modelBuilder.Entity("Domain.College.Teachers.Teacher", b =>
+            modelBuilder.Entity("Domain.College.Teachers.TeacherDepartment", b =>
                 {
                     b.HasOne("Domain.College.Departments.Department", null)
                         .WithMany()
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_teachers_departments_department_id");
+                        .IsRequired()
+                        .HasConstraintName("fk_teacher_departments_departments_department_id");
+
+                    b.HasOne("Domain.College.Teachers.Teacher", null)
+                        .WithMany("_departments")
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_teacher_departments_teachers_teacher_id");
                 });
 
             modelBuilder.Entity("Domain.Questionnaires.Forms.Question", b =>
@@ -514,6 +534,11 @@ namespace Infrastructure.Migrations
 
                     b.Navigation("Login")
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Domain.College.Teachers.Teacher", b =>
+                {
+                    b.Navigation("_departments");
                 });
 
             modelBuilder.Entity("Domain.Questionnaires.Forms.Form", b =>

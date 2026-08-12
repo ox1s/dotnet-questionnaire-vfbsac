@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api, { type Form } from "../../api";
+import api, { formsApi, type Form } from "../../api";
 import { toast } from "sonner";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { UserDashboard } from "@/components/dashboard/user-dashboard";
@@ -17,7 +17,9 @@ export const DashboardPage = () => {
   }, []);
 
   const loadForms = async () => {
-    const res = await api.get<Form[]>("/forms");
+    const res = userIsAdmin
+      ? await formsApi.getAll()
+      : await api.get<Form[]>("/forms");
     setForms(res.data);
   };
 
@@ -35,9 +37,34 @@ export const DashboardPage = () => {
       toast.error("Не удалось удалить анкету.");
     }
   };
+
+  const toggleFormActive = async (form: Form) => {
+    try {
+      if (form.isActive) {
+        await formsApi.deactivate(form.id);
+      } else {
+        await formsApi.activate(form.id);
+      }
+      setForms((prev) =>
+        prev.map((f) =>
+          f.id === form.id ? { ...f, isActive: !f.isActive } : f,
+        ),
+      );
+      toast.success(
+        form.isActive ? "Анкета закрыта." : "Анкета открыта.",
+      );
+    } catch {
+      toast.error("Не удалось изменить статус анкеты.");
+    }
+  };
+
   return userIsAdmin ? (
     <AdminLayout title="Дашборд" subtitle="Анкеты">
-      <AdminDashboard forms={forms} deleteForm={deleteForm} />
+      <AdminDashboard
+        forms={forms}
+        deleteForm={deleteForm}
+        toggleFormActive={toggleFormActive}
+      />
     </AdminLayout>
   ) : (
     <UserDashboard forms={forms} logout={logout} />

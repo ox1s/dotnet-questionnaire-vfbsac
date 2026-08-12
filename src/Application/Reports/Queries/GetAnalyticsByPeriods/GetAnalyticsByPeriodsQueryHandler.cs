@@ -68,6 +68,10 @@ internal sealed class GetAnalyticsByPeriodsQueryHandler(
         // Step 2: Apply filters in DB query
         submissionsQuery = SubmissionFilterHelper.ApplyFilters(submissionsQuery, period.FilterSet);
 
+        // Step 2b: Distinct count of submissions matching the filters/date range, independent of
+        // whether they contain numeric answers.
+        int submissionCount = await submissionsQuery.CountAsync(cancellationToken);
+
         // Step 3: Use submission query as subquery (no materialization)
         IQueryable<Guid> submissionIdsQuery = submissionsQuery.Select(s => s.Id);
 
@@ -92,7 +96,9 @@ internal sealed class GetAnalyticsByPeriodsQueryHandler(
                 Label: period.Label,
                 PeriodStart: period.DateFrom,
                 PeriodEnd: period.DateTo,
-                QuestionStatistics: []);
+                QuestionStatistics: [],
+                Overall: StatisticsCalculator.CalculateOverallSatisfaction([], []),
+                SubmissionCount: submissionCount);
         }
 
         // Step 5: Load question texts from DB
@@ -123,10 +129,16 @@ internal sealed class GetAnalyticsByPeriodsQueryHandler(
             })
             .ToList();
 
+        OverallSatisfaction overall = StatisticsCalculator.CalculateOverallSatisfaction(
+            questionStats.Select(s => s.SatisfactionPercentage).ToList(),
+            questionStats.Select(s => s.StandardDeviation).ToList());
+
         return new GetAnalyticsByPeriodsQueryResponse(
             Label: period.Label,
             PeriodStart: period.DateFrom,
             PeriodEnd: period.DateTo,
-            QuestionStatistics: questionStats);
+            QuestionStatistics: questionStats,
+            Overall: overall,
+            SubmissionCount: submissionCount);
     }
 }

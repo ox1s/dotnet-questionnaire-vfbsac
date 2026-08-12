@@ -5,7 +5,7 @@ import {
   type DictionaryItem,
   type TeacherItem,
 } from "../../api";
-import { Plus } from "lucide-react";
+import { CheckCircle2, Plus } from "lucide-react";
 import {
   AdminModal,
   AdminTable,
@@ -20,23 +20,16 @@ import { Input } from "@/components/ui/input";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export const AdminTeachersPage = () => {
-  const EMPTY_VALUE = "__empty__";
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [newName, setNewName] = useState("");
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<
+    string[]
+  >([]);
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const loadData = async () => {
@@ -73,20 +66,33 @@ export const AdminTeachersPage = () => {
     departments.find((department) => department.id === departmentId)?.name ??
     "Не указана";
 
+  const getDepartmentNames = (departmentIds: string[]) =>
+    departmentIds.length > 0
+      ? departmentIds.map((id) => getDepartmentName(id)).join(", ")
+      : "Не указана";
+
   const formatTeacherLabel = (teacher: TeacherItem) =>
-    teacher.departmentId
-      ? `${teacher.fullName} (${getDepartmentName(teacher.departmentId)})`
+    teacher.departmentIds.length > 0
+      ? `${teacher.fullName} (${getDepartmentNames(teacher.departmentIds)})`
       : teacher.fullName;
+
+  const toggleDepartment = (departmentId: string) => {
+    setSelectedDepartmentIds((prev) =>
+      prev.includes(departmentId)
+        ? prev.filter((id) => id !== departmentId)
+        : [...prev, departmentId],
+    );
+  };
 
   const openModal = (t?: TeacherItem) => {
     if (t) {
       setEditingId(t.id);
       setNewName(t.fullName);
-      setSelectedDepartmentId(t.departmentId ?? "");
+      setSelectedDepartmentIds(t.departmentIds ?? []);
     } else {
       setEditingId(null);
       setNewName("");
-      setSelectedDepartmentId("");
+      setSelectedDepartmentIds([]);
     }
     setIsFormOpen(true);
   };
@@ -117,10 +123,13 @@ export const AdminTeachersPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const departmentId = selectedDepartmentId || undefined;
       if (editingId)
-        await dictionariesApi.updateTeacher(editingId, newName, departmentId);
-      else await dictionariesApi.createTeacher(newName, departmentId);
+        await dictionariesApi.updateTeacher(
+          editingId,
+          newName,
+          selectedDepartmentIds,
+        );
+      else await dictionariesApi.createTeacher(newName, selectedDepartmentIds);
 
       setIsFormOpen(false);
       loadData();
@@ -166,7 +175,7 @@ export const AdminTeachersPage = () => {
 
             <TableCell className="align-top">
               <AdminTableTextBadge
-                text={getDepartmentName(teacher.departmentId)}
+                text={getDepartmentNames(teacher.departmentIds)}
               />
             </TableCell>
 
@@ -198,29 +207,29 @@ export const AdminTeachersPage = () => {
           />
         </div>
         <div className="space-y-2">
-          <Label>Филиал кафедры</Label>
-          <Select
-            value={selectedDepartmentId || EMPTY_VALUE}
-            onValueChange={(value) =>
-              setSelectedDepartmentId(value === EMPTY_VALUE ? "" : value)
-            }
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Укажите кафедру" />
-            </SelectTrigger>
-            <SelectContent position="popper">
-              <SelectGroup>
-                <SelectItem value={EMPTY_VALUE}>Не указана</SelectItem>
-                {departments
-                  .filter((department) => !department.isDeleted)
-                  .map((department) => (
-                    <SelectItem key={department.id} value={department.id}>
-                      {department.name}
-                    </SelectItem>
-                  ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <Label>Филиалы кафедры</Label>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {departments
+              .filter((department) => !department.isDeleted)
+              .map((department) => {
+                const active = selectedDepartmentIds.includes(department.id);
+                return (
+                  <button
+                    key={department.id}
+                    type="button"
+                    onClick={() => toggleDepartment(department.id)}
+                    className={`flex w-full items-center justify-between border px-4 py-2 text-sm font-medium transition-all ${
+                      active
+                        ? "bg-primary border-primary text-primary-foreground shadow-sm"
+                        : "bg-background border-border text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {department.name}
+                    {active && <CheckCircle2 size={16} />}
+                  </button>
+                );
+              })}
+          </div>
         </div>
       </AdminModal>
     </>

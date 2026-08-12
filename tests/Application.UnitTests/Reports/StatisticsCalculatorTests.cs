@@ -112,4 +112,31 @@ public class StatisticsCalculatorTests
 
         result.ShouldBe(expected);
     }
+
+    [Fact]
+    public void CalculateOverallSatisfaction_ReturnsMeanPercentageAverageStdDevAndRating()
+    {
+        // Formulas (5) and (6): mean of per-question percentages/std-devs, classified via Table 1.
+        List<decimal> perQuestionPercentages = [90, 70, 50];
+        List<decimal> perQuestionStandardDeviations = [1, 2, 3];
+
+        OverallSatisfaction result = StatisticsCalculator.CalculateOverallSatisfaction(
+            perQuestionPercentages,
+            perQuestionStandardDeviations);
+
+        result.MeanPercentage.ShouldBe(70m);
+        result.AverageStandardDeviation.ShouldBe(2m);
+        result.Rating.ShouldBe(SatisfactionRating.Good);
+        result.HasData.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CalculateOverallSatisfaction_EmptyLists_ReturnsHasDataFalse()
+    {
+        // Empty input (no submissions/questions) must be reported as "no data", not as a
+        // misleading 0% Unsatisfactory result.
+        OverallSatisfaction result = StatisticsCalculator.CalculateOverallSatisfaction([], []);
+
+        result.HasData.ShouldBeFalse();
+    }
 }

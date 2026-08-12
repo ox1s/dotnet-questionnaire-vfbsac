@@ -8,6 +8,7 @@ using Application.Reports.Queries.Shared;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Wordprocessing;
+using Infrastructure.Resources;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Reports;
@@ -21,9 +22,10 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
         DateTime periodStart,
         DateTime periodEnd,
         Dictionary<string, string> resolvedFilters,
-        List<GetAnalyticsByPeriodQueryResponse> statistics,
+        GetAnalyticsByPeriodQueryResult analyticsResult,
         CancellationToken cancellationToken = default)
     {
+        List<GetAnalyticsByPeriodQueryResponse> statistics = analyticsResult.Questions;
         MemoryStream? memoryStream = null;
         WordprocessingDocument? document = null;
 
@@ -44,7 +46,7 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
             // Add period information
             AddMetadataLine(
                 body,
-                "Период",
+                ReportResources.Label_Period,
                 $"{periodStart:dd.MM.yyyy} - {periodEnd:dd.MM.yyyy}");
 
             // Add filters
@@ -60,7 +62,7 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
             {
                 Paragraph noDataParagraph = new();
                 Run noDataRun = new();
-                // noDataRun.Append(new Text("Нет данных для отображения"));
+                noDataRun.Append(new Text(ReportResources.NoDataMessage));
                 noDataParagraph.Append(noDataRun);
                 body.Append(noDataParagraph);
             }
@@ -77,13 +79,13 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                 // Add header row
                 TableRow headerRow = new();
                 headerRow.Append(
-                    CreateCell("№", true),
-                    CreateCell("Вопрос", true),
-                    CreateCell("Удовл. потреб., %", true),
-                    CreateCell("Средний балл", true),
-                    CreateCell("Ст. откл.", true),
-                    CreateCell("Оценка", true),
-                    CreateCell("Кол-во ответов", true)
+                    CreateCell(ReportResources.Header_Number, true),
+                    CreateCell(ReportResources.Header_Question, true),
+                    CreateCell(ReportResources.Header_SatisfactionPercent, true),
+                    CreateCell(ReportResources.Header_AverageScore, true),
+                    CreateCell(ReportResources.Header_StandardDeviation, true),
+                    CreateCell(ReportResources.Header_Rating, true),
+                    CreateCell(ReportResources.Header_ResponseCount, true)
                 );
                 table.Append(headerRow);
 
@@ -106,6 +108,9 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                 }
 
                 body.Append(table);
+
+                AddEmptyLine(body);
+                AddOverallSatisfactionSummary(body, analyticsResult.Overall);
             }
 
             // Save and return
@@ -152,10 +157,10 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
             Body body = mainPart.Document.AppendChild(new Body());
 
             // Add title
-            AddTitle(body, "Сравнительный отчет по периодам");
+            AddTitle(body, ReportResources.ReportTitle_PeriodsComparison);
 
             // Add form name
-            AddMetadataLine(body, "Форма", formTitle);
+            AddMetadataLine(body, ReportResources.Label_Form, formTitle);
 
             AddEmptyLine(body);
 
@@ -164,7 +169,7 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
             {
                 Paragraph noDataParagraph = new();
                 Run noDataRun = new();
-                noDataRun.Append(new Text("Нет данных для отображения"));
+                noDataRun.Append(new Text(ReportResources.NoDataMessage));
                 noDataParagraph.Append(noDataRun);
                 body.Append(noDataParagraph);
             }
@@ -180,19 +185,19 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
 
                 // Add header row with dynamic columns
                 TableRow headerRow = new();
-                headerRow.Append(CreateCell("№", true));
-                headerRow.Append(CreateCell("Вопрос", true));
+                headerRow.Append(CreateCell(ReportResources.Header_Number, true));
+                headerRow.Append(CreateCell(ReportResources.Header_Question, true));
 
                 foreach (GetAnalyticsByPeriodsQueryResponse period in periodsData)
                 {
                     string periodLabel = $"{period.Label} ({period.PeriodStart:dd.MM.yyyy} - {period.PeriodEnd:dd.MM.yyyy})";
                     headerRow.Append(
                         CreateCell(periodLabel, true),
-                        CreateCell("Удовл. потреб., %", true),
-                        CreateCell("Средний балл", true),
-                        CreateCell("Ст. откл.", true),
-                        CreateCell("Оценка", true),
-                        CreateCell("Кол-во", true)
+                        CreateCell(ReportResources.Header_SatisfactionPercent, true),
+                        CreateCell(ReportResources.Header_AverageScore, true),
+                        CreateCell(ReportResources.Header_StandardDeviation, true),
+                        CreateCell(ReportResources.Header_Rating, true),
+                        CreateCell(ReportResources.Header_ResponseCountShort, true)
                     );
                 }
 
@@ -251,6 +256,12 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                 }
 
                 body.Append(table);
+
+                AddEmptyLine(body);
+                AddOverallSatisfactionComparisonSummary(
+                    body,
+                    ReportResources.Label_Period,
+                    periodsData.Select(p => (p.Label, p.Overall)).ToList());
             }
 
             // Save and return
@@ -297,10 +308,10 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
             Body body = mainPart.Document.AppendChild(new Body());
 
             // Add title
-            AddTitle(body, "Сравнительный отчет по группам");
+            AddTitle(body, ReportResources.ReportTitle_GroupsComparison);
 
             // Add form name
-            AddMetadataLine(body, "Форма", formTitle);
+            AddMetadataLine(body, ReportResources.Label_Form, formTitle);
 
             AddEmptyLine(body);
 
@@ -309,7 +320,7 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
             {
                 Paragraph noDataParagraph = new();
                 Run noDataRun = new();
-                noDataRun.Append(new Text("Нет данных для отображения"));
+                noDataRun.Append(new Text(ReportResources.NoDataMessage));
                 noDataParagraph.Append(noDataRun);
                 body.Append(noDataParagraph);
             }
@@ -325,18 +336,18 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
 
                 // Add header row with dynamic columns
                 TableRow headerRow = new();
-                headerRow.Append(CreateCell("№", true));
-                headerRow.Append(CreateCell("Вопрос", true));
+                headerRow.Append(CreateCell(ReportResources.Header_Number, true));
+                headerRow.Append(CreateCell(ReportResources.Header_Question, true));
 
                 foreach (GetAnalyticsByGroupsQueryResponse group in groupsData)
                 {
                     headerRow.Append(
                         CreateCell(group.GroupName, true),
-                        CreateCell("Удовл. потреб., %", true),
-                        CreateCell("Средний балл", true),
-                        CreateCell("Ст. откл.", true),
-                        CreateCell("Оценка", true),
-                        CreateCell("Кол-во", true)
+                        CreateCell(ReportResources.Header_SatisfactionPercent, true),
+                        CreateCell(ReportResources.Header_AverageScore, true),
+                        CreateCell(ReportResources.Header_StandardDeviation, true),
+                        CreateCell(ReportResources.Header_Rating, true),
+                        CreateCell(ReportResources.Header_ResponseCountShort, true)
                     );
                 }
 
@@ -395,6 +406,12 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
                 }
 
                 body.Append(table);
+
+                AddEmptyLine(body);
+                AddOverallSatisfactionComparisonSummary(
+                    body,
+                    ReportResources.Header_GroupLabel,
+                    groupsData.Select(g => (Label: g.GroupName, g.Overall)).ToList());
             }
 
             // Save and return
@@ -418,6 +435,48 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
 #pragma warning disable CA1849
             memoryStream?.Dispose();
 #pragma warning restore CA1849
+        }
+    }
+
+    /// <summary>
+    /// Renders the formula (5)/(6) overall form/blank satisfaction as a title and a few metadata lines.
+    /// </summary>
+    private static void AddOverallSatisfactionSummary(Body body, OverallSatisfaction overall)
+    {
+        AddTitle(body, ReportResources.OverallSatisfaction_Title);
+
+        if (!overall.HasData)
+        {
+            Paragraph noDataParagraph = new();
+            Run noDataRun = new();
+            noDataRun.Append(new Text(ReportResources.OverallSatisfaction_NoData));
+            noDataParagraph.Append(noDataRun);
+            body.Append(noDataParagraph);
+            return;
+        }
+
+        AddMetadataLine(body, ReportResources.OverallSatisfaction_MeanPercent, FormatNumber(overall.MeanPercentage));
+        AddMetadataLine(body, ReportResources.OverallSatisfaction_AvgStdDev, FormatNumber(overall.AverageStandardDeviation));
+        AddMetadataLine(body, ReportResources.OverallSatisfaction_Rating, FormatRating(overall.Rating));
+    }
+
+    /// <summary>
+    /// Renders the formula (5)/(6) overall satisfaction for each compared period/group as a title
+    /// followed by one metadata line per entry.
+    /// </summary>
+    private static void AddOverallSatisfactionComparisonSummary(
+        Body body,
+        string entryLabelPrefix,
+        List<(string Label, OverallSatisfaction Overall)> entries)
+    {
+        AddTitle(body, ReportResources.OverallSatisfaction_Title);
+
+        foreach ((string label, OverallSatisfaction overall) in entries)
+        {
+            string summary = overall.HasData
+                ? $"{FormatNumber(overall.MeanPercentage)}% ± {FormatNumber(overall.AverageStandardDeviation)} ({FormatRating(overall.Rating)})"
+                : ReportResources.OverallSatisfaction_NoData;
+            AddMetadataLine(body, $"{entryLabelPrefix} \"{label}\"", summary);
         }
     }
 
@@ -494,10 +553,10 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
     {
         return rating switch
         {
-            SatisfactionRating.Excellent => "отлично",
-            SatisfactionRating.Good => "хорошо",
-            SatisfactionRating.Satisfactory => "удовлетворительно",
-            _ => "неудовлетворительно"
+            SatisfactionRating.Excellent => ReportResources.Rating_Excellent,
+            SatisfactionRating.Good => ReportResources.Rating_Good,
+            SatisfactionRating.Satisfactory => ReportResources.Rating_Satisfactory,
+            _ => ReportResources.Rating_Unsatisfactory
         };
     }
 }

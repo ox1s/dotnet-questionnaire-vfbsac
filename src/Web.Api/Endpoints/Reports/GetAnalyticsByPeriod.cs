@@ -12,15 +12,15 @@ internal sealed class GetAnalyticsByPeriod : IEndpoint
     {
         app.MapPost("reports/analytics/period", async (
             GetAnalyticsByPeriodQuery query,
-            IQueryHandler<GetAnalyticsByPeriodQuery, 
-            List<GetAnalyticsByPeriodQueryResponse>> handler,
+            IQueryHandler<GetAnalyticsByPeriodQuery,
+            GetAnalyticsByPeriodQueryResult> handler,
             CancellationToken cancellationToken) =>
         {
-            Result<List<GetAnalyticsByPeriodQueryResponse>> result = await handler.Handle(query, cancellationToken);
+            Result<GetAnalyticsByPeriodQueryResult> result = await handler.Handle(query, cancellationToken);
 
             return result.Match(Results.Ok, CustomResults.Problem);
         })
         .WithTags("Reports")
-        .RequireAuthorization();
+        .HasPermission(Permissions.ReportsView);
     }
 }

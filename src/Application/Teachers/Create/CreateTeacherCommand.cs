@@ -4,4 +4,4 @@ namespace Application.Teachers.Create;
 
 public sealed record CreateTeacherCommand(
     string FullName,
-    Guid? DepartmentId) : ICommand<Guid>;
+    IReadOnlyCollection<Guid>? DepartmentIds) : ICommand<Guid>;

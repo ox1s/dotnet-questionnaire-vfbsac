@@ -13,14 +13,12 @@ internal sealed class TeacherConfiguration : IEntityTypeConfiguration<Domain.Col
             .IsRequired()
             .HasMaxLength(255);
 
-        builder.Property(t => t.DepartmentId)
-            .IsRequired(false);
+        builder.HasMany<Domain.College.Teachers.TeacherDepartment>("_departments")
+            .WithOne()
+            .HasForeignKey(td => td.TeacherId)
+            .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasIndex(t => t.DepartmentId);
-
-        builder.HasOne<Domain.College.Departments.Department>()
-            .WithMany()
-            .HasForeignKey(t => t.DepartmentId)
-            .OnDelete(DeleteBehavior.Restrict);
+        builder.Navigation("_departments")
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
     }
 }

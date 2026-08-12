@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__plugin_oh-my-claudecode_t__lsp_diagnostics",
+  "tool_input_preview": "{\"file\":\"C:\\\\Users\\\\oadmin\\\\home\\\\resources\\\\projects\\\\dotnet-questionnaire-vfbsac\\\\src\\\\Application\\\\Users\\\\CreateEmployer\\\\CreateEmployerUserCommandHandler.cs\"}",
+  "error": "Language server 'omnisharp' not found.\nInstall with: dotnet tool install -g omnisharp",
+  "timestamp": "2026-08-12T07:04:22.147Z",
+  "retry_count": 1
+}

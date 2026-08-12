@@ -9,6 +9,7 @@ import { AdminTeachersPage } from "./pages/admin/admin-teachers-page";
 import { AdminDisciplinesPage } from "./pages/admin/admin-disciplines-page";
 import { AdminDepartmentsPage } from "./pages/admin/admin-departments-page";
 import { AdminGroupsPage } from "./pages/admin/admin-groups-page";
+import { AdminEmployersPage } from "./pages/admin/admin-employers-page";
 import { ProtectedRoute } from "./components/auth/protected-route";
 import { AdminSettingsPage } from "./pages/admin/admin-settings-page";
 import { AdminSpecialitiesPage } from "./pages/admin/admin-specialities-page";
@@ -61,6 +62,10 @@ function App() {
                   element={<AdminSpecializationsPage />}
                 />
                 <Route path="/admin/groups" element={<AdminGroupsPage />} />
+                <Route
+                  path="/admin/employers"
+                  element={<AdminEmployersPage />}
+                />
                 <Route path="/admin/settings" element={<AdminSettingsPage />} />
               </Route>
             </Route>

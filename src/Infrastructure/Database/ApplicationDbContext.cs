@@ -30,6 +30,8 @@ public sealed class ApplicationDbContext(
 
     public DbSet<Teacher> Teachers { get; set; }
 
+    public DbSet<TeacherDepartment> TeacherDepartments { get; set; }
+
     public DbSet<Speciality> Specialities { get; set; }
     public DbSet<Question> Questions { get; set;  }
 

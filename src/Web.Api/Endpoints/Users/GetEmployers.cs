@@ -1,0 +1,26 @@
+using Application.Abstractions.Messaging;
+using Application.Users.GetEmployers;
+using SharedKernel;
+using Web.Api.Extensions;
+using Web.Api.Infrastructure;
+
+namespace Web.Api.Endpoints.Users;
+
+internal sealed class GetEmployers : IEndpoint
+{
+    public void MapEndpoint(IEndpointRouteBuilder app)
+    {
+        app.MapGet("users/employers", async (
+            IQueryHandler<GetEmployersQuery, List<GetEmployersQueryResponse>> handler,
+            CancellationToken cancellationToken) =>
+        {
+            var query = new GetEmployersQuery();
+
+            Result<List<GetEmployersQueryResponse>> result = await handler.Handle(query, cancellationToken);
+
+            return result.Match(Results.Ok, CustomResults.Problem);
+        })
+        .WithTags(Tags.Users)
+        .HasPermission(Permissions.Admin);
+    }
+}

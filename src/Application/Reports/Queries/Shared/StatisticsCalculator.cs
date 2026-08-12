@@ -54,4 +54,23 @@ internal static class StatisticsCalculator
             _ => SatisfactionRating.Excellent
         };
     }
+
+    /// <summary>
+    /// Formula (5): σ̄ = mean(σ_j) across all n criteria (questions) of the form/blank.
+    /// Formula (6): the overall form/blank satisfaction, УП = mean(УП_j across all questions) ± σ̄.
+    /// </summary>
+    public static OverallSatisfaction CalculateOverallSatisfaction(
+        List<decimal> perQuestionSatisfactionPercentages,
+        List<decimal> perQuestionStandardDeviations)
+    {
+        bool hasData = perQuestionSatisfactionPercentages.Count > 0;
+        decimal meanPercentage = CalculateAverageScore(perQuestionSatisfactionPercentages);
+        decimal averageStandardDeviation = CalculateAverageScore(perQuestionStandardDeviations);
+
+        return new OverallSatisfaction(
+            meanPercentage,
+            averageStandardDeviation,
+            ClassifySatisfaction(meanPercentage),
+            hasData);
+    }
 }

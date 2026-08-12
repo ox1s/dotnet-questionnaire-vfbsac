@@ -34,7 +34,7 @@ export interface DictionaryItem {
 export interface TeacherItem {
   id: string;
   fullName: string;
-  departmentId?: string;
+  departmentIds: string[];
   isDeleted?: boolean;
 }
 
@@ -42,6 +42,13 @@ export interface GroupUser {
   id: string;
   login: string;
   displayName: string;
+}
+
+export interface EmployerUser {
+  id: string;
+  login: string;
+  displayName: string;
+  organizationName?: string;
 }
 
 export interface SubmissionListItem {
@@ -64,6 +71,7 @@ export interface SubmissionListItem {
 export interface Form {
   id: string;
   title: string;
+  isActive: boolean;
   requiredFilters: string[];
 }
 
@@ -106,6 +114,17 @@ export interface QuestionStatistics {
   responseCount: number;
 }
 
+// Formulas (5)/(6): overall form/blank satisfaction, computed once server-side across all
+// questions of the form/period/group. hasData is false when there were no submissions/questions
+// to aggregate — in that case meanPercentage/averageStandardDeviation/rating are meaningless and
+// callers must render a "no data" state instead.
+export interface OverallSatisfaction {
+  meanPercentage: number;
+  averageStandardDeviation: number;
+  rating: SatisfactionRating;
+  hasData: boolean;
+}
+
 export interface AnalyticsByPeriodRequest {
   formId: string;
   fromDate: string;
@@ -113,14 +132,12 @@ export interface AnalyticsByPeriodRequest {
   filterSet: StatisticsFilters;
 }
 
-export interface AnalyticsByPeriodResponse {
-  questionId: string;
-  questionText: string;
-  satisfactionPercentage: number;
-  averageScore: number;
-  standardDeviation: number;
-  rating: SatisfactionRating;
-  responseCount: number;
+// Container response for the period analytics query: the per-question breakdown plus the
+// overall satisfaction and the distinct submission count, both computed once server-side.
+export interface AnalyticsByPeriodResult {
+  questions: QuestionStatistics[];
+  overall: OverallSatisfaction;
+  submissionCount: number;
 }
 
 export interface PeriodRequest {
@@ -140,10 +157,8 @@ export interface PeriodAnalyticsResponse {
   periodStart: string;
   periodEnd: string;
   questionStatistics: QuestionStatistics[];
-  totalSubmissions?: number;
-  overallSatisfactionPercentage?: number;
-  overallStandardDeviation?: number;
-  overallRating?: SatisfactionRating;
+  overall: OverallSatisfaction;
+  submissionCount: number;
 }
 
 export interface GetAnalyticsByGroupsRequest {
@@ -158,6 +173,8 @@ export interface GroupAnalyticsResponse {
   groupKey: string;
   groupName: string;
   questionStatistics: QuestionStatistics[];
+  overall: OverallSatisfaction;
+  submissionCount: number;
 }
 
 // Old API types (deprecated)
@@ -211,6 +228,24 @@ export interface AdviceItem {
   departmentId?: string;
 }
 
+export interface GetTextAnswersRequest {
+  formId: string;
+  filterSet: StatisticsFilters;
+  periodStart?: string;
+  periodEnd?: string;
+}
+
+export interface TextAnswerItem {
+  questionId: string;
+  questionText: string;
+  value: string;
+  submittedAt: string;
+  teacherId?: string;
+  teacherName?: string;
+  departmentId?: string;
+  departmentName?: string;
+}
+
 export const usersApi = {
   createGroup: (groupName: string, password: string) =>
     api.post<string>("/users/groups", { groupName, password }),
@@ -220,10 +255,28 @@ export const usersApi = {
   getStaff: () => api.get<GroupUser[]>("/users/staff"),
   getGroups: () => api.get<GroupUser[]>("/users/groups"),
 
+  createEmployer: (
+    login: string,
+    displayName: string,
+    organizationName: string,
+    password: string,
+  ) =>
+    api.post<string>("/users/employers", {
+      login,
+      displayName,
+      organizationName,
+      password,
+    }),
+  getEmployers: () => api.get<EmployerUser[]>("/users/employers"),
+
   deleteUser: (id: string) => api.delete(`/users/${id}`),
 
-  updateUser: (id: string, login: string, displayName: string) =>
-    api.put(`/users/${id}`, { login, displayName }),
+  updateUser: (
+    id: string,
+    login: string,
+    displayName: string,
+    organizationName?: string,
+  ) => api.put(`/users/${id}`, { login, displayName, organizationName }),
 
   setPassword: (id: string, newPassword: string) =>
     api.post(`/users/${id}/set-password`, { userId: id, newPassword }),
@@ -243,8 +296,8 @@ export const dictionariesApi = {
   getSpecializations: () =>
     api.get<DictionaryItem[]>("/dictionaries/specializations"),
 
-  createTeacher: (fullName: string, departmentId?: string) =>
-    api.post<string>("/teachers", { fullName, departmentId }),
+  createTeacher: (fullName: string, departmentIds?: string[]) =>
+    api.post<string>("/teachers", { fullName, departmentIds }),
   createDiscipline: (name: string, departmentId: string) =>
     api.post<string>("/disciplines", { name, departmentId }),
   createDepartment: (name: string) =>
@@ -269,14 +322,20 @@ export const dictionariesApi = {
 
   updateDepartment: (id: string, name: string) =>
     api.put(`/departments/${id}`, { departmentId: id, name }),
-  updateTeacher: (id: string, fullName: string, departmentId?: string) =>
-    api.put(`/teachers/${id}`, { fullName, departmentId }),
+  updateTeacher: (id: string, fullName: string, departmentIds?: string[]) =>
+    api.put(`/teachers/${id}`, { fullName, departmentIds }),
   updateDiscipline: (id: string, name: string, departmentId: string) =>
     api.put(`/disciplines/${id}`, { name, departmentId }),
   updateSpeciality: (id: string, name: string) =>
     api.put(`/specialities/${id}`, { name }),
   updateSpecialization: (id: string, name: string, specialityId: string) =>
     api.put(`/specializations/${id}`, { name, specialityId }),
+};
+
+export const formsApi = {
+  getAll: () => api.get<Form[]>("/forms/admin"),
+  activate: (id: string) => api.post(`/forms/${id}/activate`),
+  deactivate: (id: string) => api.post(`/forms/${id}/deactivate`),
 };
 
 export const submissionsApi = {
@@ -293,7 +352,7 @@ export const submissionsApi = {
 export const reportsApi = {
   // New analytics endpoints
   getAnalyticsByPeriod: (payload: AnalyticsByPeriodRequest) =>
-    api.post<AnalyticsByPeriodResponse[]>("/reports/analytics/period", payload),
+    api.post<AnalyticsByPeriodResult>("/reports/analytics/period", payload),
 
   getAnalyticsByPeriods: (payload: GetAnalyticsByPeriodsRequest) =>
     api.post<PeriodAnalyticsResponse[]>("/reports/analytics/periods", payload),
@@ -325,6 +384,9 @@ export const reportsApi = {
     api.get<AdviceItem[]>(`/reports/forms/${formId}/advices`, {
       params: { teacherId },
     }),
+
+  getTextAnswers: (payload: GetTextAnswersRequest) =>
+    api.post<TextAnswerItem[]>("/reports/analytics/text-answers", payload),
 };
 
 export const getApiErrorMessage = (

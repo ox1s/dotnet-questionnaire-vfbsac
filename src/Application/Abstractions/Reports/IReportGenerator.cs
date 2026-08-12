@@ -11,7 +11,7 @@ public interface IReportGenerator
         DateTime periodStart,
         DateTime periodEnd,
         Dictionary<string, string> resolvedFilters,
-        List<GetAnalyticsByPeriodQueryResponse> statistics,
+        GetAnalyticsByPeriodQueryResult analyticsResult,
         CancellationToken cancellationToken = default);
 
     Task<byte[]> GeneratePeriodsComparisonReportAsync(

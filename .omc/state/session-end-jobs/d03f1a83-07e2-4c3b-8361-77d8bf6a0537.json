@@ -1,0 +1,269 @@
+{
+  "version": 1,
+  "jobId": "1fdfddcd-645b-4744-bc9b-9b28a64c4962",
+  "sessionId": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+  "scopeKey": "d7b6614a298e70f5eaab48ab4912c2efadf479370e696c0f501067988e9f362b",
+  "revision": 2,
+  "createdAt": "2026-08-11T13:10:47.258Z",
+  "updatedAt": "2026-08-11T13:10:47.386Z",
+  "producerGraceExpiresAt": "2026-08-11T13:11:17.260Z",
+  "bestEffortDeadlineAt": "2026-08-11T13:12:08.260Z",
+  "producers": {
+    "core": {
+      "state": "sealed",
+      "intentKey": "06c75f2471cfcc044ab5c806e2208c623f1ded63f2f921c175c73d893af2a8b7",
+      "payloadDigest": "06c75f2471cfcc044ab5c806e2208c623f1ded63f2f921c175c73d893af2a8b7",
+      "sealedAt": "2026-08-11T13:10:47.386Z",
+      "sealedBy": "foreground"
+    },
+    "wiki": {
+      "state": "no-op",
+      "sealedAt": "2026-08-11T13:10:47.258Z",
+      "sealedBy": "wiki-producer"
+    }
+  },
+  "actions": {
+    "foreground-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 0,
+      "idempotencyKey": "febf6dba2f2536433960a07f7cedce72e946b43ced0896570df80f017b8914d2",
+      "payload": {
+        "transcriptPath": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+        "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+        "reason": "clear",
+        "input": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "transcript_path": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+          "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+          "prompt_id": "b3e251cf-dd36-40d1-99f7-56ddffd7b6d3",
+          "hook_event_name": "SessionEnd",
+          "reason": "clear"
+        },
+        "metrics": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "ended_at": "2026-08-11T13:10:47.191Z",
+          "reason": "clear",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {},
+        "foregroundResult": {
+          "removedTransientFiles": 2,
+          "completedAt": "2026-08-11T13:10:47.383Z"
+        }
+      },
+      "budgetMs": 9000,
+      "completedAt": "2026-08-11T13:10:47.386Z",
+      "lastOutcomeCode": "completed"
+    },
+    "wiki-capture": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "completed",
+      "attempts": 0,
+      "idempotencyKey": "1719cd1ef5b51e0269b78c4cb8c9308c9c1f7b82fd1c067fc034c060f23863f5",
+      "payload": {},
+      "budgetMs": 9000,
+      "completedAt": "2026-08-11T13:10:47.258Z"
+    },
+    "team-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "pending",
+      "attempts": 0,
+      "idempotencyKey": "cee6ac31df545408e1e822247ac249b3f8182a98a5fe8e448ae3b251e55bdee1",
+      "payload": {
+        "transcriptPath": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+        "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+        "reason": "clear",
+        "input": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "transcript_path": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+          "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+          "prompt_id": "b3e251cf-dd36-40d1-99f7-56ddffd7b6d3",
+          "hook_event_name": "SessionEnd",
+          "reason": "clear"
+        },
+        "metrics": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "ended_at": "2026-08-11T13:10:47.191Z",
+          "reason": "clear",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000
+    },
+    "python-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "pending",
+      "attempts": 0,
+      "idempotencyKey": "1f1370c4ac056606059d517e2f106b602d8cbcb04587b3fcc5f3b9f89e649cd0",
+      "payload": {
+        "transcriptPath": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+        "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+        "reason": "clear",
+        "input": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "transcript_path": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+          "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+          "prompt_id": "b3e251cf-dd36-40d1-99f7-56ddffd7b6d3",
+          "hook_event_name": "SessionEnd",
+          "reason": "clear"
+        },
+        "metrics": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "ended_at": "2026-08-11T13:10:47.191Z",
+          "reason": "clear",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000
+    },
+    "reply-cleanup": {
+      "class": "required",
+      "phase": "deferred-required",
+      "status": "pending",
+      "attempts": 0,
+      "idempotencyKey": "0b3a8b47c28b26d56aca004d4f572b96c118f16819c0d35162418816f9a5420a",
+      "payload": {
+        "transcriptPath": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+        "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+        "reason": "clear",
+        "input": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "transcript_path": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+          "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+          "prompt_id": "b3e251cf-dd36-40d1-99f7-56ddffd7b6d3",
+          "hook_event_name": "SessionEnd",
+          "reason": "clear"
+        },
+        "metrics": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "ended_at": "2026-08-11T13:10:47.191Z",
+          "reason": "clear",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {}
+      },
+      "budgetMs": 9000
+    },
+    "callback": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "pending",
+      "attempts": 0,
+      "idempotencyKey": "d068ede2655bf89e0c0950e087d0603d7dcf45538e94f20a654d08c6f4841895",
+      "payload": {
+        "transcriptPath": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+        "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+        "reason": "clear",
+        "input": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "transcript_path": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+          "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+          "prompt_id": "b3e251cf-dd36-40d1-99f7-56ddffd7b6d3",
+          "hook_event_name": "SessionEnd",
+          "reason": "clear"
+        },
+        "metrics": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "ended_at": "2026-08-11T13:10:47.191Z",
+          "reason": "clear",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {}
+      },
+      "budgetMs": 2000
+    },
+    "notification": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "pending",
+      "attempts": 0,
+      "idempotencyKey": "89c0438ff63097ce04beb60efb87292ff68a7af350a0ee331f3de9dbf42d62fc",
+      "payload": {
+        "transcriptPath": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+        "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+        "reason": "clear",
+        "input": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "transcript_path": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+          "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+          "prompt_id": "b3e251cf-dd36-40d1-99f7-56ddffd7b6d3",
+          "hook_event_name": "SessionEnd",
+          "reason": "clear"
+        },
+        "metrics": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "ended_at": "2026-08-11T13:10:47.191Z",
+          "reason": "clear",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {}
+      },
+      "budgetMs": 2000
+    },
+    "openclaw": {
+      "class": "best-effort",
+      "phase": "deferred-best-effort",
+      "status": "pending",
+      "attempts": 0,
+      "idempotencyKey": "31fe8f6e1cf204e27006de511df257326fdd98655122ca437013e8779ffc735b",
+      "payload": {
+        "transcriptPath": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+        "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+        "reason": "clear",
+        "input": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "transcript_path": "C:\\Users\\oadmin\\.claude\\projects\\C--Users-oadmin-home-resources-projects-dotnet-questionnaire-vfbsac\\d03f1a83-07e2-4c3b-8361-77d8bf6a0537.jsonl",
+          "cwd": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+          "prompt_id": "b3e251cf-dd36-40d1-99f7-56ddffd7b6d3",
+          "hook_event_name": "SessionEnd",
+          "reason": "clear"
+        },
+        "metrics": {
+          "session_id": "d03f1a83-07e2-4c3b-8361-77d8bf6a0537",
+          "ended_at": "2026-08-11T13:10:47.191Z",
+          "reason": "clear",
+          "agents_spawned": 0,
+          "agents_completed": 0,
+          "modes_used": []
+        },
+        "initialTeamNames": [],
+        "openClawEnabled": false,
+        "openClawRouting": {}
+      },
+      "budgetMs": 2000
+    }
+  },
+  "owner": null,
+  "phase": "ready"
+}

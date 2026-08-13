@@ -51,6 +51,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 
 interface AdminTableIconCellProps {
   icon?: React.ReactNode;
@@ -256,11 +257,12 @@ export function AdminTable<T>({
               data.map((item) => renderRow(item))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-muted-foreground text-sm"
-                >
-                  {emptyText}
+                <TableCell colSpan={columns.length} className="h-24 p-0">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyTitle>{emptyText}</EmptyTitle>
+                    </EmptyHeader>
+                  </Empty>
                 </TableCell>
               </TableRow>
             )}

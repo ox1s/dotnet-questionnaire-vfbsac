@@ -115,6 +115,283 @@
       ]
     }
   },
-  "hotPaths": [],
+  "hotPaths": [
+    {
+      "path": "src/Web.Client/src/components/ui/card.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1786603188391,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/empty.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1786607228477,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src",
+      "accessCount": 4,
+      "lastAccessed": 1786603190441,
+      "type": "directory"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/popover.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1786602574544,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/chart.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1786603146726,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/calendar.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1786603172516,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/table.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1786603244677,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/admin/admin-shared.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1786603786961,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/fetch-upstream.mjs",
+      "accessCount": 2,
+      "lastAccessed": 1786601555837,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/index.css",
+      "accessCount": 2,
+      "lastAccessed": 1786602355428,
+      "type": "directory"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/alert-dialog.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786602545665,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/alert.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786602547350,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/button-variants.ts",
+      "accessCount": 2,
+      "lastAccessed": 1786602551245,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/field.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786602553777,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/dropdown-menu.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786602567224,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/input-group.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786602568209,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/separator.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786602569906,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/sheet.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786602571164,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/sidebar.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1786602584661,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client",
+      "accessCount": 2,
+      "lastAccessed": 1786603230614,
+      "type": "directory"
+    },
+    {
+      "path": "src/Web.Client/components.json",
+      "accessCount": 1,
+      "lastAccessed": 1786542050458,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/fetch-retry.mjs",
+      "accessCount": 1,
+      "lastAccessed": 1786601672120,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/run-diffs.mjs",
+      "accessCount": 1,
+      "lastAccessed": 1786601900309,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/hooks/use-sidebar.ts",
+      "accessCount": 1,
+      "lastAccessed": 1786602269535,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui",
+      "accessCount": 1,
+      "lastAccessed": 1786602397372,
+      "type": "directory"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/badge-variants.ts",
+      "accessCount": 1,
+      "lastAccessed": 1786602451621,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/badge.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1786602461155,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/button.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1786602461643,
+      "type": "file"
+    },
+    {
+      "path": "full_review.diff",
+      "accessCount": 1,
+      "lastAccessed": 1786603163488,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/components",
+      "accessCount": 1,
+      "lastAccessed": 1786603189531,
+      "type": "directory"
+    },
+    {
+      "path": "src/Web.Client/src/components/ui/sonner.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1786603217522,
+      "type": "file"
+    },
+    {
+      "path": "AGENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1786605705407,
+      "type": "file"
+    },
+    {
+      "path": "src/Web.Client/src/pages/admin/admin-settings-page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1786605705518,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 1,
+      "lastAccessed": 1786605715155,
+      "type": "directory"
+    },
+    {
+      "path": "src/AGENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1786605715367,
+      "type": "file"
+    },
+    {
+      "path": "src/Application/Users/OpenSemester/OpenSemesterCommandHandler.cs",
+      "accessCount": 1,
+      "lastAccessed": 1786605721502,
+      "type": "file"
+    },
+    {
+      "path": "src/Application/Users/CloseSemester/CloseSemesterCommandHandler.cs",
+      "accessCount": 1,
+      "lastAccessed": 1786605722717,
+      "type": "file"
+    },
+    {
+      "path": "src/Application/AGENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1786605722868,
+      "type": "file"
+    },
+    {
+      "path": "TODO.md",
+      "accessCount": 1,
+      "lastAccessed": 1786605751396,
+      "type": "file"
+    },
+    {
+      "path": "src/Application/Submissions",
+      "accessCount": 1,
+      "lastAccessed": 1786605752342,
+      "type": "directory"
+    },
+    {
+      "path": "src/Application/Submissions/Create/CreateSubmissionCommandHandler.cs",
+      "accessCount": 1,
+      "lastAccessed": 1786605784149,
+      "type": "file"
+    },
+    {
+      "path": "college-specs/AGENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1786605999508,
+      "type": "file"
+    },
+    {
+      "path": "college-specs/Методика_оценки.md",
+      "accessCount": 1,
+      "lastAccessed": 1786606007591,
+      "type": "file"
+    },
+    {
+      "path": "college-specs",
+      "accessCount": 1,
+      "lastAccessed": 1786606059769,
+      "type": "directory"
+    },
+    {
+      "path": "src/Application/Reports",
+      "accessCount": 1,
+      "lastAccessed": 1786606106299,
+      "type": "directory"
+    },
+    {
+      "path": "src/Application/Reports/AGENTS.md",
+      "accessCount": 1,
+      "lastAccessed": 1786606106623,
+      "type": "file"
+    }
+  ],
   "userDirectives": []
 }

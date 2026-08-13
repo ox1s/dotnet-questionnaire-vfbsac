@@ -1,0 +1,11 @@
+{
+  "active": true,
+  "started_at": "2026-08-13T07:45:47.100Z",
+  "original_prompt": "/oh-my-claudecode:autopilot you need to commit existing changes in this branch but commits needs to be separated by change. So you need not to stage all changes and do push, but stage some files, do commit and then push. And so one. Do proper commits with feat:, fix:, test: and etc. naming",
+  "session_id": "8f041d28-cf6a-460c-a3fa-4e500d90dea4",
+  "project_path": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac",
+  "reinforcement_count": 0,
+  "awaiting_confirmation": true,
+  "awaiting_confirmation_set_at": "2026-08-13T07:45:47.100Z",
+  "last_checked_at": "2026-08-13T07:45:47.100Z"
+}

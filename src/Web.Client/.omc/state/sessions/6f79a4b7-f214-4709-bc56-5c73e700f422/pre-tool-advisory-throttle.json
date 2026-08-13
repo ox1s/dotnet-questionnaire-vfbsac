@@ -2,53 +2,13 @@
   "version": 1,
   "entries": {
     "79a93d4a2f8f50b95f852280616242fee1855dc99a3c75211917f55e72e95fae": {
-      "last_emitted_at_ms": 1786539693815,
+      "last_emitted_at_ms": 1786605695642,
       "message": "Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests)."
     },
     "1bb6914bc42b891c26d46c8ae2fd4f44071f59862e89dc550f4c82877b700216": {
-      "last_emitted_at_ms": 1786539395600,
+      "last_emitted_at_ms": 1786604279376,
       "message": "The boulder never stops. Continue until all tasks complete."
-    },
-    "445ed27a3872b681d98190bae61ccb84954e1bc4e140df5370be958dee776b3a": {
-      "last_emitted_at_ms": 1786539300922,
-      "message": "Verify changes work after editing. Test functionality before marking complete."
-    },
-    "466399dafa2d20f60587180bad0a07358eb7f2bce724df0ff682f038ad33f5ad": {
-      "last_emitted_at_ms": 1786539263584,
-      "message": "Read multiple files in parallel when possible for faster analysis."
-    },
-    "459c54e5f35d6a58dcd90d2aecc21fa6d1f35d241bc5b134c506f87dc7b6d67b": {
-      "last_emitted_at_ms": 1786538780848,
-      "message": "Combine searches in parallel when investigating multiple patterns."
-    },
-    "b7ee124a5eab64fc234c1a4110ffc481af5adbe593976581853759d6fee4ff54": {
-      "last_emitted_at_ms": 1786538568259,
-      "message": "Spawning agent: oh-my-claudecode:architect (opus) | Task: Architect verification of Web.Client cleanup"
-    },
-    "3b0d82309e699277d95d4b889f53c7eb25675f2410c6b499ccf949ee4cc29c25": {
-      "last_emitted_at_ms": 1786537034242,
-      "message": "Spawning agent: oh-my-claudecode:executor (opus) | Task: Dedup admin CRUD pages into shared hook (US-6)"
-    },
-    "59837f9df024864658494fb47df3cbfeb3514a88d19d1a97a1ae8f8b1c0b44e2": {
-      "last_emitted_at_ms": 1786537016770,
-      "message": "Spawning agent: oh-my-claudecode:executor (sonnet) | Task: Fix admin-stats-page deps warning + review (US-5)"
-    },
-    "59dfbe6ca10d690ea630df149bdbe04a56ed212bdb23885a8eee7d14ecc17627": {
-      "last_emitted_at_ms": 1786537010985,
-      "message": "Spawning agent: oh-my-claudecode:executor (sonnet) | Task: Fix TDZ + deps bugs in dashboard/hook (US-4)"
-    },
-    "a31b42c820bc56f20a93bc7b2b762a8f710172e44676be76a1b46c91c66119d2": {
-      "last_emitted_at_ms": 1786536997861,
-      "message": "[SLOP WARNING] Detected fallback/workaround language in this tool input. Do not make potential slop: avoid ad-hoc fallback layers, workaround shims, or environment-specific patches unless explicitly justified. For architecture concerns, consult the architect for a concrete design first. If this seems environment-specific, ask the user to confirm constraints before proceeding.\n\nSpawning agent: oh-my-claudecode:executor (sonnet) | Task: Fix unused catch vars in admin-settings-page (US-3)"
-    },
-    "8ac411175b889cba863df42b95afdc5f30536fbc0f3ca18d9ac6862b81fa18bb": {
-      "last_emitted_at_ms": 1786536992709,
-      "message": "Spawning agent: oh-my-claudecode:executor (sonnet) | Task: Fix any-types and unused vars (US-2)"
-    },
-    "df6d9119f1ce0cf7df531c4352e04c1f96658b31fd4f4e1931b457d0a57204e0": {
-      "last_emitted_at_ms": 1786536985359,
-      "message": "Spawning agent: oh-my-claudecode:executor (sonnet) | Task: Fix react-refresh export-split violations (US-1)"
     }
   },
-  "updated_at": "2026-08-12T13:01:33.815Z"
+  "updated_at": "2026-08-13T07:21:35.642Z"
 }

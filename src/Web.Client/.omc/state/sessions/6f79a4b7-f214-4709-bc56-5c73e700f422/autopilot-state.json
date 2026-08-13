@@ -1,0 +1,11 @@
+{
+  "active": true,
+  "started_at": "2026-08-12T14:01:01.027Z",
+  "original_prompt": "/oh-my-claudecode:autopilot check with context 7 new components and features of shadcnui and update ui componetns accroding changes",
+  "session_id": "6f79a4b7-f214-4709-bc56-5c73e700f422",
+  "project_path": "C:\\Users\\oadmin\\home\\resources\\projects\\dotnet-questionnaire-vfbsac\\src\\Web.Client",
+  "reinforcement_count": 0,
+  "awaiting_confirmation": true,
+  "awaiting_confirmation_set_at": "2026-08-12T14:01:01.027Z",
+  "last_checked_at": "2026-08-12T14:01:01.027Z"
+}

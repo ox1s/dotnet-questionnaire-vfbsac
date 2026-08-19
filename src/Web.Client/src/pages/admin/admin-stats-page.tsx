@@ -15,7 +15,6 @@ import api, {
   dictionariesApi,
   getApiErrorMessage,
   reportsApi,
-  type AdviceItem,
   type DictionaryItem,
   type FormDetail,
   type StatisticsFilters,
@@ -31,7 +30,6 @@ import { AnalyticsFilterPanel } from "@/components/admin/admin-stats/analytics-f
 import { AnalyticsSummaryCards } from "@/components/admin/admin-stats/analytics-summary-cards";
 import { AnalyticsChart } from "@/components/admin/admin-stats/analytics-chart";
 import { QuestionsTable } from "@/components/admin/admin-stats/questions-table";
-import { AdvicesSection } from "@/components/admin/admin-stats/advices-section";
 import { TextAnswersSection } from "@/components/admin/admin-stats/text-answers-section";
 import {
   getPreviousPeriodRange,
@@ -45,7 +43,6 @@ export const AdminStatsPage = () => {
   const { id } = useParams();
   const [form, setForm] = useState<FormDetail | null>(null);
   const [report, setReport] = useState<PeriodAnalyticsResponse[] | null>(null);
-  const [advices, setAdvices] = useState<AdviceItem[]>([]);
   const [textAnswers, setTextAnswers] = useState<TextAnswerItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -122,12 +119,6 @@ export const AdminStatsPage = () => {
       ? `${teacher.fullName} (${departmentNames.join(", ")})`
       : teacher.fullName;
   };
-
-  const getTeacherName = (teacherId?: string) =>
-    teachers.find((teacher) => teacher.id === teacherId)?.fullName;
-
-  const getDepartmentName = (departmentId?: string) =>
-    departments.find((department) => department.id === departmentId)?.name;
 
   const optionsFor = () => {
     const filtersWithoutCompareField = baseFilters(compareField);
@@ -262,7 +253,6 @@ export const AdminStatsPage = () => {
       } else {
         setReport(null);
       }
-      setAdvices([]);
       setTextAnswers([]);
       return;
     }
@@ -315,10 +305,6 @@ export const AdminStatsPage = () => {
         };
       }
 
-      const advicesResponse = await reportsApi.getAdvices(
-        id,
-        filters.teacherId,
-      );
       const textAnswersResponse = await reportsApi.getTextAnswers({
         formId: id,
         filterSet: filters,
@@ -327,13 +313,6 @@ export const AdminStatsPage = () => {
       });
 
       setReport(reportResponse.data);
-      setAdvices(
-        filters.departmentId
-          ? advicesResponse.data.filter(
-              (item) => item.departmentId === filters.departmentId,
-            )
-          : advicesResponse.data,
-      );
       setTextAnswers(textAnswersResponse.data);
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Не удалось построить отчет"));
@@ -497,16 +476,6 @@ export const AdminStatsPage = () => {
 
             {hasReportData ? (
               <QuestionsTable questions={questions} periods={report} />
-            ) : null}
-
-            {hasReportData ? (
-              <AdvicesSection
-                advices={advices}
-                teacherFilterId={filters.teacherId}
-                departmentFilterId={filters.departmentId}
-                getTeacherName={getTeacherName}
-                getDepartmentName={getDepartmentName}
-              />
             ) : null}
 
             {hasReportData ? (

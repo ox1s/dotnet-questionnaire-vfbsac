@@ -58,7 +58,8 @@ internal sealed class GetTextAnswersQueryHandler(
                 x.answer.Value,
                 x.submission.SubmittedAt,
                 x.submission.Context.TeacherId,
-                x.submission.Context.DepartmentId
+                x.submission.Context.DepartmentId,
+                x.submission.Context.DisciplineId
             })
             .ToListAsync(cancellationToken);
 
@@ -95,6 +96,16 @@ internal sealed class GetTextAnswersQueryHandler(
             context,
             cancellationToken);
 
+        IEnumerable<Guid> disciplineIds = rawAnswers
+            .Select(a => a.DisciplineId)
+            .Where(id => id.HasValue)
+            .Select(id => id!.Value);
+
+        Dictionary<Guid, string> disciplineNames = await EntityNameResolver.ResolveDisciplineNamesAsync(
+            disciplineIds,
+            context,
+            cancellationToken);
+
         var responses = rawAnswers
             .Select(a => new GetTextAnswersQueryResponse(
                 a.QuestionId,
@@ -104,7 +115,9 @@ internal sealed class GetTextAnswersQueryHandler(
                 a.TeacherId,
                 a.TeacherId.HasValue ? teacherNames.GetValueOrDefault(a.TeacherId.Value) : null,
                 a.DepartmentId,
-                a.DepartmentId.HasValue ? departmentNames.GetValueOrDefault(a.DepartmentId.Value) : null))
+                a.DepartmentId.HasValue ? departmentNames.GetValueOrDefault(a.DepartmentId.Value) : null,
+                a.DisciplineId,
+                a.DisciplineId.HasValue ? disciplineNames.GetValueOrDefault(a.DisciplineId.Value) : null))
             .OrderByDescending(a => a.SubmittedAt)
             .ToList();
 

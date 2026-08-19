@@ -222,12 +222,6 @@ export interface AnalyticsReport {
   questions: AnalyticsQuestion[];
 }
 
-export interface AdviceItem {
-  text: string;
-  teacherId?: string;
-  departmentId?: string;
-}
-
 export interface GetTextAnswersRequest {
   formId: string;
   filterSet: StatisticsFilters;
@@ -244,6 +238,8 @@ export interface TextAnswerItem {
   teacherName?: string;
   departmentId?: string;
   departmentName?: string;
+  disciplineId?: string;
+  disciplineName?: string;
 }
 
 export const usersApi = {
@@ -379,11 +375,6 @@ export const reportsApi = {
   // Old endpoint (deprecated)
   getAnalytics: (payload: AnalyticsReportRequest) =>
     api.post<AnalyticsReport>("/reports/analytics", payload),
-
-  getAdvices: (formId: string, teacherId?: string) =>
-    api.get<AdviceItem[]>(`/reports/forms/${formId}/advices`, {
-      params: { teacherId },
-    }),
 
   getTextAnswers: (payload: GetTextAnswersRequest) =>
     api.post<TextAnswerItem[]>("/reports/analytics/text-answers", payload),

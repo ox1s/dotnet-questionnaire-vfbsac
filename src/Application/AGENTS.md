@@ -26,7 +26,7 @@ See `Abstractions/AGENTS.md` for full detail on these and the other cross-cuttin
 | `Departments/`, `Disciplines/`, `Specialities/`, `Specializations/`, `Teachers/` | Near-identical CRUD vertical slices for college reference data. Summarized in the table below rather than documented per-folder. |
 | `Forms/` | Questionnaire form definitions (title, required context filters, ordered questions). `Create/Delete/GetById/GetList`. |
 | `Submissions/` | Student/staff answers to a form, carrying a denormalized `SubmissionContext` (department/discipline/teacher/speciality/specialization/org/education-form/employee-category/position) used for analytics filtering. `Create/Delete/GetList`. `GetStatistics/` exists as an empty placeholder folder (no files). |
-| `Reports/` | Analytics queries (per-period, multi-period comparison, per-group comparison, free-text advice extraction) and export commands that render those analytics to a document via `IReportGenerator`. Has real complexity — see its own `AGENTS.md`. |
+| `Reports/` | Analytics queries (per-period, multi-period comparison, per-group comparison, free-text answer extraction) and export commands that render those analytics to a document via `IReportGenerator`. Has real complexity — see its own `AGENTS.md`. |
 | `Users/` | Accounts: student-group logins, staff/admin accounts, sign-in, password administration, semester open/close, group listing. |
 | `Resources/` | `ApplicationErrors.resx` / `.Designer.cs` — localized validation message strings (`NotEmpty`, `WithReference`), consumed by validators via `Resources.ApplicationErrors.NotEmpty` etc. |
 

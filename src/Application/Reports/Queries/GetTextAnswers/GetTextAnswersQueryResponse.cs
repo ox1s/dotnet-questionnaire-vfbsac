@@ -8,4 +8,6 @@ public sealed record GetTextAnswersQueryResponse(
     Guid? TeacherId,
     string? TeacherName,
     Guid? DepartmentId,
-    string? DepartmentName);
+    string? DepartmentName,
+    Guid? DisciplineId,
+    string? DisciplineName);

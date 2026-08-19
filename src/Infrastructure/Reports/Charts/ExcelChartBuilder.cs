@@ -91,70 +91,114 @@ internal static class ExcelChartBuilder
         IReadOnlyList<decimal> values,
         bool isRadar)
     {
-        C.PlotArea plotArea = isRadar
-            ? BuildRadarPlotArea(categories, values)
-            : BuildBarPlotArea(categories, values);
-
-        var chart = new C.Chart(
-            new C.AutoTitleDeleted { Val = true },
-            plotArea,
-            new C.Legend(new C.LegendPosition { Val = C.LegendPositionValues.Bottom }),
-            new C.PlotVisibleOnly { Val = true });
+        C.Chart chart = isRadar
+            ? BuildRadarChart(categories, values)
+            : BuildBar3DChart(categories, values);
 
         chartPart.ChartSpace = new C.ChartSpace(
             new C.EditingLanguage { Val = "ru-RU" },
             chart);
     }
 
-    private static C.PlotArea BuildBarPlotArea(IReadOnlyList<string> categories, IReadOnlyList<decimal> values)
+    // Mirrors the college-specs reference workbook's per-discipline bar chart exactly (see
+    // xl/charts/chart3.xml in обработка_удовл_обучающихся...xlsx): a 3-D clustered column chart
+    // with value data labels on the bars, no gridlines/legend. The flat 2-D column chart this
+    // replaced didn't match what the manual spreadsheet actually produced.
+    private static C.Chart BuildBar3DChart(IReadOnlyList<string> categories, IReadOnlyList<decimal> values)
     {
-        var barChart = new C.BarChart(
+        var bar3DChart = new C.Bar3DChart(
             new C.BarDirection { Val = C.BarDirectionValues.Column },
             new C.BarGrouping { Val = C.BarGroupingValues.Clustered },
+            new C.VaryColors { Val = false },
             BuildBarSeries(categories, values),
+            new C.Shape { Val = C.ShapeValues.Box },
             new C.AxisId { Val = BarCategoryAxisId },
-            new C.AxisId { Val = BarValueAxisId });
+            new C.AxisId { Val = BarValueAxisId },
+            new C.AxisId { Val = 0U });
 
-        return new C.PlotArea(
+        var plotArea = new C.PlotArea(
             new C.Layout(),
-            barChart,
-            BuildCategoryAxis(BarCategoryAxisId, BarValueAxisId),
-            BuildValueAxis(BarValueAxisId, BarCategoryAxisId));
+            bar3DChart,
+            BuildCategoryAxis(BarCategoryAxisId, BarValueAxisId, withGridlines: false, tickMark: C.TickMarkValues.None),
+            BuildValueAxis(BarValueAxisId, BarCategoryAxisId, withGridlines: false, tickMark: C.TickMarkValues.None));
+
+        return new C.Chart(
+            new C.AutoTitleDeleted { Val = true },
+            new C.View3D(
+                new C.RotateX { Val = (sbyte)15 },
+                new C.RotateY { Val = (ushort)20 },
+                new C.RightAngleAxes { Val = true }),
+            new C.Floor(new C.Thickness { Val = (byte)0 }),
+            new C.SideWall(new C.Thickness { Val = (byte)0 }),
+            new C.BackWall(new C.Thickness { Val = (byte)0 }),
+            plotArea,
+            new C.PlotVisibleOnly { Val = true },
+            new C.DisplayBlanksAs { Val = C.DisplayBlanksAsValues.Gap });
     }
 
-    private static C.PlotArea BuildRadarPlotArea(IReadOnlyList<string> categories, IReadOnlyList<decimal> values)
+    // Mirrors the reference workbook's radar chart (xl/charts/chart2.xml): a marker-style radar
+    // with no data labels, gridlines on both axes. The third chart present in the original file
+    // per sheet (another radar series) is a dangling #REF! left over from editing the source
+    // spreadsheet by hand - a genuine authoring artifact, not something worth reproducing here.
+    private static C.Chart BuildRadarChart(IReadOnlyList<string> categories, IReadOnlyList<decimal> values)
     {
         var radarChart = new C.RadarChart(
             new C.RadarStyle { Val = C.RadarStyleValues.Marker },
+            new C.VaryColors { Val = false },
             BuildRadarSeries(categories, values),
             new C.AxisId { Val = RadarCategoryAxisId },
             new C.AxisId { Val = RadarValueAxisId });
 
-        return new C.PlotArea(
+        var plotArea = new C.PlotArea(
             new C.Layout(),
             radarChart,
-            BuildCategoryAxis(RadarCategoryAxisId, RadarValueAxisId),
-            BuildValueAxis(RadarValueAxisId, RadarCategoryAxisId));
+            BuildCategoryAxis(RadarCategoryAxisId, RadarValueAxisId, withGridlines: true, tickMark: C.TickMarkValues.Outside),
+            BuildValueAxis(RadarValueAxisId, RadarCategoryAxisId, withGridlines: true, tickMark: C.TickMarkValues.Cross));
+
+        return new C.Chart(
+            new C.AutoTitleDeleted { Val = true },
+            plotArea,
+            new C.PlotVisibleOnly { Val = true },
+            new C.DisplayBlanksAs { Val = C.DisplayBlanksAsValues.Gap });
     }
 
-    private static C.CategoryAxis BuildCategoryAxis(uint axisId, uint crossingAxisId)
+    private static C.CategoryAxis BuildCategoryAxis(uint axisId, uint crossingAxisId, bool withGridlines, C.TickMarkValues tickMark)
     {
-        return new C.CategoryAxis(
+        var axis = new C.CategoryAxis(
             new C.AxisId { Val = axisId },
             new C.Scaling(new C.Orientation { Val = C.OrientationValues.MinMax }),
             new C.Delete { Val = false },
-            new C.AxisPosition { Val = C.AxisPositionValues.Bottom },
-            new C.CrossingAxis { Val = crossingAxisId });
+            new C.AxisPosition { Val = C.AxisPositionValues.Bottom });
+
+        if (withGridlines)
+        {
+            axis.Append(new C.MajorGridlines());
+        }
+
+        axis.Append(new C.MajorTickMark { Val = tickMark });
+        axis.Append(new C.CrossingAxis { Val = crossingAxisId });
+
+        return axis;
     }
 
-    private static C.ValueAxis BuildValueAxis(uint axisId, uint crossingAxisId)
+    private static C.ValueAxis BuildValueAxis(uint axisId, uint crossingAxisId, bool withGridlines, C.TickMarkValues tickMark)
     {
-        return new C.ValueAxis(
+        var axis = new C.ValueAxis(
             new C.AxisId { Val = axisId },
             new C.Scaling(new C.Orientation { Val = C.OrientationValues.MinMax }),
             new C.Delete { Val = false },
-            new C.AxisPosition { Val = C.AxisPositionValues.Left },
-            new C.CrossingAxis { Val = crossingAxisId });
+            new C.AxisPosition { Val = C.AxisPositionValues.Left });
+
+        if (withGridlines)
+        {
+            axis.Append(new C.MajorGridlines());
+        }
+
+        axis.Append(new C.NumberingFormat { FormatCode = "0.0", SourceLinked = false });
+        axis.Append(new C.MajorTickMark { Val = tickMark });
+        axis.Append(new C.CrossingAxis { Val = crossingAxisId });
+
+        return axis;
     }
 
     private static C.BarChartSeries BuildBarSeries(IReadOnlyList<string> categories, IReadOnlyList<decimal> values)
@@ -163,7 +207,8 @@ internal static class ExcelChartBuilder
             new C.Index { Val = 0U },
             new C.Order { Val = 0U },
             BuildCategoryAxisData(categories),
-            BuildValues(values));
+            BuildValues(values),
+            BuildValueDataLabels());
     }
 
     private static C.RadarChartSeries BuildRadarSeries(IReadOnlyList<string> categories, IReadOnlyList<decimal> values)
@@ -172,7 +217,19 @@ internal static class ExcelChartBuilder
             new C.Index { Val = 0U },
             new C.Order { Val = 0U },
             BuildCategoryAxisData(categories),
-            BuildValues(values));
+            BuildValues(values),
+            new C.Marker(new C.Symbol { Val = C.MarkerStyleValues.None }));
+    }
+
+    private static C.DataLabels BuildValueDataLabels()
+    {
+        return new C.DataLabels(
+            new C.ShowLegendKey { Val = false },
+            new C.ShowValue { Val = true },
+            new C.ShowCategoryName { Val = false },
+            new C.ShowSeriesName { Val = false },
+            new C.ShowPercent { Val = false },
+            new C.ShowBubbleSize { Val = false });
     }
 
     private static C.CategoryAxisData BuildCategoryAxisData(IReadOnlyList<string> categories)

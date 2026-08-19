@@ -7,6 +7,7 @@ import {
   Trash2,
   Power,
   PowerOff,
+  Eye,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -101,6 +102,16 @@ export const DashboardContent = ({
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <Link to={`/admin/preview/${form.id}`} title="Просмотреть анкету">
+                    <Eye size={18} />
+                  </Link>
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"

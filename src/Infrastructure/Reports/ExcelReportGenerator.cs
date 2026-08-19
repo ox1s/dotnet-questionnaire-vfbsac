@@ -5,6 +5,7 @@ using Application.Reports.Queries.GetAnalyticsByPeriod;
 using Application.Reports.Queries.GetAnalyticsByPeriods;
 using Application.Reports.Queries.Shared;
 using ClosedXML.Excel;
+using Infrastructure.Reports.Charts;
 using Infrastructure.Resources;
 using Microsoft.Extensions.Logging;
 
@@ -76,13 +77,19 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
             // Data rows
             int rowNumber = 1;
+            int firstDataRow = currentRow;
             foreach (GetAnalyticsByPeriodQueryResponse stat in statistics)
             {
                 worksheet.Cell(currentRow, 1).Value = rowNumber;
                 worksheet.Cell(currentRow, 2).Value = stat.QuestionText;
-                worksheet.Cell(currentRow, 3).Value = FormatNumber(stat.SatisfactionPercentage);
-                worksheet.Cell(currentRow, 4).Value = FormatNumber(stat.AverageScore);
-                worksheet.Cell(currentRow, 5).Value = FormatNumber(stat.StandardDeviation);
+
+                worksheet.Cell(currentRow, 3).Value = stat.SatisfactionPercentage;
+                worksheet.Cell(currentRow, 3).Style.NumberFormat.Format = "0.00";
+                worksheet.Cell(currentRow, 4).Value = stat.AverageScore;
+                worksheet.Cell(currentRow, 4).Style.NumberFormat.Format = "0.00";
+                worksheet.Cell(currentRow, 5).Value = stat.StandardDeviation;
+                worksheet.Cell(currentRow, 5).Style.NumberFormat.Format = "0.00";
+
                 worksheet.Cell(currentRow, 6).Value = FormatRating(stat.Rating);
                 worksheet.Cell(currentRow, 7).Value = stat.ResponseCount;
 
@@ -94,15 +101,29 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
                 rowNumber++;
             }
 
+            int lastDataRow = currentRow - 1;
+
             currentRow++;
-            AppendOverallSatisfactionSummary(worksheet, currentRow, analyticsResult.Overall);
+            AppendOverallSatisfactionSummary(worksheet, currentRow, analyticsResult.Overall, firstDataRow, lastDataRow);
 
             // Auto-fit columns
             worksheet.Columns().AdjustToContents();
 
             using var memoryStream = new MemoryStream();
             workbook.SaveAs(memoryStream);
-            return Task.FromResult(memoryStream.ToArray());
+
+            var chartCategories = Enumerable.Range(1, statistics.Count)
+                .Select(i => i.ToString(CultureInfo.InvariantCulture))
+                .ToList();
+            var chartValues = statistics.Select(s => s.SatisfactionPercentage).ToList();
+
+            byte[] reportBytes = ExcelChartBuilder.AddSatisfactionCharts(
+                memoryStream.ToArray(),
+                ReportResources.SheetTitle_Report,
+                chartCategories,
+                chartValues);
+
+            return Task.FromResult(reportBytes);
         }
         catch (Exception ex)
         {
@@ -463,12 +484,19 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
 
     /// <summary>
     /// Renders the formula (5)/(6) overall form/blank satisfaction as a small label/value block,
-    /// starting at <paramref name="startRow"/>.
+    /// starting at <paramref name="startRow"/>. Formula (6)'s mean and formula (5)'s average
+    /// standard deviation are written as live <c>AVERAGE</c> formulas over the per-question rows
+    /// (<paramref name="firstDataRow"/>-<paramref name="lastDataRow"/>, columns C and E) rather
+    /// than pre-computed text, so the workbook stays auditable/recalculable like the manual
+    /// college-specs reference spreadsheet. The rating is a nested <c>IF</c> over Table 1's
+    /// thresholds, referencing the mean-percentage cell.
     /// </summary>
     private static void AppendOverallSatisfactionSummary(
         IXLWorksheet worksheet,
         int startRow,
-        OverallSatisfaction overall)
+        OverallSatisfaction overall,
+        int firstDataRow,
+        int lastDataRow)
     {
         int currentRow = startRow;
 
@@ -482,16 +510,23 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
             return;
         }
 
-        worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_MeanPercent;
-        worksheet.Cell(currentRow, 2).Value = FormatNumber(overall.MeanPercentage);
+        int meanRow = currentRow;
+        worksheet.Cell(meanRow, 1).Value = ReportResources.OverallSatisfaction_MeanPercent;
+        worksheet.Cell(meanRow, 2).FormulaA1 = $"=AVERAGE(C{firstDataRow}:C{lastDataRow})";
+        worksheet.Cell(meanRow, 2).Style.NumberFormat.Format = "0.00";
         currentRow++;
 
         worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_AvgStdDev;
-        worksheet.Cell(currentRow, 2).Value = FormatNumber(overall.AverageStandardDeviation);
+        worksheet.Cell(currentRow, 2).FormulaA1 = $"=AVERAGE(E{firstDataRow}:E{lastDataRow})";
+        worksheet.Cell(currentRow, 2).Style.NumberFormat.Format = "0.00";
         currentRow++;
 
+        string meanRef = $"B{meanRow}";
         worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_Rating;
-        worksheet.Cell(currentRow, 2).Value = FormatRating(overall.Rating);
+        worksheet.Cell(currentRow, 2).FormulaA1 =
+            $"=IF({meanRef}<40,\"{ReportResources.Rating_Unsatisfactory}\"," +
+            $"IF({meanRef}<60,\"{ReportResources.Rating_Satisfactory}\"," +
+            $"IF({meanRef}<80,\"{ReportResources.Rating_Good}\",\"{ReportResources.Rating_Excellent}\")))";
     }
 
     /// <summary>

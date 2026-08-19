@@ -141,7 +141,7 @@ namespace Infrastructure.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Удовл. потреб., %.
+        ///   Looks up a localized string similar to ср зн уд j кр Упj (1), %.
         /// </summary>
         internal static string Header_SatisfactionPercent {
             get {
@@ -150,7 +150,7 @@ namespace Infrastructure.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Средний балл.
+        ///   Looks up a localized string similar to ср зн инд оц уд потр j кр (2).
         /// </summary>
         internal static string Header_AverageScore {
             get {
@@ -159,11 +159,20 @@ namespace Infrastructure.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Ст. откл..
+        ///   Looks up a localized string similar to ср кв откл инд оц (3), %.
         /// </summary>
         internal static string Header_StandardDeviation {
             get {
                 return ResourceManager.GetString("Header_StandardDeviation", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Удовлетворенность потребителей, %.
+        /// </summary>
+        internal static string Header_ConsumerSatisfaction {
+            get {
+                return ResourceManager.GetString("Header_ConsumerSatisfaction", resourceCulture);
             }
         }
 

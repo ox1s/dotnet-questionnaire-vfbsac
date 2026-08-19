@@ -145,13 +145,16 @@
     <value>Вопрос</value>
   </data>
   <data name="Header_SatisfactionPercent" xml:space="preserve">
-    <value>Удовл. потреб., %</value>
+    <value>ср зн уд j кр Упj (1), %</value>
   </data>
   <data name="Header_AverageScore" xml:space="preserve">
-    <value>Средний балл</value>
+    <value>ср зн инд оц уд потр j кр (2)</value>
   </data>
   <data name="Header_StandardDeviation" xml:space="preserve">
-    <value>Ст. откл.</value>
+    <value>ср кв откл инд оц (3), %</value>
+  </data>
+  <data name="Header_ConsumerSatisfaction" xml:space="preserve">
+    <value>Удовлетворенность потребителей, %</value>
   </data>
   <data name="Header_Rating" xml:space="preserve">
     <value>Оценка</value>

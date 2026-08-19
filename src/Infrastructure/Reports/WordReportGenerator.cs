@@ -22,9 +22,14 @@ public sealed class WordReportGenerator(ILogger<WordReportGenerator> logger) : I
         DateTime periodStart,
         DateTime periodEnd,
         Dictionary<string, string> resolvedFilters,
-        GetAnalyticsByPeriodQueryResult analyticsResult,
+        List<PeriodReportSheet> sheets,
         CancellationToken cancellationToken = default)
     {
+        // Word export never grew multi-sheet support; it renders only the first sheet and is not
+        // DI-registered (see DependencyInjection.cs), so this is a reasonable stopgap.
+        GetAnalyticsByPeriodQueryResult analyticsResult = sheets.Count > 0
+            ? sheets[0].AnalyticsResult
+            : new GetAnalyticsByPeriodQueryResult([], new OverallSatisfaction(0, 0, SatisfactionRating.Unsatisfactory, HasData: false), 0);
         List<GetAnalyticsByPeriodQueryResponse> statistics = analyticsResult.Questions;
         MemoryStream? memoryStream = null;
         WordprocessingDocument? document = null;

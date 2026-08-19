@@ -4,6 +4,12 @@ using Application.Reports.Queries.GetAnalyticsByPeriods;
 
 namespace Application.Abstractions.Reports;
 
+/// <summary>
+/// One worksheet to render for the single-period report: either the whole form (when no
+/// discipline breakdown applies) or a single discipline/teacher slice of it.
+/// </summary>
+public sealed record PeriodReportSheet(string SheetName, GetAnalyticsByPeriodQueryResult AnalyticsResult);
+
 public interface IReportGenerator
 {
     Task<byte[]> GeneratePeriodReportAsync(
@@ -11,7 +17,7 @@ public interface IReportGenerator
         DateTime periodStart,
         DateTime periodEnd,
         Dictionary<string, string> resolvedFilters,
-        GetAnalyticsByPeriodQueryResult analyticsResult,
+        List<PeriodReportSheet> sheets,
         CancellationToken cancellationToken = default);
 
     Task<byte[]> GeneratePeriodsComparisonReportAsync(

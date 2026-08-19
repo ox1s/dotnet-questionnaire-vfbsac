@@ -27,7 +27,8 @@ internal static class ExcelChartBuilder
         byte[] workbookBytes,
         string sheetName,
         IReadOnlyList<string> categories,
-        IReadOnlyList<decimal> values)
+        IReadOnlyList<decimal> values,
+        int fromRow)
     {
         if (values.Count == 0)
         {
@@ -50,9 +51,13 @@ internal static class ExcelChartBuilder
             ChartPart radarChartPart = drawingsPart.AddNewPart<ChartPart>();
             WriteChartPart(radarChartPart, categories, values, isRadar: true);
 
+            int toRow = fromRow + 19;
+
+            // Both charts sit below the data table (which starts at column A), side by side with
+            // each other, rather than to the right of the table as before.
             var worksheetDrawing = new Xdr.WorksheetDrawing(
-                BuildAnchor(drawingsPart.GetIdOfPart(barChartPart), 1, "SatisfactionBarChart", 8, 1, 17, 20),
-                BuildAnchor(drawingsPart.GetIdOfPart(radarChartPart), 2, "SatisfactionRadarChart", 18, 1, 27, 20));
+                BuildAnchor(drawingsPart.GetIdOfPart(barChartPart), 1, "SatisfactionBarChart", 0, fromRow, 9, toRow),
+                BuildAnchor(drawingsPart.GetIdOfPart(radarChartPart), 2, "SatisfactionRadarChart", 11, fromRow, 20, toRow));
 
             drawingsPart.WorksheetDrawing = worksheetDrawing;
 

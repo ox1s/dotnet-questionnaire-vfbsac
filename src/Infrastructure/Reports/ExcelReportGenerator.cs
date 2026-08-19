@@ -13,115 +13,134 @@ namespace Infrastructure.Reports;
 
 public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) : IReportGenerator
 {
+    private static readonly char[] InvalidSheetNameChars = ['\\', '/', '?', '*', '[', ']', ':'];
+
     public Task<byte[]> GeneratePeriodReportAsync(
         string formTitle,
         DateTime periodStart,
         DateTime periodEnd,
         Dictionary<string, string> resolvedFilters,
-        GetAnalyticsByPeriodQueryResult analyticsResult,
+        List<PeriodReportSheet> sheets,
         CancellationToken cancellationToken = default)
     {
-        List<GetAnalyticsByPeriodQueryResponse> statistics = analyticsResult.Questions;
         try
         {
             using var workbook = new XLWorkbook();
-            IXLWorksheet worksheet = workbook.Worksheets.Add(ReportResources.SheetTitle_Report);
+            var usedSheetNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var pendingCharts = new List<(string SheetName, List<string> Categories, List<decimal> Values, int FromRow)>();
 
-            int currentRow = 1;
-
-            // Title
-            worksheet.Cell(currentRow, 1).Value = formTitle;
-            worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-            worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
-            currentRow += 2;
-
-            // Period
-            worksheet.Cell(currentRow, 1).Value = $"{ReportResources.Label_Period}:";
-            worksheet.Cell(currentRow, 2).Value = $"{periodStart:dd.MM.yyyy} - {periodEnd:dd.MM.yyyy}";
-            currentRow++;
-
-            // Filters
-            foreach (KeyValuePair<string, string> filter in resolvedFilters)
+            foreach (PeriodReportSheet sheet in sheets)
             {
-                worksheet.Cell(currentRow, 1).Value = $"{filter.Key}:";
-                worksheet.Cell(currentRow, 2).Value = filter.Value;
+                List<GetAnalyticsByPeriodQueryResponse> statistics = sheet.AnalyticsResult.Questions;
+                string sheetName = BuildUniqueSheetName(sheet.SheetName, usedSheetNames);
+                IXLWorksheet worksheet = workbook.Worksheets.Add(sheetName);
+
+                int currentRow = 1;
+
+                // Title
+                worksheet.Cell(currentRow, 1).Value = formTitle;
+                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+                worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
+                currentRow += 2;
+
+                // Period
+                worksheet.Cell(currentRow, 1).Value = $"{ReportResources.Label_Period}:";
+                worksheet.Cell(currentRow, 2).Value = $"{periodStart:dd.MM.yyyy} - {periodEnd:dd.MM.yyyy}";
                 currentRow++;
-            }
 
-            currentRow++;
-
-            if (statistics.Count == 0)
-            {
-                worksheet.Cell(currentRow, 1).Value = ReportResources.NoDataMessage;
-                using var stream = new MemoryStream();
-                workbook.SaveAs(stream);
-                return Task.FromResult(stream.ToArray());
-            }
-
-            // Header row
-            worksheet.Cell(currentRow, 1).Value = ReportResources.Header_Number;
-            worksheet.Cell(currentRow, 2).Value = ReportResources.Header_Question;
-            worksheet.Cell(currentRow, 3).Value = ReportResources.Header_SatisfactionPercent;
-            worksheet.Cell(currentRow, 4).Value = ReportResources.Header_AverageScore;
-            worksheet.Cell(currentRow, 5).Value = ReportResources.Header_StandardDeviation;
-            worksheet.Cell(currentRow, 6).Value = ReportResources.Header_Rating;
-            worksheet.Cell(currentRow, 7).Value = ReportResources.Header_ResponseCount;
-
-            IXLRange headerRange = worksheet.Range(currentRow, 1, currentRow, 7);
-            headerRange.Style.Font.Bold = true;
-            headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
-            headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-            headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-
-            currentRow++;
-
-            // Data rows
-            int rowNumber = 1;
-            int firstDataRow = currentRow;
-            foreach (GetAnalyticsByPeriodQueryResponse stat in statistics)
-            {
-                worksheet.Cell(currentRow, 1).Value = rowNumber;
-                worksheet.Cell(currentRow, 2).Value = stat.QuestionText;
-
-                worksheet.Cell(currentRow, 3).Value = stat.SatisfactionPercentage;
-                worksheet.Cell(currentRow, 3).Style.NumberFormat.Format = "0.00";
-                worksheet.Cell(currentRow, 4).Value = stat.AverageScore;
-                worksheet.Cell(currentRow, 4).Style.NumberFormat.Format = "0.00";
-                worksheet.Cell(currentRow, 5).Value = stat.StandardDeviation;
-                worksheet.Cell(currentRow, 5).Style.NumberFormat.Format = "0.00";
-
-                worksheet.Cell(currentRow, 6).Value = FormatRating(stat.Rating);
-                worksheet.Cell(currentRow, 7).Value = stat.ResponseCount;
-
-                IXLRange dataRange = worksheet.Range(currentRow, 1, currentRow, 7);
-                dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-                dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                // Filters
+                foreach (KeyValuePair<string, string> filter in resolvedFilters)
+                {
+                    worksheet.Cell(currentRow, 1).Value = $"{filter.Key}:";
+                    worksheet.Cell(currentRow, 2).Value = filter.Value;
+                    currentRow++;
+                }
 
                 currentRow++;
-                rowNumber++;
+
+                if (statistics.Count == 0)
+                {
+                    worksheet.Cell(currentRow, 1).Value = ReportResources.NoDataMessage;
+                    worksheet.Columns().AdjustToContents();
+                    continue;
+                }
+
+                // Header row
+                worksheet.Cell(currentRow, 1).Value = ReportResources.Header_Number;
+                worksheet.Cell(currentRow, 2).Value = ReportResources.Header_Question;
+                worksheet.Cell(currentRow, 3).Value = ReportResources.Header_SatisfactionPercent;
+                worksheet.Cell(currentRow, 4).Value = ReportResources.Header_AverageScore;
+                worksheet.Cell(currentRow, 5).Value = ReportResources.Header_StandardDeviation;
+                worksheet.Cell(currentRow, 6).Value = ReportResources.Header_ConsumerSatisfaction;
+                worksheet.Cell(currentRow, 7).Value = ReportResources.Header_Rating;
+                worksheet.Cell(currentRow, 8).Value = ReportResources.Header_ResponseCount;
+
+                IXLRange headerRange = worksheet.Range(currentRow, 1, currentRow, 8);
+                headerRange.Style.Font.Bold = true;
+                headerRange.Style.Fill.BackgroundColor = XLColor.LightGray;
+                headerRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                headerRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                currentRow++;
+
+                // Data rows
+                int rowNumber = 1;
+                int firstDataRow = currentRow;
+                foreach (GetAnalyticsByPeriodQueryResponse stat in statistics)
+                {
+                    worksheet.Cell(currentRow, 1).Value = rowNumber;
+                    worksheet.Cell(currentRow, 2).Value = stat.QuestionText;
+
+                    worksheet.Cell(currentRow, 3).Value = stat.SatisfactionPercentage;
+                    worksheet.Cell(currentRow, 3).Style.NumberFormat.Format = "0.00";
+                    worksheet.Cell(currentRow, 4).Value = stat.AverageScore;
+                    worksheet.Cell(currentRow, 4).Style.NumberFormat.Format = "0.00";
+                    worksheet.Cell(currentRow, 5).Value = stat.StandardDeviation;
+                    worksheet.Cell(currentRow, 5).Style.NumberFormat.Format = "0.00";
+
+                    worksheet.Cell(currentRow, 6).Value =
+                        $"{FormatNumber(stat.SatisfactionPercentage)} ± {FormatNumber(stat.StandardDeviation)}";
+
+                    worksheet.Cell(currentRow, 7).Value = FormatRating(stat.Rating);
+                    worksheet.Cell(currentRow, 8).Value = stat.ResponseCount;
+
+                    IXLRange dataRange = worksheet.Range(currentRow, 1, currentRow, 8);
+                    dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                    dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+                    currentRow++;
+                    rowNumber++;
+                }
+
+                int lastDataRow = currentRow - 1;
+
+                currentRow++;
+                currentRow = AppendOverallSatisfactionSummary(
+                    worksheet, currentRow, sheet.AnalyticsResult.Overall, firstDataRow, lastDataRow);
+
+                // Auto-fit columns
+                worksheet.Columns().AdjustToContents();
+
+                var chartCategories = Enumerable.Range(1, statistics.Count)
+                    .Select(i => i.ToString(CultureInfo.InvariantCulture))
+                    .ToList();
+                var chartValues = statistics.Select(s => s.SatisfactionPercentage).ToList();
+
+                // Charts render below the table/summary, separated by one blank row. currentRow
+                // is the 1-based next-free-row; leaving it blank and converting the row after it
+                // (currentRow + 1) to a 0-indexed anchor row yields exactly currentRow.
+                int chartFromRow = currentRow;
+                pendingCharts.Add((sheetName, chartCategories, chartValues, chartFromRow));
             }
-
-            int lastDataRow = currentRow - 1;
-
-            currentRow++;
-            AppendOverallSatisfactionSummary(worksheet, currentRow, analyticsResult.Overall, firstDataRow, lastDataRow);
-
-            // Auto-fit columns
-            worksheet.Columns().AdjustToContents();
 
             using var memoryStream = new MemoryStream();
             workbook.SaveAs(memoryStream);
 
-            var chartCategories = Enumerable.Range(1, statistics.Count)
-                .Select(i => i.ToString(CultureInfo.InvariantCulture))
-                .ToList();
-            var chartValues = statistics.Select(s => s.SatisfactionPercentage).ToList();
-
-            byte[] reportBytes = ExcelChartBuilder.AddSatisfactionCharts(
-                memoryStream.ToArray(),
-                ReportResources.SheetTitle_Report,
-                chartCategories,
-                chartValues);
+            byte[] reportBytes = memoryStream.ToArray();
+            foreach ((string sheetName, List<string> categories, List<decimal> values, int fromRow) in pendingCharts)
+            {
+                reportBytes = ExcelChartBuilder.AddSatisfactionCharts(reportBytes, sheetName, categories, values, fromRow);
+            }
 
             return Task.FromResult(reportBytes);
         }
@@ -130,6 +149,46 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
             logger.LogError(ex, "Error creating Excel document for form {FormTitle}", formTitle);
             throw new InvalidOperationException($"Failed to generate Excel report for form '{formTitle}'", ex);
         }
+    }
+
+    /// <summary>
+    /// Ensures a discipline/teacher display name is a legal, unique Excel sheet name (invalid
+    /// characters stripped, max 31 chars, de-duplicated with a numeric suffix on collision).
+    /// </summary>
+    private static string BuildUniqueSheetName(string desiredName, HashSet<string> usedNames)
+    {
+        string sanitized = SanitizeSheetName(desiredName);
+        string candidate = sanitized;
+        int suffix = 2;
+
+        while (!usedNames.Add(candidate))
+        {
+            string suffixText = $" ({suffix})";
+            int maxBaseLength = Math.Max(1, 31 - suffixText.Length);
+            string truncatedBase = sanitized.Length > maxBaseLength ? sanitized[..maxBaseLength] : sanitized;
+            candidate = truncatedBase + suffixText;
+            suffix++;
+        }
+
+        return candidate;
+    }
+
+    private static string SanitizeSheetName(string name)
+    {
+        string cleaned = name;
+        foreach (char invalidChar in InvalidSheetNameChars)
+        {
+            cleaned = cleaned.Replace(invalidChar, ' ');
+        }
+
+        cleaned = cleaned.Trim();
+
+        if (cleaned.Length == 0)
+        {
+            cleaned = ReportResources.SheetTitle_Report;
+        }
+
+        return cleaned.Length > 31 ? cleaned[..31] : cleaned;
     }
 
     public Task<byte[]> GeneratePeriodsComparisonReportAsync(
@@ -491,7 +550,8 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
     /// college-specs reference spreadsheet. The rating is a nested <c>IF</c> over Table 1's
     /// thresholds, referencing the mean-percentage cell.
     /// </summary>
-    private static void AppendOverallSatisfactionSummary(
+    /// <returns>The 1-based row immediately after the summary block.</returns>
+    private static int AppendOverallSatisfactionSummary(
         IXLWorksheet worksheet,
         int startRow,
         OverallSatisfaction overall,
@@ -507,7 +567,7 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
         if (!overall.HasData)
         {
             worksheet.Cell(currentRow, 1).Value = ReportResources.OverallSatisfaction_NoData;
-            return;
+            return currentRow + 1;
         }
 
         int meanRow = currentRow;
@@ -527,6 +587,9 @@ public sealed class ExcelReportGenerator(ILogger<ExcelReportGenerator> logger) :
             $"=IF({meanRef}<40,\"{ReportResources.Rating_Unsatisfactory}\"," +
             $"IF({meanRef}<60,\"{ReportResources.Rating_Satisfactory}\"," +
             $"IF({meanRef}<80,\"{ReportResources.Rating_Good}\",\"{ReportResources.Rating_Excellent}\")))";
+        currentRow++;
+
+        return currentRow;
     }
 
     /// <summary>

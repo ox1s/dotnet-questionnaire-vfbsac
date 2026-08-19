@@ -327,6 +327,11 @@ export const AdminStatsPage = () => {
   }, [loading, form, mode]);
 
   const exportReport = async () => {
+    if (mode === "groups") {
+      toast.error("Экспорт для данного критерия не доступен");
+      return;
+    }
+
     const request = buildRequest();
     if (!request) {
       toast.error("Настройте параметры отчета перед экспортом");
@@ -343,16 +348,11 @@ export const AdminStatsPage = () => {
           request as AnalyticsByPeriodRequest,
         );
         filename = `analytics-period-${datePart}.xlsx`;
-      } else if (mode === "periods") {
+      } else {
         response = await reportsApi.exportAnalyticsByPeriods(
           request as GetAnalyticsByPeriodsRequest,
         );
         filename = `analytics-periods-${datePart}.xlsx`;
-      } else {
-        response = await reportsApi.exportAnalyticsByGroups(
-          request as GetAnalyticsByGroupsRequest,
-        );
-        filename = `analytics-groups-${datePart}.xlsx`;
       }
 
       // Create download link

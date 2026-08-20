@@ -103,7 +103,7 @@ export const AdminSpecializationsPage = () => {
         columns={[
           { header: "Название" },
           { header: "Специальность" },
-          { header: "Действия", className: "text-right w-24" },
+          { header: "Действия", className: "text-right w-32" },
         ]}
         renderRow={(specialization) => (
           <AdminTableRow

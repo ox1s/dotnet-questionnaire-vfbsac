@@ -287,7 +287,7 @@ export const AdminTableActions = ({
           variant="ghost"
           size="icon"
           onClick={onRestore}
-          className="text-slate-400 hover:text-emerald-600 hover:bg-emerald-50"
+          className="text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
           title="Восстановить"
         >
           <RotateCcw size={16} />

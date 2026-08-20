@@ -4,11 +4,12 @@ import {
   AdminModal,
   AdminTable,
   AdminTableActions,
+  AdminTableRow,
 } from "@/components/admin/admin-shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TableCell, TableRow } from "@/components/ui/table";
+import { TableCell } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Plus, Building2, Key, X, RefreshCw, Copy } from "lucide-react";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
@@ -141,7 +142,7 @@ export const AdminEmployersPage = () => {
   return (
     <>
       {loading ? (
-        <div className="p-8 text-center text-slate-500">Загрузка данных...</div>
+        <div className="p-8 text-center text-muted-foreground">Загрузка данных...</div>
       ) : (
         <AdminTable
           data={filteredEmployers}
@@ -151,26 +152,26 @@ export const AdminEmployersPage = () => {
           searchPlaceholder="Поиск нанимателя..."
           topContent={
             lastCreated && (
-              <div className="bg-green-50 border border-green-200 p-4 flex justify-between items-center animate-in slide-in-from-top-2">
+              <div className="bg-green-50 border border-green-200 dark:bg-green-950/30 dark:border-green-900 p-4 flex justify-between items-center animate-in slide-in-from-top-2">
                 <div className="flex gap-4 items-center">
-                  <div className="w-10 h-10  bg-green-100 text-green-600 flex items-center justify-center">
+                  <div className="w-10 h-10  bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-400 flex items-center justify-center">
                     <Key size={20} />
                   </div>
                   <div>
-                    <p className="text-green-900 font-bold text-sm uppercase">
+                    <p className="text-green-900 dark:text-green-300 font-bold text-sm uppercase">
                       Наниматель создан
                     </p>
-                    <p className="text-sm text-green-700 mt-1">
+                    <p className="text-sm text-green-700 dark:text-green-400 mt-1">
                       Логин:{" "}
-                      <b className="font-mono bg-white/50 px-1 ">
+                      <b className="font-mono bg-white/50 dark:bg-black/20 px-1 ">
                         {lastCreated.login}
                       </b>{" "}
                       • Пароль:{" "}
-                      <b className="font-mono bg-white/50 px-1 ">
+                      <b className="font-mono bg-white/50 dark:bg-black/20 px-1 ">
                         {lastCreated.pass}
                       </b>{" "}
                       • Ссылка:{" "}
-                      <b className="font-mono bg-white/50 px-1 ">
+                      <b className="font-mono bg-white/50 dark:bg-black/20 px-1 ">
                         {lastCreated.link}
                       </b>
                     </p>
@@ -181,7 +182,7 @@ export const AdminEmployersPage = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => handleCopyCredentials(lastCreated)}
-                    className="text-green-700 hover:bg-green-100"
+                    className="text-green-700 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/40"
                     title="Скопировать логин, пароль и ссылку"
                   >
                     <Copy size={18} />
@@ -190,7 +191,7 @@ export const AdminEmployersPage = () => {
                     variant="ghost"
                     size="icon"
                     onClick={() => setLastCreated(null)}
-                    className="text-green-700 hover:bg-green-100"
+                    className="text-green-700 hover:bg-green-100 dark:text-green-400 dark:hover:bg-green-900/40"
                   >
                     <X size={18} />
                   </Button>
@@ -204,23 +205,23 @@ export const AdminEmployersPage = () => {
             { header: "Действия", className: "w-32 text-right" },
           ]}
           renderRow={(e) => (
-            <TableRow key={e.id} className="group hover:bg-slate-50">
+            <AdminTableRow key={e.id}>
               <TableCell className="py-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2  bg-indigo-50 text-indigo-600">
+                  <div className="p-2 bg-chart-5/15 text-chart-5">
                     <Building2 size={16} />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-slate-900">
+                    <div className="text-sm font-bold text-foreground">
                       {e.displayName}
                     </div>
-                    <div className="text-xs text-slate-500 font-mono">
+                    <div className="text-xs text-muted-foreground font-mono">
                       {e.login}
                     </div>
                   </div>
                 </div>
               </TableCell>
-              <TableCell className="py-4 text-sm text-slate-700">
+              <TableCell className="py-4 text-sm text-foreground">
                 {e.organizationName || "—"}
               </TableCell>
               <TableCell className="py-4 text-right">
@@ -229,7 +230,7 @@ export const AdminEmployersPage = () => {
                   onDelete={() => handleDelete(e)}
                 />
               </TableCell>
-            </TableRow>
+            </AdminTableRow>
           )}
         />
       )}

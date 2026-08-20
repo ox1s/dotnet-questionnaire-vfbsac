@@ -11,6 +11,7 @@ import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ROLE_LABELS } from "@/utils/roles";
 
 // Kept in sync with QUESTION_TYPES in create-form-page.tsx so a form reads the
 // same way in the builder and in the preview.
@@ -130,6 +131,11 @@ export const AdminFormPreviewPage = () => {
                 <Badge variant={form.isActive ? "default" : "destructive"}>
                   {form.isActive ? "Активна" : "Неактивна"}
                 </Badge>
+                {form.targetRole && (
+                  <Badge variant="secondary">
+                    Только: {ROLE_LABELS[form.targetRole] ?? form.targetRole}
+                  </Badge>
+                )}
               </div>
               <div className="flex flex-wrap gap-2">
                 {form.requiredFilters && form.requiredFilters.length > 0 ? (

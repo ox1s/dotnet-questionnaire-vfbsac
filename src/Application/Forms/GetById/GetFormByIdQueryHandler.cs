@@ -19,6 +19,7 @@ internal sealed class GetFormByIdQueryHandler(IApplicationDbContext context)
                 Title = f.Title,
                 IsActive = f.IsActive,
                 RequiredFilters = f.RequiredFilters,
+                TargetRole = f.TargetRole,
                 Questions = f.Questions
                     .OrderBy(q => q.Order)
                     .Select(q => new QuestionResponse

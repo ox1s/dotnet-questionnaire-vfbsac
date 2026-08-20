@@ -46,10 +46,10 @@ All five follow the identical shape: `Create/`, `Delete/`, `GetList/`, `Restore/
 ## Forms
 | Slice | Behavior |
 |-------|----------|
-| `Create/CreateFormCommand(Title, RequiredFilters?, Questions?)` | Builds the `Form` aggregate via `Form.Create`, then adds each `QuestionRequest(Text, Type, Order)` through `form.AddQuestion(...)`. Validator: `Title` NotEmpty/MaxLength 500; each question validated by `QuestionRequestValidator` (Text NotEmpty/MaxLength 2000, Order >= 0). |
+| `Create/CreateFormCommand(Title, RequiredFilters?, Questions?, TargetRole?)` | Builds the `Form` aggregate via `Form.Create`, then adds each `QuestionRequest(Text, Type, Order)` through `form.AddQuestion(...)`. Validator: `Title` NotEmpty/MaxLength 500; each question validated by `QuestionRequestValidator` (Text NotEmpty/MaxLength 2000, Order >= 0). `TargetRole` (`Domain.User.UserRole?`) is optional and unvalidated — any enum value including `Admin` can be set; null (the default) means the form is visible to every role. |
 | `Delete/DeleteFormCommand(FormId)` | Soft-delete only (`form.IsDeleted = true`); no hard-delete path. |
 | `GetById/GetFormByIdQuery(FormId)` | Projects `Form` + ordered `Questions` into `GetFormByIdQueryResponse`/`QuestionResponse`. 404 via `FormErrors.NotFound`. |
-| `GetList/GetFormsQuery(IsActive?)` | Optional `IsActive` filter, ordered by `Title`. No pagination. |
+| `GetList/GetFormsQuery(IsActive?, CallerRole?)` | Optional `IsActive` filter, ordered by `Title`. No pagination. `CallerRole` (`Domain.User.UserRole?`) additionally filters to forms with `TargetRole == null` (general) or `TargetRole == CallerRole`; leave null to bypass audience filtering entirely (used by the admin-only listing so admins see every form regardless of its audience). The respondent-facing endpoint (`Web.Api/Endpoints/Forms/GetList.cs`) passes the caller's role via `IUserContext.Role`. |
 
 Forms are toggled active/inactive in bulk by `Users/OpenSemester` and `Users/CloseSemester` (see below), not by a per-form command in this folder.
 

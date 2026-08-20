@@ -195,6 +195,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("text")
                         .HasColumnName("required_filters");
 
+                    b.Property<int?>("TargetRole")
+                        .HasColumnType("integer")
+                        .HasColumnName("target_role");
+
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(500)

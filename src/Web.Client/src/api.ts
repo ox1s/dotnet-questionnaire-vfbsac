@@ -73,6 +73,7 @@ export interface Form {
   title: string;
   isActive: boolean;
   requiredFilters: string[];
+  targetRole?: string | null;
 }
 
 export interface Question {

@@ -58,6 +58,10 @@ export const SurveyPage = () => {
       toast.error("Пожалуйста, выберите дисциплину!");
       return;
     }
+    if (form.requiredFilters?.includes("Speciality") && !context.specialityId) {
+      toast.error("Пожалуйста, выберите специальность!");
+      return;
+    }
 
     const answersPayload = form.questions
       .map((q) => {
@@ -87,6 +91,7 @@ export const SurveyPage = () => {
         teacherId: context.teacherId || null,
         departmentId: context.departmentId || null,
         disciplineId: context.disciplineId || null,
+        specialityId: context.specialityId || null,
         answers: answersPayload,
       });
       toast.success("Анкета успешно отправлена!");

@@ -1,9 +1,11 @@
 import { type Form } from "../../api";
-import { LogOut, FileText, User } from "lucide-react";
+import { LogOut, FileText, User, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/shared/mode-toggle";
 import { DashboardContent } from "./dashboard-content";
+import { getUserInfo } from "@/utils/auth";
+import { OWN_ROLE_LABELS } from "@/utils/roles";
 
 export const UserDashboard = ({
   forms,
@@ -12,6 +14,10 @@ export const UserDashboard = ({
   forms: Form[];
   logout: () => void;
 }) => {
+  const role = getUserInfo()?.role;
+  const roleLabel = (role && OWN_ROLE_LABELS[role]) ?? "Пользователь";
+  const RoleIcon = role === "Employer" ? Building2 : User;
+
   return (
     <div className="min-h-screen bg-muted/30 font-sans text-foreground">
       <nav className="bg-background border-b border-border px-6 py-4">
@@ -20,14 +26,14 @@ export const UserDashboard = ({
             <div className="w-8 h-8 bg-primary flex items-center justify-center text-primary-foreground">
               <FileText size={18} />
             </div>
-            <h1 className="text-lg font-bold">Опросы Учащихся</h1>
+            <h1 className="text-lg font-bold">Опросы</h1>
           </div>
           <div className="flex items-center gap-4">
             <Badge
               variant="secondary"
               className="hidden sm:flex items-center gap-1"
             >
-              <User size={14} /> Учащийся
+              <RoleIcon size={14} /> {roleLabel}
             </Badge>
             <ModeToggle />
             <Button

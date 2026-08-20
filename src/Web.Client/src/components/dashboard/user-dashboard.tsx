@@ -39,6 +39,7 @@ export const UserDashboard = ({
             <Button
               variant="ghost"
               onClick={logout}
+              aria-label="Выйти"
               className="text-muted-foreground hover:text-destructive"
             >
               <LogOut size={16} className="mr-2" />

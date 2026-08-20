@@ -22,13 +22,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
-        run: dotnet restore Questionnaire.sln
+        run: dotnet restore src/Questionnaire.slnx
 
       - name: Build
-        run: dotnet build Questionnaire.sln --configuration Release --no-restore
+        run: dotnet build src/Questionnaire.slnx --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test Questionnaire.sln --configuration Release --no-restore --no-build
+        run: dotnet test src/Questionnaire.sln --configuration Release --no-restore --no-build
 
       - name: Publish
-        run: dotnet publish Questionnaire.sln --configuration Release --no-restore --no-build
+        run: dotnet publish src/Questionnaire.sln --configuration Release --no-restore --no-build

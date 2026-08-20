@@ -324,7 +324,8 @@ public sealed class DemoDataGenerator
 
         Form disciplineForm = Form.Create(
             "Оценка удовлетворённости обучающихся преподаванием учебных дисциплин",
-            [FilterField.Discipline]).Value;
+            [FilterField.Discipline],
+            UserRole.StudentGroup).Value;
         disciplineForm.SetIdForSeeding(Guid.NewGuid());
         disciplineForm.AddQuestion("Содержание образовательной программы", QuestionType.WeightedRating, 1);
         disciplineForm.AddQuestion("Лекционные занятия (методы)", QuestionType.WeightedRating, 2);
@@ -336,7 +337,8 @@ public sealed class DemoDataGenerator
 
         Form practiceForm = Form.Create(
             "Оценка руководителей производственной практики",
-            [FilterField.Speciality]).Value;
+            [FilterField.Speciality],
+            UserRole.StudentGroup).Value;
         practiceForm.SetIdForSeeding(Guid.NewGuid());
         practiceForm.AddQuestion("Актуальность теоретических знаний", QuestionType.Number, 1);
         practiceForm.AddQuestion("Качество практических навыков", QuestionType.Number, 2);

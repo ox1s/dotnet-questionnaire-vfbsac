@@ -1,7 +1,0 @@
-{
-  "tool_name": "PowerShell",
-  "tool_input_preview": "{\"command\":\"& pdftotext -layout \\\"C:\\\\Users\\\\oadmin\\\\home\\\\resources\\\\projects\\\\dotnet-questionnaire-vfbsac\\\\college-specs\\\\обработка_удовл_обучающихся_преподаванием_дисциплин_18_19_июнь.pdf\\\" - | Sel...",
-  "error": "Exit code 1\n&: The term 'pdftotext' is not recognized as a name of a cmdlet, function, script file, or executable program.\r\nCheck the spelling of the name, or if a path was included, verify that the path is correct and try again.",
-  "timestamp": "2026-08-13T07:27:50.204Z",
-  "retry_count": 1
-}

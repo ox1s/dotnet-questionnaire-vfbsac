@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd \\\"C:/Users/oadmin/home/resources/projects/dotnet-questionnaire-vfbsac/src/Web.Client\\\" && ls node_modules/shadcn/*.css 2>/dev/null; echo \\\"=== utilities defined ===\\\"; grep -rn \\\"@utili...",
-  "error": "Exit code 1\n=== utilities defined ===\n=== version ===",
-  "timestamp": "2026-08-12T13:50:55.671Z",
-  "retry_count": 2
-}

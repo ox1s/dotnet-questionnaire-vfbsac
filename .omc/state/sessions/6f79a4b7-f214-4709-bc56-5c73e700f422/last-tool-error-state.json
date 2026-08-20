@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd \\\"C:/Users/oadmin/home/resources/projects/dotnet-questionnaire-vfbsac/src/Web.Client\\\" && echo \\\"=== shadcn pkg version ===\\\" && node -e \\\"console.log(require('./node_modules/shadcn/pac...",
-  "error": "Exit code 1\n=== shadcn pkg version ===\n4.1.2\n=== cn- utilities defined in shadcn/tailwind.css? ===\n--- file size ---",
-  "timestamp": "2026-08-13T06:48:30.227Z",
-  "retry_count": 1
-}

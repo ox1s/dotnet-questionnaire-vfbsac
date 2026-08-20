@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"cd tests/ArchitectureTests && dotnet test 2>&1 | tail -40\",\"timeout\":180000,\"description\":\"Run architecture tests\"}",
-  "error": "Exit code 1\n/usr/bin/bash: line 1: cd: tests/ArchitectureTests: No such file or directory",
-  "timestamp": "2026-08-12T06:52:31.941Z",
-  "retry_count": 2
-}

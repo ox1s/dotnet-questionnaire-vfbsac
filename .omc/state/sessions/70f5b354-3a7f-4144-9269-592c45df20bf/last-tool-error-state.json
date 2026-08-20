@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"python3 --version 2>&1; python --version 2>&1; which soffice 2>&1; which libreoffice 2>&1; where soffice 2>&1\",\"description\":\"Check for python and libreoffice availability\"}",
-  "error": "Exit code 1\nPython was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.\r\nPython 3.14.3\r\nwhich: no soffice in (/c/Users/oadmin/bin:/mingw64/bin:/usr/local/bin:/usr/bin:/bin:/mingw64/bin:/usr/bin:/c/Users/oadmin/bin:/c/Program Files/WindowsApps/Microsoft.PowerShell_7.6.4.0_x64__8wekyb3d8bbwe:/c/Program Files/Microsoft SDKs/Azure/CLI2/wbin:/c/Program Files/glzr.io/GlazeWM/cli:/c/Pytho...",
-  "timestamp": "2026-08-11T12:13:10.816Z",
-  "retry_count": 1
-}

@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="ArchitectureTests" />
+    <InternalsVisibleTo Include="Application.UnitTests" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Database\Migrations\" />

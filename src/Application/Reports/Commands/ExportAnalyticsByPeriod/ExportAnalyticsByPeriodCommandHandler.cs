@@ -106,10 +106,15 @@ internal sealed partial class ExportAnalyticsByPeriodCommandHandler(
 
         List<GetAnalyticsByGroupsQueryResponse> disciplineGroups = disciplineResult.Value;
 
-        if (disciplineGroups.Count == 0)
+        bool noDisciplineData = disciplineGroups.Count == 0 ||
+            disciplineGroups.All(g => !Guid.TryParse(g.GroupKey, out Guid id) || id == Guid.Empty);
+
+        if (noDisciplineData)
         {
-            // No submission in range carries a discipline at all (or there's no data whatsoever);
-            // fall back to a single aggregate sheet, matching the pre-existing behavior.
+            // No submission in range carries a discipline at all (grouping collapses everything
+            // into a single "not specified" bucket rather than returning zero groups) or there's
+            // no data whatsoever; fall back to a single aggregate sheet instead of a sheet titled
+            // after the "not specified" placeholder.
             GetAnalyticsByPeriodQuery fallbackQuery = new(
                 command.FormId,
                 command.FromDate,

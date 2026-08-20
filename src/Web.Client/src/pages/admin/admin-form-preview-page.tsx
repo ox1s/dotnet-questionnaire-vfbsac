@@ -133,7 +133,7 @@ export const AdminFormPreviewPage = () => {
                 </Badge>
                 {form.targetRole && (
                   <Badge variant="secondary">
-                    Только: {ROLE_LABELS[form.targetRole] ?? form.targetRole}
+                    Аудитория: {ROLE_LABELS[form.targetRole] ?? form.targetRole}
                   </Badge>
                 )}
               </div>

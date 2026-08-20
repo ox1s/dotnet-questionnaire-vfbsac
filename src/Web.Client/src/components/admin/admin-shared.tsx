@@ -281,16 +281,16 @@ export const AdminTableActions = ({
   deleteDescription = "Вы уверены, что хотите удалить эту запись?",
 }: AdminTableActionsProps) => {
   return (
-    <div className="flex flex-col sm:flex-row items-end justify-end gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
+    <div className="flex flex-row items-center justify-end gap-3 sm:gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
       {isDeleted ? (
         <Button
           variant="ghost"
           size="icon"
           onClick={onRestore}
-          className="text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
+          className="size-11 sm:size-8 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40"
           title="Восстановить"
         >
-          <RotateCcw size={16} />
+          <RotateCcw className="size-5 sm:size-4" />
         </Button>
       ) : (
         <>
@@ -299,18 +299,23 @@ export const AdminTableActions = ({
               variant="ghost"
               size="icon"
               onClick={onEdit}
-              className="text-slate-400 hover:text-primary hover:bg-primary/10"
+              className="size-11 sm:size-8 text-slate-400 hover:text-primary hover:bg-primary/10"
               title="Редактировать"
             >
-              <Edit2 size={16} />
+              <Edit2 className="size-5 sm:size-4" />
             </Button>
           )}
 
           {onDelete && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" size="icon" title="Удалить">
-                  <Trash2 size={16} />
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  className="size-11 sm:size-8"
+                  title="Удалить"
+                >
+                  <Trash2 className="size-5 sm:size-4" />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent size="sm">

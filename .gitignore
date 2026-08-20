@@ -420,3 +420,8 @@ FodyWeavers.xsd
 
 # Front-end build output (regenerated via `npm run build`)
 src/Web.Client/dist/
+
+# Playwright e2e artifacts (regenerated via `npm run test:e2e`)
+src/Web.Client/test-results/
+src/Web.Client/playwright-report/
+src/Web.Client/playwright/.cache/

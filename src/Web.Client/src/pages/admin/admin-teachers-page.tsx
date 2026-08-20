@@ -111,7 +111,7 @@ export const AdminTeachersPage = () => {
         columns={[
           { header: "ФИО" },
           { header: "Филиал кафедры" },
-          { header: "Действия", className: "text-right w-24" },
+          { header: "Действия", className: "text-right w-32" },
         ]}
         renderRow={(teacher) => (
           <AdminTableRow key={teacher.id} isDeleted={teacher.isDeleted}>

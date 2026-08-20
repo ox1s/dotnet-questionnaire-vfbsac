@@ -313,7 +313,7 @@ public sealed class DemoDataGenerator
         practiceForm.AddQuestion("Актуальность теоретических знаний", QuestionType.Number, 1);
         practiceForm.AddQuestion("Качество практических навыков", QuestionType.Number, 2);
         practiceForm.AddQuestion("Дисциплина и исполнительность", QuestionType.Number, 3);
-        practiceForm.AddQuestion("Затруднения при работе", QuestionType.MultipleChoice, 4);
+        practiceForm.AddQuestion("Затруднения при работе", QuestionType.SingleChoice, 4);
         practiceForm.AddQuestion("Предложения", QuestionType.Text, 5);
         forms.Add(practiceForm);
 
@@ -453,7 +453,7 @@ public sealed class DemoDataGenerator
                     continue;
                 }
 
-                if (question.Type == QuestionType.MultipleChoice)
+                if (question.Type == QuestionType.SingleChoice)
                 {
                     submission.AddAnswer(question.Id, value: PracticeDifficulties[NextInt(PracticeDifficulties.Length)]);
                     continue;

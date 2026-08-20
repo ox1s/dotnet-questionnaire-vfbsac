@@ -18,7 +18,6 @@ const QUESTION_TYPE_LABELS: Record<string, string> = {
   WeightedRating: "Рейтинг (Оценка + Важность)",
   Number: "Числовая оценка (1-10)",
   Text: "Текстовый комментарий",
-  MultipleChoice: "Множественный выбор",
   SingleChoice: "Одиночный выбор",
 };
 
@@ -67,7 +66,6 @@ const renderQuestionPreview = (type: string): ReactNode | null => {
           </div>
         </div>
       );
-    case "MultipleChoice":
     case "SingleChoice":
       return (
         <p className="text-sm text-muted-foreground italic">

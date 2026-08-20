@@ -39,11 +39,6 @@ public static class AnswerErrors
             "Answers.InvalidTypeForWeightedRating",
             "WeightedRating question requires NumericValue and Weight fields");
 
-    public static Error InvalidTypeForMultipleChoice =>
-        Error.Failure(
-            "Answers.InvalidTypeForMultipleChoice",
-            "MultipleChoice question requires Value field only");
-
     public static Error InvalidTypeForSingleChoice =>
         Error.Failure(
             "Answers.InvalidTypeForSingleChoice",

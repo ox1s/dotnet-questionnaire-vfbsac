@@ -20,6 +20,6 @@ internal sealed class GetAnalyticsByPeriods : IEndpoint
             return result.Match(Results.Ok, CustomResults.Problem);
         })
         .WithTags("Reports")
-        .RequireAuthorization();
+        .HasPermission(Permissions.ReportsView);
     }
 }

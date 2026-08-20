@@ -8,7 +8,7 @@ namespace Web.Api.Endpoints.Users;
 
 internal sealed class Update : IEndpoint
 {
-    public sealed record UpdateUserRequest(string Login, string DisplayName);
+    public sealed record UpdateUserRequest(string Login, string DisplayName, string? OrganizationName = null);
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
@@ -18,7 +18,7 @@ internal sealed class Update : IEndpoint
             ICommandHandler<UpdateUserCommand> handler,
             CancellationToken cancellationToken) =>
         {
-            var command = new UpdateUserCommand(userId, request.Login, request.DisplayName);
+            var command = new UpdateUserCommand(userId, request.Login, request.DisplayName, request.OrganizationName);
             Result result = await handler.Handle(command, cancellationToken);
             return result.Match(Results.NoContent, CustomResults.Problem);
         })

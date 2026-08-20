@@ -1,4 +1,5 @@
 using Application.Abstractions.Data;
+using Application.Resources;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
@@ -62,7 +63,7 @@ public static class EntityNameResolver
                         filterSet.TeacherId.Value);
                 }
 
-                resolvedFilters["Преподаватель"] = teacherName;
+                resolvedFilters[AnalyticsFilterResources.Filter_Teacher] = teacherName;
             }
 
             if (filterSet.DisciplineId.HasValue)
@@ -77,7 +78,7 @@ public static class EntityNameResolver
                         filterSet.DisciplineId.Value);
                 }
 
-                resolvedFilters["Дисциплина"] = disciplineName;
+                resolvedFilters[AnalyticsFilterResources.Filter_Discipline] = disciplineName;
             }
 
             if (filterSet.DepartmentId.HasValue)
@@ -92,7 +93,7 @@ public static class EntityNameResolver
                         filterSet.DepartmentId.Value);
                 }
 
-                resolvedFilters["Кафедра"] = departmentName;
+                resolvedFilters[AnalyticsFilterResources.Filter_Department] = departmentName;
             }
 
             if (filterSet.SpecialityId.HasValue)
@@ -107,7 +108,7 @@ public static class EntityNameResolver
                         filterSet.SpecialityId.Value);
                 }
 
-                resolvedFilters["Специальность"] = specialityName;
+                resolvedFilters[AnalyticsFilterResources.Filter_Speciality] = specialityName;
             }
 
             if (filterSet.SpecializationId.HasValue)
@@ -122,28 +123,28 @@ public static class EntityNameResolver
                         filterSet.SpecializationId.Value);
                 }
 
-                resolvedFilters["Специализация"] = specializationName;
+                resolvedFilters[AnalyticsFilterResources.Filter_Specialization] = specializationName;
             }
 
             // Add text filters as-is
             if (!string.IsNullOrWhiteSpace(filterSet.OrganizationName))
             {
-                resolvedFilters["Организация"] = filterSet.OrganizationName;
+                resolvedFilters[AnalyticsFilterResources.Filter_Organization] = filterSet.OrganizationName;
             }
 
             if (!string.IsNullOrWhiteSpace(filterSet.EducationForm))
             {
-                resolvedFilters["Форма обучения"] = filterSet.EducationForm;
+                resolvedFilters[AnalyticsFilterResources.Filter_EducationForm] = filterSet.EducationForm;
             }
 
             if (!string.IsNullOrWhiteSpace(filterSet.EmployeeCategory))
             {
-                resolvedFilters["Категория сотрудника"] = filterSet.EmployeeCategory;
+                resolvedFilters[AnalyticsFilterResources.Filter_EmployeeCategory] = filterSet.EmployeeCategory;
             }
 
             if (!string.IsNullOrWhiteSpace(filterSet.Position))
             {
-                resolvedFilters["Должность"] = filterSet.Position;
+                resolvedFilters[AnalyticsFilterResources.Filter_Position] = filterSet.Position;
             }
         }
         catch (Exception ex)
@@ -155,27 +156,27 @@ public static class EntityNameResolver
             // Return GUIDs for all filters on error
             if (filterSet.TeacherId.HasValue)
             {
-                resolvedFilters["Преподаватель"] = filterSet.TeacherId.Value.ToString();
+                resolvedFilters[AnalyticsFilterResources.Filter_Teacher] = filterSet.TeacherId.Value.ToString();
             }
 
             if (filterSet.DisciplineId.HasValue)
             {
-                resolvedFilters["Дисциплина"] = filterSet.DisciplineId.Value.ToString();
+                resolvedFilters[AnalyticsFilterResources.Filter_Discipline] = filterSet.DisciplineId.Value.ToString();
             }
 
             if (filterSet.DepartmentId.HasValue)
             {
-                resolvedFilters["Кафедра"] = filterSet.DepartmentId.Value.ToString();
+                resolvedFilters[AnalyticsFilterResources.Filter_Department] = filterSet.DepartmentId.Value.ToString();
             }
 
             if (filterSet.SpecialityId.HasValue)
             {
-                resolvedFilters["Специальность"] = filterSet.SpecialityId.Value.ToString();
+                resolvedFilters[AnalyticsFilterResources.Filter_Speciality] = filterSet.SpecialityId.Value.ToString();
             }
 
             if (filterSet.SpecializationId.HasValue)
             {
-                resolvedFilters["Специализация"] = filterSet.SpecializationId.Value.ToString();
+                resolvedFilters[AnalyticsFilterResources.Filter_Specialization] = filterSet.SpecializationId.Value.ToString();
             }
         }
 

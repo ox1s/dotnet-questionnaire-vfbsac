@@ -25,6 +25,6 @@ internal sealed class ExportAnalyticsByPeriods : IEndpoint
                 CustomResults.Problem);
         })
         .WithTags("Reports")
-        .RequireAuthorization();
+        .HasPermission(Permissions.ReportsView);
     }
 }

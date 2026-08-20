@@ -28,6 +28,11 @@ internal sealed class LoginUserCommandHandler(
             return Result.Failure<string>(UserErrors.NotFoundByLogin(command.Login));
         }
 
+        if (!user.IsActive)
+        {
+            return Result.Failure<string>(UserErrors.NotFoundByLogin(command.Login));
+        }
+
         bool verified = passwordHasher.Verify(command.Password, user.PasswordHash);
         if (!verified)
         {

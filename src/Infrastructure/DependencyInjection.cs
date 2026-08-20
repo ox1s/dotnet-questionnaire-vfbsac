@@ -100,7 +100,6 @@ public static class DependencyInjection
         private IServiceCollection AddAuthorizationInternal()
         {
             services.AddAuthorization();
-            services.AddScoped<PermissionProvider>();
             services.AddTransient<IAuthorizationHandler, PermissionAuthorizationHandler>();
             services.AddTransient<IAuthorizationPolicyProvider, PermissionAuthorizationPolicyProvider>();
 

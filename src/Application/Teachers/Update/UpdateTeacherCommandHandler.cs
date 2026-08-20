@@ -13,6 +13,7 @@ internal sealed class UpdateTeacherCommandHandler(IApplicationDbContext context)
     public async Task<Result> Handle(UpdateTeacherCommand command, CancellationToken cancellationToken)
     {
         Teacher? teacher = await context.Teachers
+            .Include("_departments")
             .FirstOrDefaultAsync(t => t.Id == command.TeacherId, cancellationToken);
         if (teacher is null)
         {
@@ -25,20 +26,30 @@ internal sealed class UpdateTeacherCommandHandler(IApplicationDbContext context)
             return Result.Failure(teacherResult.Error);
         }
 
-        if (teacher.DepartmentId != command.DepartmentId)
+        var departmentIds = (command.DepartmentIds ?? []).Distinct().ToList();
+
+        if (departmentIds.Count > 0)
         {
-            if (command.DepartmentId.HasValue)
+            List<Guid> existingIds = await context.Departments
+                .Where(d => departmentIds.Contains(d.Id))
+                .Select(d => d.Id)
+                .ToListAsync(cancellationToken);
+
+            Guid[] missingIds = departmentIds.Except(existingIds).ToArray();
+            if (missingIds.Length > 0)
             {
-                bool departmentExists = await context.Departments
-                    .AnyAsync(d => d.Id == command.DepartmentId.Value, cancellationToken);
-
-                if (!departmentExists)
-                {
-                    return Result.Failure(DepartmentErrors.NotFound(command.DepartmentId.Value));
-                }
+                return Result.Failure(DepartmentErrors.NotFound(missingIds[0]));
             }
+        }
 
-            teacher.SetDepartment(command.DepartmentId);
+        foreach (Guid departmentId in teacher.DepartmentIds.Except(departmentIds).ToList())
+        {
+            teacher.RemoveDepartment(departmentId);
+        }
+
+        foreach (Guid departmentId in departmentIds.Except(teacher.DepartmentIds).ToList())
+        {
+            teacher.AssignDepartment(departmentId);
         }
 
         await context.SaveChangesAsync(cancellationToken);

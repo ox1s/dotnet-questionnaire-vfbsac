@@ -8,4 +8,4 @@ public sealed record GetAnalyticsByPeriodQuery(
     DateTime FromDate,
     DateTime ToDate,
     AnalyticsFilterSet FilterSet)
-    : IQuery<List<GetAnalyticsByPeriodQueryResponse>>;
+    : IQuery<GetAnalyticsByPeriodQueryResult>;

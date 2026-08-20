@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api, { type Form } from "../../api";
+import api, { formsApi, type Form } from "../../api";
 import { toast } from "sonner";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { UserDashboard } from "@/components/dashboard/user-dashboard";
@@ -12,14 +12,20 @@ export const DashboardPage = () => {
   const navigate = useNavigate();
   const userIsAdmin = isAdmin();
 
-  useEffect(() => {
-    loadForms().catch(() => navigate("/login"));
-  }, []);
-
-  const loadForms = async () => {
-    const res = await api.get<Form[]>("/forms");
+  const loadForms = useCallback(async () => {
+    const res = userIsAdmin
+      ? await formsApi.getAll()
+      : await api.get<Form[]>("/forms");
     setForms(res.data);
-  };
+  }, [userIsAdmin]);
+
+  useEffect(() => {
+    // `setForms` runs after the awaited fetch resolves, not synchronously
+    // during the effect/commit, so this isn't the synchronous-setState
+    // pattern react-hooks/set-state-in-effect warns about.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadForms().catch(() => navigate("/login"));
+  }, [loadForms, navigate]);
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -35,9 +41,34 @@ export const DashboardPage = () => {
       toast.error("Не удалось удалить анкету.");
     }
   };
+
+  const toggleFormActive = async (form: Form) => {
+    try {
+      if (form.isActive) {
+        await formsApi.deactivate(form.id);
+      } else {
+        await formsApi.activate(form.id);
+      }
+      setForms((prev) =>
+        prev.map((f) =>
+          f.id === form.id ? { ...f, isActive: !f.isActive } : f,
+        ),
+      );
+      toast.success(
+        form.isActive ? "Анкета закрыта." : "Анкета открыта.",
+      );
+    } catch {
+      toast.error("Не удалось изменить статус анкеты.");
+    }
+  };
+
   return userIsAdmin ? (
     <AdminLayout title="Дашборд" subtitle="Анкеты">
-      <AdminDashboard forms={forms} deleteForm={deleteForm} />
+      <AdminDashboard
+        forms={forms}
+        deleteForm={deleteForm}
+        toggleFormActive={toggleFormActive}
+      />
     </AdminLayout>
   ) : (
     <UserDashboard forms={forms} logout={logout} />

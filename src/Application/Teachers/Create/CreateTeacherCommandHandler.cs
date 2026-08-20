@@ -12,18 +12,23 @@ internal sealed class CreateTeacherCommandHandler(IApplicationDbContext context)
 {
     public async Task<Result<Guid>> Handle(CreateTeacherCommand command, CancellationToken cancellationToken)
     {
-        if (command.DepartmentId.HasValue)
-        {
-            bool departmentExists = await context.Departments
-                .AnyAsync(d => d.Id == command.DepartmentId.Value, cancellationToken);
+        var departmentIds = (command.DepartmentIds ?? []).Distinct().ToList();
 
-            if (!departmentExists)
+        if (departmentIds.Count > 0)
+        {
+            List<Guid> existingIds = await context.Departments
+                .Where(d => departmentIds.Contains(d.Id))
+                .Select(d => d.Id)
+                .ToListAsync(cancellationToken);
+
+            Guid[] missingIds = departmentIds.Except(existingIds).ToArray();
+            if (missingIds.Length > 0)
             {
-                return Result.Failure<Guid>(DepartmentErrors.NotFound(command.DepartmentId.Value));
+                return Result.Failure<Guid>(DepartmentErrors.NotFound(missingIds[0]));
             }
         }
 
-        Result<Teacher> teacherResult = Teacher.Create(command.FullName, command.DepartmentId);
+        Result<Teacher> teacherResult = Teacher.Create(command.FullName, departmentIds);
 
         if (teacherResult.IsFailure)
         {

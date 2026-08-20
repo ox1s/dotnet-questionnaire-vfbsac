@@ -404,3 +404,19 @@ FodyWeavers.xsd
 *.lscache
 
 .kiro/*
+
+# oh-my-claudecode (OMC) ephemeral session/runtime state - not meant for
+# version control. .omc/project-memory.json (shared project knowledge) is
+# intentionally kept tracked and is NOT covered by these rules.
+.omc/autopilot/
+.omc/plans/
+.omc/sessions/
+.omc/state/
+.omc/*.tmp.*
+**/.omc/state/
+**/.omc/sessions/
+**/.omc/autopilot/
+**/.omc/plans/
+
+# Front-end build output (regenerated via `npm run build`)
+src/Web.Client/dist/

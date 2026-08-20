@@ -1,0 +1,45 @@
+<!-- Parent: ../AGENTS.md -->
+<!-- Generated: 2026-08-11 | Updated: 2026-08-11 -->
+
+# Questionnaires
+
+## Purpose
+The core domain of the platform: `Forms/` defines questionnaire *templates* (a `Form` made of ordered `Question`s), and `Submissions/` captures the *responses* to those templates (a `Submission` made of `Answer`s, tagged with contextual metadata about who/what was being evaluated). Together these two folders model the full evaluation lifecycle: create a form → activate it → users submit answers against it → answers get scored/weighted.
+
+## Key Files
+| File | Description |
+|------|-------------|
+| `Forms/Form.cs` | `sealed class Form : Entity, ISoftDeletable`. Properties: `Title`, `IsActive`, `RequiredFilters` (`List<FilterField>?` — which `FilterField`s a submitter must supply for this form), private `_questions` list exposed as `IReadOnlyList<Question> Questions`. `Create(title, requiredFilters?)` validates non-blank title and defaults `IsActive = true`. `AddQuestion(text, type, order)` rejects a duplicate `order` value (`FormErrors.QuestionOrderExists`) before delegating to `Question.Create`. `Activate()` is unconditional (`void`); `Deactivate()` returns `Result`, failing with `FormErrors.AlreadyDeactivated` if already inactive — note the asymmetry, there is no `AlreadyActive` guard wired into `Activate()` even though `FormErrors.AlreadyActive(Guid)` exists (likely intended for use, currently unused in `Activate()`). |
+| `Forms/Question.cs` | `sealed class Question : Entity, ISoftDeletable`. Properties: `Text`, `Type` (`QuestionType`), `Order` (int), `FormId`. `Create` requires non-blank `text` and `order >= 0` (`QuestionErrors.OrderInvalid` otherwise). Always constructed via `Form.AddQuestion`, never directly. |
+| `Forms/QuestionType.cs` | `[Flags] enum QuestionType { Text = 1, Number = 2, MultipleChoice = 3, SingleChoice = 4, WeightedRating = 6 }`. **Gotcha**: despite the `[Flags]` attribute, the values are not disjoint bit flags — `MultipleChoice = 3` overlaps `Text | Number` (1|2), and `WeightedRating = 6` overlaps `Number | SingleChoice` (2|4). This enum is used as a single discrete tag, not as a combinable bitmask; don't write code that does bitwise `HasFlag`/OR logic on it expecting independent bits. |
+| `Forms/FilterField.cs` | Plain enum: `Department, Discipline, Speciality, Specialization, Teacher`. Used both by `Form.RequiredFilters` (which context fields a form demands) and conceptually mirrors the optional FK fields on `SubmissionContext`. |
+| `Forms/FormErrors.cs` | `NotFound`, `QuestionNotFound`, `FormInactive`, `QuestionOrderExists(order)`, `AlreadyActive`, `AlreadyDeactivated`. |
+| `Forms/QuestionErrors.cs` | `EmptyField`, `OrderInvalid`, `NotFound`. |
+| `Submissions/Submission.cs` | `sealed class Submission : Entity` (does **not** implement `ISoftDeletable` — see gotcha below). Properties: `SubmittedAt`, `Context` (`SubmissionContext`), `FormId`, `UserId`, `DeviceId`, `IsDeleted` (own property, not from an interface), private `_answers` exposed as `IReadOnlyList<Answer> Answers`. `Create(formId, deviceId, userId, submittedAt, disciplineId?, teacherId?, departmentId?, specialityId?, specializationId?, organizationName?)` builds the `SubmissionContext` internally and always succeeds (returns `Result<Submission>` but there's no validation path that fails). `AddAnswer(questionId, value?, numericValue?, weight?)` rejects a duplicate `questionId` (`SubmissionErrors.AnswerExists`) before delegating to `Answer.Create`. `UpdateContext(SubmissionContext)` replaces `Context` wholesale and always succeeds. |
+| `Submissions/Answer.cs` | `sealed class Answer : Entity, ISoftDeletable`. Properties: `SubmissionId`, `QuestionId`, `Value` (string?), `NumericValue` (decimal?), `Weight` (decimal?). `Create` invariants: (1) at least one of `value`/`numericValue` must be provided (`AnswerErrors.ValueRequired`); (2) `numericValue` and `weight`, if present, must each be in `[1, 10]` (`AnswerErrors.InvalidScore`/`InvalidWeight`); (3) if both `weight` and `numericValue` are present, `numericValue` must not exceed `weight` (`SubmissionErrors.InvalidWeight(questionId)` — note this cross-references the *Submission* error catalog, not `AnswerErrors`). |
+| `Submissions/SubmissionContext.cs` | `record SubmissionContext(Guid? DisciplineId, Guid? TeacherId, Guid? DepartmentId, Guid? SpecialityId, Guid? SpecializationId, string? OrganizationName, string? EducationForm, string? EmployeeCategory, string? Position)` — a plain immutable value object, all fields optional. Mirrors the `FilterField` enum's concerns (department/discipline/speciality/specialization/teacher) plus extra free-text context (`OrganizationName`, `EducationForm`, `EmployeeCategory`, `Position`) not represented in `FilterField`. |
+| `Submissions/SubmissionErrors.cs` | `NotFound`, `AnswerNotFound`, `InvalidWeight(questionId)`, `AlreadySubmitted()`, `AnswerExists(questionId)`. |
+| `Submissions/AnswerErrors.cs` | `NotFound`, `ValueRequired`, `InvalidScore(min, max)`, `InvalidWeight(min, max)`, plus five `InvalidTypeFor*` errors (`Text`, `Number`, `WeightedRating`, `MultipleChoice`, `SingleChoice`) and `UnknownQuestionType`. **Note**: these five `InvalidTypeFor*` / `UnknownQuestionType` errors are not referenced anywhere in `Answer.Create` itself — `Answer` currently validates generic value/score/weight bounds only, with no cross-check against the `Question.Type` it's answering. These errors exist for (presumably) `Application`-layer validation that matches an answer's shape to its question's `QuestionType`; if adding that check, this is where the vocabulary already lives. |
+
+## Subdirectories
+| Directory | Purpose |
+|-----------|---------|
+| `Forms/` | Questionnaire templates: `Form` (aggregate root) + `Question` (child), `QuestionType`, `FilterField`, and their error catalogs. |
+| `Submissions/` | Questionnaire responses: `Submission` (aggregate root) + `Answer` (child), `SubmissionContext` (value object), and their error catalogs. |
+
+## For AI Agents
+### Working In This Directory
+- **`Submission` breaks the `ISoftDeletable` convention** used everywhere else in `Domain/` — it declares its own `IsDeleted` property directly rather than implementing the interface. Code that filters "all soft-deletable entities" via `ISoftDeletable` (e.g. a generic EF Core query filter in `Infrastructure`) will **not** pick up `Submission` automatically; check for this if soft-delete behavior on submissions looks inconsistent.
+- **`QuestionType` is not a real bitmask** (see gotcha above) — treat it as a closed set of named values, not something to combine with `|`.
+- **Aggregate-owned children**: always create `Question`s via `Form.AddQuestion(...)` and `Answer`s via `Submission.AddAnswer(...)` — never call `Question.Create`/`Answer.Create` directly and attach the result manually, since the parent's duplicate-order/duplicate-question guards live in those methods, not in the child's own `Create`.
+- **Weight vs. score coupling**: `Answer.Create`'s cross-field check (`numericValue <= weight`) deliberately raises a `SubmissionErrors` error even though it lives in `Answer` — if you refactor this validation, keep sourcing the error from `SubmissionErrors.InvalidWeight`, not `AnswerErrors.InvalidWeight`, unless you intend to change the error code consumers see.
+- **`FilterField` vs `SubmissionContext`**: `FilterField` (Forms) enumerates which context dimensions a form can *require*; `SubmissionContext` (Submissions) is the actual bag of optional values a submission carries. They're conceptually paired but not type-linked — `Form.RequiredFilters` is just a `List<FilterField>`, so enforcing "this form's required filters were actually supplied in the submission's context" is `Application`-layer logic, not enforced here.
+
+## Dependencies
+### Internal
+`SharedKernel` (`Entity`, `Result`/`Result<T>`, `Error`, `ISoftDeletable`). `Submission` and `Answer` reference `FormId`/`QuestionId` by `Guid` only — no direct object reference to `Form`/`Question`, so these two folders don't reference each other's types directly beyond the `Guid` FK convention.
+
+### External
+None beyond what the parent `Domain` project already pulls in (`Throw` is not used in this folder).
+
+<!-- MANUAL: -->

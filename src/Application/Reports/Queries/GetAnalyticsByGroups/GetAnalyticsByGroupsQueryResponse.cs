@@ -5,4 +5,6 @@ namespace Application.Reports.Queries.GetAnalyticsByGroups;
 public sealed record GetAnalyticsByGroupsQueryResponse(
     string GroupKey,
     string GroupName,
-    List<QuestionStatistics> QuestionStatistics);
+    List<QuestionStatistics> QuestionStatistics,
+    OverallSatisfaction Overall,
+    int SubmissionCount);

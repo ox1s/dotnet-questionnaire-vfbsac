@@ -1,11 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   dictionariesApi,
-  getApiErrorMessage,
   type DictionaryItem,
   type TeacherItem,
 } from "../../api";
-import { Plus } from "lucide-react";
+import { CheckCircle2, Plus } from "lucide-react";
 import {
   AdminModal,
   AdminTable,
@@ -18,43 +17,50 @@ import { Button } from "@/components/ui/button";
 import { TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export const AdminTeachersPage = () => {
-  const EMPTY_VALUE = "__empty__";
-  const [teachers, setTeachers] = useState<TeacherItem[]>([]);
-  const [departments, setDepartments] = useState<DictionaryItem[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [newName, setNewName] = useState("");
-  const [selectedDepartmentId, setSelectedDepartmentId] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>(
+    [],
+  );
 
-  const loadData = async () => {
-    try {
+  const {
+    related: departments,
+    filteredItems: filteredTeachers,
+    searchQuery,
+    setSearchQuery,
+    isFormOpen,
+    closeModal,
+    openModal,
+    editingId,
+    name,
+    setName,
+    handleDelete,
+    handleRestore,
+    handleSubmit,
+  } = useDictionaryCrud<TeacherItem, DictionaryItem>({
+    fetch: async () => {
       const [teachersRes, departmentsRes] = await Promise.all([
         dictionariesApi.getTeachers(),
         dictionariesApi.getDepartments(),
       ]);
-      setTeachers(teachersRes.data);
-      setDepartments(departmentsRes.data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
+      return { items: teachersRes.data, related: departmentsRes.data };
+    },
+    searchText: (t) => t.fullName,
+    formName: (t) => t.fullName,
+    fillForm: (t) => setSelectedDepartmentIds(t?.departmentIds ?? []),
+    submit: async (id) => {
+      if (id)
+        await dictionariesApi.updateTeacher(id, name, selectedDepartmentIds);
+      else await dictionariesApi.createTeacher(name, selectedDepartmentIds);
+    },
+    remove: dictionariesApi.deleteTeacher,
+    restore: dictionariesApi.restoreTeacher,
+    confirmDelete: () => "Вы уверены, что хотите удалить этого преподавателя?",
+    restoreSuccessMessage: "Преподаватель успешно восстановлен.",
+  });
 
-  useEffect(() => {
-    loadData();
-  }, []);
   useAdminPageConfig({
     title: "Справочники",
     subtitle: "Преподаватели",
@@ -65,68 +71,26 @@ export const AdminTeachersPage = () => {
     ),
   });
 
-  const filteredTeachers = teachers.filter((t) =>
-    t.fullName.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
   const getDepartmentName = (departmentId?: string) =>
     departments.find((department) => department.id === departmentId)?.name ??
     "Не указана";
 
+  const getDepartmentNames = (departmentIds: string[]) =>
+    departmentIds.length > 0
+      ? departmentIds.map((id) => getDepartmentName(id)).join(", ")
+      : "Не указана";
+
   const formatTeacherLabel = (teacher: TeacherItem) =>
-    teacher.departmentId
-      ? `${teacher.fullName} (${getDepartmentName(teacher.departmentId)})`
+    teacher.departmentIds.length > 0
+      ? `${teacher.fullName} (${getDepartmentNames(teacher.departmentIds)})`
       : teacher.fullName;
 
-  const openModal = (t?: TeacherItem) => {
-    if (t) {
-      setEditingId(t.id);
-      setNewName(t.fullName);
-      setSelectedDepartmentId(t.departmentId ?? "");
-    } else {
-      setEditingId(null);
-      setNewName("");
-      setSelectedDepartmentId("");
-    }
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Вы уверены, что хотите удалить этого преподавателя?"))
-      return;
-    try {
-      await dictionariesApi.deleteTeacher(id);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка удаления"));
-    }
-  };
-
-  const handleRestore = async (id: string) => {
-    try {
-      await dictionariesApi.restoreTeacher(id);
-      loadData();
-      toast.success("Преподаватель успешно восстановлен.", {
-        style: { color: "green" },
-      });
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const departmentId = selectedDepartmentId || undefined;
-      if (editingId)
-        await dictionariesApi.updateTeacher(editingId, newName, departmentId);
-      else await dictionariesApi.createTeacher(newName, departmentId);
-
-      setIsFormOpen(false);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка сохранения"));
-    }
+  const toggleDepartment = (departmentId: string) => {
+    setSelectedDepartmentIds((prev) =>
+      prev.includes(departmentId)
+        ? prev.filter((id) => id !== departmentId)
+        : [...prev, departmentId],
+    );
   };
 
   const truncateFirstWord = (fullName: string, maxLen: number = 10) => {
@@ -166,7 +130,7 @@ export const AdminTeachersPage = () => {
 
             <TableCell className="align-top">
               <AdminTableTextBadge
-                text={getDepartmentName(teacher.departmentId)}
+                text={getDepartmentNames(teacher.departmentIds)}
               />
             </TableCell>
 
@@ -174,8 +138,8 @@ export const AdminTeachersPage = () => {
               <AdminTableActions
                 isDeleted={teacher.isDeleted}
                 onEdit={() => openModal(teacher)}
-                onDelete={() => handleDelete(teacher.id)}
-                onRestore={() => handleRestore(teacher.id)}
+                onDelete={() => handleDelete(teacher)}
+                onRestore={() => handleRestore(teacher)}
                 deleteDescription={`Вы уверены, что хотите удалить преподавателя "${formatTeacherLabel(teacher)}"?`}
               />
             </TableCell>
@@ -185,42 +149,42 @@ export const AdminTeachersPage = () => {
 
       <AdminModal
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={closeModal}
         title={editingId ? "Редактирование" : "Новый преподаватель"}
         onSubmit={handleSubmit}
       >
         <div className="space-y-2">
           <Label>ФИО</Label>
           <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Введите фио..."
           />
         </div>
         <div className="space-y-2">
-          <Label>Филиал кафедры</Label>
-          <Select
-            value={selectedDepartmentId || EMPTY_VALUE}
-            onValueChange={(value) =>
-              setSelectedDepartmentId(value === EMPTY_VALUE ? "" : value)
-            }
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Укажите кафедру" />
-            </SelectTrigger>
-            <SelectContent position="popper">
-              <SelectGroup>
-                <SelectItem value={EMPTY_VALUE}>Не указана</SelectItem>
-                {departments
-                  .filter((department) => !department.isDeleted)
-                  .map((department) => (
-                    <SelectItem key={department.id} value={department.id}>
-                      {department.name}
-                    </SelectItem>
-                  ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <Label>Филиалы кафедры</Label>
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {departments
+              .filter((department) => !department.isDeleted)
+              .map((department) => {
+                const active = selectedDepartmentIds.includes(department.id);
+                return (
+                  <button
+                    key={department.id}
+                    type="button"
+                    onClick={() => toggleDepartment(department.id)}
+                    className={`flex w-full items-center justify-between border px-4 py-2 text-sm font-medium transition-all ${
+                      active
+                        ? "bg-primary border-primary text-primary-foreground shadow-sm"
+                        : "bg-background border-border text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {department.name}
+                    {active && <CheckCircle2 size={16} />}
+                  </button>
+                );
+              })}
+          </div>
         </div>
       </AdminModal>
     </>

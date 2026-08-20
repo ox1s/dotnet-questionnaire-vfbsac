@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import api, { type FormDetail } from "../../api";
 import { WeightedRatingInput } from "@/components/survey/weighted-rating-input";
 import {
@@ -16,11 +17,20 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 
+// A WeightedRating answer stores both the respondent's score and their importance
+// weight; Text/Number answers store the raw input value directly.
+interface WeightedRatingAnswer {
+  value: number | undefined;
+  weight: number | undefined;
+}
+
+type AnswerValue = string | number | WeightedRatingAnswer;
+
 export const SurveyPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [form, setForm] = useState<FormDetail | null>(null);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>({});
   const [context, setContext] = useState<SubmissionContext>({
     educationForm: "ДФПО",
   });
@@ -55,10 +65,11 @@ export const SurveyPage = () => {
         if (!ans) return null;
 
         if (q.type === "WeightedRating") {
+          const weighted = ans as WeightedRatingAnswer;
           return {
             questionId: q.id,
-            numericValue: ans.value,
-            weight: ans.weight,
+            numericValue: weighted.value,
+            weight: weighted.weight,
           };
         }
         if (q.type === "Number") {
@@ -80,9 +91,9 @@ export const SurveyPage = () => {
       });
       toast.success("Анкета успешно отправлена!");
       navigate("/dashboard");
-    } catch (e: any) {
+    } catch (e) {
       console.error(e);
-      if (e.response && e.response.status === 409) {
+      if (axios.isAxiosError(e) && e.response?.status === 409) {
         toast.error("Вы уже голосовали за этого преподавателя/дисциплину!");
       } else {
         toast.error("Ошибка при отправке. Проверьте данные.");
@@ -124,8 +135,8 @@ export const SurveyPage = () => {
               <div className="pl-11">
                 {q.type === "WeightedRating" && (
                   <WeightedRatingInput
-                    value={answers[q.id]?.value}
-                    weight={answers[q.id]?.weight}
+                    value={(answers[q.id] as WeightedRatingAnswer | undefined)?.value}
+                    weight={(answers[q.id] as WeightedRatingAnswer | undefined)?.weight}
                     onChange={(v, w) =>
                       setAnswers({
                         ...answers,
@@ -138,7 +149,7 @@ export const SurveyPage = () => {
                 {q.type === "Text" && (
                   <Textarea
                     placeholder="Ваш ответ..."
-                    value={answers[q.id] || ""}
+                    value={(answers[q.id] as string | undefined) || ""}
                     onChange={(e) =>
                       setAnswers({ ...answers, [q.id]: e.target.value })
                     }
@@ -150,7 +161,7 @@ export const SurveyPage = () => {
                     type="number"
                     placeholder="1–10"
                     className="w-32"
-                    value={answers[q.id] || ""}
+                    value={(answers[q.id] as number | undefined) || ""}
                     onChange={(e) =>
                       setAnswers({
                         ...answers,

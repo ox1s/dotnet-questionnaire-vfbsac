@@ -189,7 +189,7 @@ public sealed class DemoDataGenerator
         {
             string teacherName = TeacherNames[index];
             Guid departmentId = departments[DepartmentNames[index % DepartmentNames.Length]].Id;
-            Teacher teacher = Teacher.Create(teacherName, departmentId).Value;
+            Teacher teacher = Teacher.Create(teacherName, [departmentId]).Value;
             teachers.Add(teacher);
         }
 

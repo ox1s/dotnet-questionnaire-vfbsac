@@ -1,7 +1,8 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import { Edit2, Trash2, RotateCcw, SearchIcon, Trash2Icon } from "lucide-react";
-import { useAdminPage, AdminPageProvider } from "@/contexts/admin-page-context";
+import { AdminPageProvider } from "@/contexts/admin-page-context";
+import { useAdminPage } from "@/hooks/use-admin-page";
 import {
   SidebarInset,
   SidebarProvider,
@@ -50,6 +51,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
 
 interface AdminTableIconCellProps {
   icon?: React.ReactNode;
@@ -255,11 +257,12 @@ export function AdminTable<T>({
               data.map((item) => renderRow(item))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center text-muted-foreground text-sm"
-                >
-                  {emptyText}
+                <TableCell colSpan={columns.length} className="h-24 p-0">
+                  <Empty>
+                    <EmptyHeader>
+                      <EmptyTitle>{emptyText}</EmptyTitle>
+                    </EmptyHeader>
+                  </Empty>
                 </TableCell>
               </TableRow>
             )}

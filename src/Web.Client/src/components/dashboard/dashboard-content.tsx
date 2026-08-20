@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
 import { type Form } from "../../api";
-import { FileText, BarChart3, ArrowRight, Trash2 } from "lucide-react";
+import {
+  FileText,
+  BarChart3,
+  ArrowRight,
+  Trash2,
+  Power,
+  PowerOff,
+  Eye,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,10 +33,12 @@ import {
 export const DashboardContent = ({
   forms,
   deleteForm,
+  toggleFormActive,
   isAdmin,
 }: {
   forms: Form[];
   deleteForm?: (id: string) => void;
+  toggleFormActive?: (form: Form) => void;
   isAdmin: boolean;
 }) => {
   return (
@@ -36,7 +46,9 @@ export const DashboardContent = ({
       {forms.map((form) => (
         <Card
           key={form.id}
-          className="group flex flex-col hover:shadow-md transition-all duration-200"
+          className={`group flex flex-col hover:shadow-md transition-all duration-200 ${
+            isAdmin && !form.isActive ? "opacity-60" : ""
+          }`}
         >
           <CardHeader className="flex flex-row items-start justify-between pb-2 space-y-0">
             <div className="p-3 bg-primary/15 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -44,6 +56,23 @@ export const DashboardContent = ({
             </div>
             {isAdmin && (
               <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  title={form.isActive ? "Закрыть анкету" : "Открыть анкету"}
+                  className={
+                    form.isActive
+                      ? "text-muted-foreground hover:text-destructive"
+                      : "text-muted-foreground hover:text-primary"
+                  }
+                  onClick={() => toggleFormActive?.(form)}
+                >
+                  {form.isActive ? (
+                    <Power size={18} />
+                  ) : (
+                    <PowerOff size={18} />
+                  )}
+                </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -79,6 +108,16 @@ export const DashboardContent = ({
                   asChild
                   className="text-muted-foreground hover:text-foreground"
                 >
+                  <Link to={`/admin/preview/${form.id}`} title="Просмотреть анкету">
+                    <Eye size={18} />
+                  </Link>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  asChild
+                  className="text-muted-foreground hover:text-foreground"
+                >
                   <Link to={`/admin/stats/${form.id}`}>
                     <BarChart3 size={18} />
                   </Link>
@@ -90,6 +129,11 @@ export const DashboardContent = ({
             <CardTitle className="text-base leading-snug">
               {form.title}
             </CardTitle>
+            {isAdmin && !form.isActive && (
+              <Badge variant="destructive" className="mt-2">
+                Неактивна
+              </Badge>
+            )}
           </CardContent>
           <CardFooter className="mt-auto pt-4 border-t flex-col items-start gap-4">
             <div className="flex flex-wrap gap-2">

@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { getApiErrorMessage, usersApi, type GroupUser } from "../../api";
+import { useState } from "react";
+import { usersApi, type GroupUser } from "../../api";
 import {
   AdminModal,
   AdminTable,
@@ -12,110 +12,58 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 import { Plus, Users, Key, X, RefreshCw } from "lucide-react";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
+
+const generateGroupPassword = () =>
+  Math.floor(10000000 + Math.random() * 90000000).toString();
 
 export const AdminGroupsPage = () => {
-  const [groups, setGroups] = useState<GroupUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
   const [groupName, setGroupName] = useState("");
   const [password, setPassword] = useState("");
-
-  const [searchQuery, setSearchQuery] = useState("");
 
   const [lastCreated, setLastCreated] = useState<{
     name: string;
     pass: string;
   } | null>(null);
 
-  const loadData = async () => {
-    try {
-      const res = await usersApi.getGroups();
-      setGroups(res.data);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    filteredItems: filteredGroups,
+    loading,
+    isSubmitting,
+    searchQuery,
+    setSearchQuery,
+    isFormOpen,
+    closeModal,
+    openModal,
+    editingId,
+    handleDelete,
+    handleSubmit,
+  } = useDictionaryCrud<GroupUser>({
+    fetch: async () => ({ items: (await usersApi.getGroups()).data }),
+    searchText: (g) => g.login,
+    fillForm: (g) => {
+      setGroupName(g ? g.login : "");
+      setPassword(g ? "" : generateGroupPassword());
+    },
+    validate: () => {
+      if (!groupName.trim()) {
+        toast.error("Введите логин группы");
+        return false;
+      }
 
-  useEffect(() => {
-    loadData();
-  }, []);
+      if (!editingId && !password.trim()) {
+        toast.error("Пароль обязателен при создании");
+        return false;
+      }
 
-  const generatePassword = () => {
-    const pass = Math.floor(10000000 + Math.random() * 90000000).toString();
-    setPassword(pass);
-  };
-
-  const openCreate = () => {
-    setEditingId(null);
-    setGroupName("");
-    setPassword(Math.floor(10000000 + Math.random() * 90000000).toString());
-    setIsFormOpen(true);
-  };
-
-  const openEdit = (g: GroupUser) => {
-    setEditingId(g.id);
-    setGroupName(g.login);
-    setPassword("");
-    setIsFormOpen(true);
-  };
-
-  useAdminPageConfig({
-    title: "Настройки",
-    subtitle: "Группы",
-    actions: (
-      <Button onClick={openCreate}>
-        <Plus size={18} className="mr-2" /> Добавить
-      </Button>
-    ),
-  });
-
-  const filteredGroups = groups.filter((g) =>
-    g.login.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const handleDelete = async (id: string, name: string) => {
-    if (!window.confirm(`Вы уверены, что хотите удалить группу "${name}"?`))
-      return;
-    try {
-      await usersApi.deleteUser(id);
-      toast.success("Группа удалена");
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка при удалении"));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!groupName.trim()) {
-      toast.error("Введите логин группы");
-      return;
-    }
-
-    if (!editingId && !password.trim()) {
-      toast.error("Пароль обязателен при создании");
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      if (editingId) {
-        await usersApi.updateUser(
-          editingId,
-          groupName.trim(),
-          groupName.trim(),
-        );
+      return true;
+    },
+    submit: async (id) => {
+      if (id) {
+        await usersApi.updateUser(id, groupName.trim(), groupName.trim());
 
         if (password.trim()) {
-          await usersApi.setPassword(editingId, password.trim());
+          await usersApi.setPassword(id, password.trim());
         }
         toast.success("Группа обновлена");
       } else {
@@ -124,21 +72,26 @@ export const AdminGroupsPage = () => {
         toast.success("Группа создана");
       }
 
-      setIsFormOpen(false);
       setGroupName("");
       setPassword("");
-      loadData();
-    } catch (e) {
-      toast.error(
-        getApiErrorMessage(
-          e,
-          "Ошибка. Возможно, имя занято или содержит недопустимые символы.",
-        ),
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+    remove: usersApi.deleteUser,
+    confirmDelete: (g) => `Вы уверены, что хотите удалить группу "${g.login}"?`,
+    deleteSuccessMessage: "Группа удалена",
+    deleteErrorMessage: "Ошибка при удалении",
+    saveErrorMessage:
+      "Ошибка. Возможно, имя занято или содержит недопустимые символы.",
+  });
+
+  useAdminPageConfig({
+    title: "Настройки",
+    subtitle: "Группы",
+    actions: (
+      <Button onClick={() => openModal()}>
+        <Plus size={18} className="mr-2" /> Добавить
+      </Button>
+    ),
+  });
 
   return (
     <>
@@ -202,8 +155,8 @@ export const AdminGroupsPage = () => {
               </TableCell>
               <TableCell className="py-4 text-right">
                 <AdminTableActions
-                  onEdit={() => openEdit(g)}
-                  onDelete={() => handleDelete(g.id, g.login)}
+                  onEdit={() => openModal(g)}
+                  onDelete={() => handleDelete(g)}
                 />
               </TableCell>
             </TableRow>
@@ -213,7 +166,7 @@ export const AdminGroupsPage = () => {
 
       <AdminModal
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={closeModal}
         title={editingId ? "Редактирование группы" : "Новая группа"}
         onSubmit={handleSubmit}
         submitText={isSubmitting ? "Сохранение..." : "Сохранить"}
@@ -237,7 +190,7 @@ export const AdminGroupsPage = () => {
             <Button
               type="button"
               variant="outline"
-              onClick={generatePassword}
+              onClick={() => setPassword(generateGroupPassword())}
               className="h-8 px-3"
             >
               <RefreshCw size={14} className="mr-2" />

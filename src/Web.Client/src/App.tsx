@@ -4,11 +4,13 @@ import { LoginPage } from "./pages/auth/login-page";
 import { DashboardPage } from "./pages/dashboard/dashboard-page";
 import { SurveyPage } from "./pages/forms/survey-page";
 import { AdminStatsPage } from "./pages/admin/admin-stats-page";
+import { AdminFormPreviewPage } from "./pages/admin/admin-form-preview-page";
 import { CreateFormPage } from "./pages/forms/create-form-page";
 import { AdminTeachersPage } from "./pages/admin/admin-teachers-page";
 import { AdminDisciplinesPage } from "./pages/admin/admin-disciplines-page";
 import { AdminDepartmentsPage } from "./pages/admin/admin-departments-page";
 import { AdminGroupsPage } from "./pages/admin/admin-groups-page";
+import { AdminEmployersPage } from "./pages/admin/admin-employers-page";
 import { ProtectedRoute } from "./components/auth/protected-route";
 import { AdminSettingsPage } from "./pages/admin/admin-settings-page";
 import { AdminSpecialitiesPage } from "./pages/admin/admin-specialities-page";
@@ -38,6 +40,10 @@ function App() {
               }
             >
               <Route path="/admin/stats/:id" element={<AdminStatsPage />} />
+              <Route
+                path="/admin/preview/:id"
+                element={<AdminFormPreviewPage />}
+              />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
@@ -61,6 +67,10 @@ function App() {
                   element={<AdminSpecializationsPage />}
                 />
                 <Route path="/admin/groups" element={<AdminGroupsPage />} />
+                <Route
+                  path="/admin/employers"
+                  element={<AdminEmployersPage />}
+                />
                 <Route path="/admin/settings" element={<AdminSettingsPage />} />
               </Route>
             </Route>

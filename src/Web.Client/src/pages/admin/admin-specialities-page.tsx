@@ -1,9 +1,4 @@
-import React, { useEffect, useState } from "react";
-import {
-  dictionariesApi,
-  getApiErrorMessage,
-  type DictionaryItem,
-} from "../../api";
+import { dictionariesApi, type DictionaryItem } from "../../api";
 import { Plus, Book } from "lucide-react";
 import {
   AdminModal,
@@ -16,32 +11,41 @@ import { Button } from "@/components/ui/button";
 import { TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 
 export const AdminSpecialitiesPage = () => {
-  const [specialities, setSpecialities] = useState<DictionaryItem[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [newName, setNewName] = useState("");
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  const loadData = async () => {
-    try {
-      const res = await dictionariesApi.getSpecialities();
-      setSpecialities(res.data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const filteredSpecialities = specialities.filter((speciality) =>
-    speciality.name.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+  const {
+    filteredItems: filteredSpecialities,
+    searchQuery,
+    setSearchQuery,
+    isFormOpen,
+    closeModal,
+    openModal,
+    editingId,
+    name,
+    setName,
+    handleDelete,
+    handleRestore,
+    handleSubmit,
+  } = useDictionaryCrud<DictionaryItem>({
+    fetch: async () => ({
+      items: (await dictionariesApi.getSpecialities()).data,
+    }),
+    searchText: (speciality) => speciality.name,
+    formName: (speciality) => speciality.name,
+    submit: async (id) => {
+      if (id) {
+        await dictionariesApi.updateSpeciality(id, name);
+      } else {
+        await dictionariesApi.createSpeciality(name);
+      }
+    },
+    remove: dictionariesApi.deleteSpeciality,
+    restore: dictionariesApi.restoreSpeciality,
+    confirmDelete: () => "Удалить специальность?",
+    restoreSuccessMessage: "Специальность успешно восстановлена.",
+  });
 
   useAdminPageConfig({
     title: "Справочники",
@@ -52,58 +56,6 @@ export const AdminSpecialitiesPage = () => {
       </Button>
     ),
   });
-
-  const openModal = (speciality?: DictionaryItem) => {
-    if (speciality) {
-      setEditingId(speciality.id);
-      setNewName(speciality.name);
-    } else {
-      setEditingId(null);
-      setNewName("");
-    }
-
-    setIsFormOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!window.confirm("Удалить специальность?")) return;
-
-    try {
-      await dictionariesApi.deleteSpeciality(id);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка удаления"));
-    }
-  };
-
-  const handleRestore = async (id: string) => {
-    try {
-      await dictionariesApi.restoreSpeciality(id);
-      loadData();
-      toast.success("Специальность успешно восстановлена.", {
-        style: { color: "green" },
-      });
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка восстановления"));
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      if (editingId) {
-        await dictionariesApi.updateSpeciality(editingId, newName);
-      } else {
-        await dictionariesApi.createSpeciality(newName);
-      }
-
-      setIsFormOpen(false);
-      loadData();
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка сохранения"));
-    }
-  };
 
   return (
     <>
@@ -131,8 +83,8 @@ export const AdminSpecialitiesPage = () => {
               <AdminTableActions
                 isDeleted={speciality.isDeleted}
                 onEdit={() => openModal(speciality)}
-                onDelete={() => handleDelete(speciality.id)}
-                onRestore={() => handleRestore(speciality.id)}
+                onDelete={() => handleDelete(speciality)}
+                onRestore={() => handleRestore(speciality)}
                 deleteDescription={`Вы уверены, что хотите удалить дисциплину "${speciality.name}"?`}
               />
             </TableCell>
@@ -141,15 +93,15 @@ export const AdminSpecialitiesPage = () => {
       />
       <AdminModal
         isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
+        onClose={closeModal}
         title={editingId ? "Редактирование" : "Новая специальность"}
         onSubmit={handleSubmit}
       >
         <div className="space-y-2">
           <Label>Название</Label>
           <Input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
             placeholder="Введите название специальности..."
           />
         </div>

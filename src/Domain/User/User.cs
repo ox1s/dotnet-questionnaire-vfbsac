@@ -69,6 +69,37 @@ public sealed class User : Entity, ISoftDeletable
         };
     }
 
+    public static Result<User> CreateEmployer(
+        Login login,
+        string displayName,
+        string organizationName,
+        string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(displayName))
+        {
+            return Result.Failure<User>(Error.NullValue);
+        }
+
+        if (string.IsNullOrWhiteSpace(organizationName))
+        {
+            return Result.Failure<User>(Error.NullValue);
+        }
+
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            Login = login,
+            DisplayName = displayName.Trim(),
+            PasswordHash = passwordHash,
+            Role = UserRole.Employer,
+            TeacherId = null,
+            DepartmentId = null,
+            GroupId = null,
+            OrganizationName = organizationName.Trim(),
+            IsActive = true
+        };
+    }
+
     public static Result<User> CreateAdmin(Login login, string passwordHash)
     {
         return new User
@@ -98,6 +129,11 @@ public sealed class User : Entity, ISoftDeletable
         DisplayName = displayName;
 
         return Result.Success();
+    }
+
+    public void UpdateOrganizationName(string organizationName)
+    {
+        OrganizationName = organizationName.Trim();
     }
 
     public void SetDepartment(Guid departmentId)

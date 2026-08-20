@@ -68,16 +68,20 @@ export const ContextSelector: React.FC<Props> = ({
   }, [context, onChange]);
 
   const getTeacherLabel = (teacher: TeacherItem) => {
-    if (!teacher.departmentId) {
+    if (!teacher.departmentIds || teacher.departmentIds.length === 0) {
       return teacher.fullName;
     }
 
-    const departmentName = departments.find(
-      (department) => department.id === teacher.departmentId,
-    )?.name;
+    const departmentNames = teacher.departmentIds
+      .map(
+        (departmentId) =>
+          departments.find((department) => department.id === departmentId)
+            ?.name,
+      )
+      .filter((name): name is string => Boolean(name));
 
-    return departmentName
-      ? `${teacher.fullName} (${departmentName})`
+    return departmentNames.length > 0
+      ? `${teacher.fullName} (${departmentNames.join(", ")})`
       : teacher.fullName;
   };
 

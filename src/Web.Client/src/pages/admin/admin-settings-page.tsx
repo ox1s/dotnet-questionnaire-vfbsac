@@ -7,7 +7,7 @@ import {
   LockKeyholeOpenIcon,
   CheckIcon,
 } from "lucide-react";
-import { usersApi, settingsApi } from "../../api";
+import { usersApi, settingsApi, getApiErrorMessage } from "../../api";
 import { getUserInfo } from "../../utils/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,7 +50,7 @@ export const AdminSettingsPage = () => {
       setNewPassword("");
       setConfirmPassword("");
     } catch (e) {
-      toast.error("Ошибка при смене пароля");
+      toast.error(getApiErrorMessage(e, "Ошибка при смене пароля"));
     } finally {
       setIsSaving(false);
     }
@@ -65,7 +65,7 @@ export const AdminSettingsPage = () => {
         await settingsApi.closeSemester();
         toast.success("Семестр успешно закрыт. Все анкеты деактивированы.");
       } catch (e) {
-        toast.error("Не удалось закрыть семестр.");
+        toast.error(getApiErrorMessage(e, "Не удалось закрыть семестр."));
       } finally {
         setIsClosing(false);
       }
@@ -83,7 +83,7 @@ export const AdminSettingsPage = () => {
         await settingsApi.openSemester();
         toast.success("Новый семестр успешно открыт.");
       } catch (e) {
-        toast.error("Не удалось открыть новый семестр.");
+        toast.error(getApiErrorMessage(e, "Не удалось открыть новый семестр."));
       } finally {
         setIsOpening(false);
       }

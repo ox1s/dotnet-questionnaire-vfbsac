@@ -66,21 +66,30 @@ test.describe("Admin dashboard", () => {
     await page.goto("/admin/teachers");
     await expect(page).toHaveURL(/\/admin\/teachers$/);
 
-    const responses: number[] = [];
+    const documentNavigations: string[] = [];
     page.on("response", (response) => {
-      if (response.url().endsWith("/login")) {
-        responses.push(response.status());
+      if (
+        response.request().resourceType() === "document" &&
+        new URL(response.url()).pathname === "/login"
+      ) {
+        documentNavigations.push(response.url());
       }
     });
 
-    await page.getByRole("button", { name: /Выйти/ }).click();
+    // Below the sidebar's mobile breakpoint the nav lives in a closed
+    // off-canvas Sheet, so the logout button isn't in the DOM until opened.
+    const logoutButton = page.getByRole("button", { name: /Выйти/ });
+    if (!(await logoutButton.isVisible())) {
+      await page.getByRole("button", { name: "Toggle Sidebar" }).click();
+    }
+    await logoutButton.click();
 
     await expect(page).toHaveURL(/\/login$/);
     const token = await page.evaluate(() => window.localStorage.getItem("token"));
     expect(token).toBeNull();
 
     // No document navigation to /login was ever issued by the browser.
-    expect(responses).toHaveLength(0);
+    expect(documentNavigations).toHaveLength(0);
 
     await expect(page.getByText("Войдите в систему")).toBeVisible();
     await expect(

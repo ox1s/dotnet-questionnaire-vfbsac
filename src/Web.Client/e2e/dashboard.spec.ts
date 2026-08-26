@@ -76,13 +76,17 @@ test.describe("Admin dashboard", () => {
       }
     });
 
-    // Below the sidebar's mobile breakpoint the nav lives in a closed
-    // off-canvas Sheet, so the logout button isn't in the DOM until opened.
-    const logoutButton = page.getByRole("button", { name: /Выйти/ });
-    if (!(await logoutButton.isVisible())) {
-      await page.getByRole("button", { name: "Toggle Sidebar" }).click();
+    // Below the sidebar's 768px mobile breakpoint (use-mobile.ts), the nav
+    // lives in a closed off-canvas Sheet, so the logout button isn't in the
+    // DOM until opened. Gate on the configured viewport rather than a
+    // point-in-time visibility check, and target the trigger by its unique
+    // data-sidebar attribute — SidebarRail also has an accessible name of
+    // "Toggle Sidebar" on wider viewports, which would otherwise match two
+    // elements.
+    if ((page.viewportSize()?.width ?? 1280) < 768) {
+      await page.locator('[data-sidebar="trigger"]').click();
     }
-    await logoutButton.click();
+    await page.getByRole("button", { name: /Выйти/ }).click();
 
     await expect(page).toHaveURL(/\/login$/);
     const token = await page.evaluate(() => window.localStorage.getItem("token"));

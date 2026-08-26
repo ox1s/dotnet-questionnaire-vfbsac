@@ -48,3 +48,43 @@ test.describe("Student dashboard", () => {
     expect(token).toBeNull();
   });
 });
+
+test.describe("Admin dashboard", () => {
+  // Regression test for the reported bug: logging out from an admin page used to
+  // hard-navigate to /login (window.location.href), which returned a real server
+  // "Not Found" on hosts with no SPA fallback. Logout must stay client-side, land
+  // on /login, and render the actual login form rather than a blank page.
+  test("sidebar logout stays client-side and lands on a fully-rendered login page", async ({
+    page,
+  }) => {
+    await loginAs(page, "Admin");
+    await mockForms(page, []);
+    await page.route("**/api/dictionaries/**", (route) =>
+      route.fulfill({ json: [] }),
+    );
+
+    await page.goto("/admin/teachers");
+    await expect(page).toHaveURL(/\/admin\/teachers$/);
+
+    const responses: number[] = [];
+    page.on("response", (response) => {
+      if (response.url().endsWith("/login")) {
+        responses.push(response.status());
+      }
+    });
+
+    await page.getByRole("button", { name: /Выйти/ }).click();
+
+    await expect(page).toHaveURL(/\/login$/);
+    const token = await page.evaluate(() => window.localStorage.getItem("token"));
+    expect(token).toBeNull();
+
+    // No document navigation to /login was ever issued by the browser.
+    expect(responses).toHaveLength(0);
+
+    await expect(page.getByText("Войдите в систему")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Войти" }),
+    ).toBeVisible();
+  });
+});

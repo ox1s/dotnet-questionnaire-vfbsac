@@ -76,6 +76,8 @@ function App() {
                 <Route path="/admin/settings" element={<AdminSettingsPage />} />
               </Route>
             </Route>
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </TooltipProvider>
       </ThemeProvider>

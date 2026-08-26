@@ -36,4 +36,17 @@ describe("handleUnauthorizedResponse (api.ts 401 interceptor)", () => {
 
     expect(logout).not.toHaveBeenCalled();
   });
+
+  it("does not call logout() on a 401 from the login request itself (wrong password)", async () => {
+    const error = {
+      isAxiosError: true,
+      config: { url: "/users/login" },
+      response: { status: 401 },
+    };
+    vi.spyOn(axios, "isAxiosError").mockReturnValue(true);
+
+    await expect(handleUnauthorizedResponse(error)).rejects.toBe(error);
+
+    expect(logout).not.toHaveBeenCalled();
+  });
 });

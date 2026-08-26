@@ -10,10 +10,10 @@ This is the application source root for the Web.Client SPA. It contains the app 
 | File | Description |
 |------|-------------|
 | `main.tsx` | React 19 entry point; mounts `<App />` into `#root` under `<StrictMode>` |
-| `App.tsx` | Top-level router: `BrowserRouter` → `ThemeProvider` (default light) → `TooltipProvider` → `Toaster` (sonner, top-center) → `<Routes>`. Defines every route in the app (see table below) |
+| `App.tsx` | Top-level router: `BrowserRouter` → `ThemeProvider` (default light) → `TooltipProvider` → `AuthSessionListener` (`components/auth/auth-session-listener.tsx`; navigates to `/login` on the `auth:logout` window event dispatched by `logout()`) → `Toaster` (sonner, top-center) → `<Routes>`. Defines every route in the app (see table below), plus a trailing `path="*"` catch-all redirecting to `/dashboard` |
 | `App.css` | Legacy Vite starter styles (mostly unused now that Tailwind + `index.css` drive styling) |
 | `index.css` | Tailwind v4 entrypoint: `@import "tailwindcss"`, shadcn theme (`shadcn/tailwind.css`), `tw-animate-css`, Geist Variable font; defines the OKLCH color tokens (`--background`, `--primary`, `--chart-1..5`, `--sidebar-*`, etc.) consumed via `@theme inline` and used by every `ui/` component and `dark:` variants |
-| `api.ts` | The entire backend API surface: axios instance (`baseURL: "/api"`, Bearer-token request interceptor, 401→logout response interceptor), every DTO interface (`Form`, `FormDetail`, `Question`, `DictionaryItem`, `TeacherItem`, `SubmissionListItem`, `StatisticsFilters`, analytics/report request-response types), grouped endpoint objects (`usersApi`, `settingsApi`, `dictionariesApi`, `submissionsApi`, `reportsApi`), and `getApiErrorMessage()` for turning ASP.NET `ProblemDetails` errors into user-facing Russian strings |
+| `api.ts` | The entire backend API surface: axios instance (`baseURL: import.meta.env.VITE_API_URL \|\| "/api"`, Bearer-token request interceptor, 401→`logout()` response interceptor via the exported `handleUnauthorizedResponse`, skipped for the `/users/login` request itself), every DTO interface (`Form`, `FormDetail`, `Question`, `DictionaryItem`, `TeacherItem`, `SubmissionListItem`, `StatisticsFilters`, analytics/report request-response types), grouped endpoint objects (`usersApi`, `settingsApi`, `dictionariesApi`, `submissionsApi`, `reportsApi`), and `getApiErrorMessage()` for turning ASP.NET `ProblemDetails` errors into user-facing Russian strings |
 
 ### Routes defined in `App.tsx`
 | Path | Element | Guard |

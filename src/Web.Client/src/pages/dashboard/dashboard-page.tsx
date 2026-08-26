@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { UserDashboard } from "@/components/dashboard/user-dashboard";
 import { AdminLayout } from "@/components/admin/admin-shared";
-import { isAdmin } from "@/utils/auth";
+import { isAdmin, logout } from "@/utils/auth";
 
 export const DashboardPage = () => {
   const [forms, setForms] = useState<Form[]>([]);
@@ -26,11 +26,6 @@ export const DashboardPage = () => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     loadForms().catch(() => navigate("/login"));
   }, [loadForms, navigate]);
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
 
   const deleteForm = async (id: string) => {
     try {

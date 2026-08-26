@@ -14,14 +14,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 export const handleUnauthorizedResponse = (error: unknown) => {
-  const isLoginRequest =
-    axios.isAxiosError(error) && error.config?.url === "/users/login";
-  if (
-    axios.isAxiosError(error) &&
-    error.response?.status === 401 &&
-    !isLoginRequest
-  ) {
-    logout();
+  if (axios.isAxiosError(error)) {
+    const isLoginRequest = error.config?.url === "/users/login";
+    if (error.response?.status === 401 && !isLoginRequest) {
+      logout();
+    }
   }
   return Promise.reject(error);
 };

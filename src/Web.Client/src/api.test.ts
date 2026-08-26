@@ -11,6 +11,7 @@ import { handleUnauthorizedResponse } from "./api";
 describe("handleUnauthorizedResponse (api.ts 401 interceptor)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(axios, "isAxiosError").mockReturnValue(true);
   });
 
   it("calls the shared logout() helper on a 401 response", async () => {
@@ -18,7 +19,6 @@ describe("handleUnauthorizedResponse (api.ts 401 interceptor)", () => {
       isAxiosError: true,
       response: { status: 401 },
     };
-    vi.spyOn(axios, "isAxiosError").mockReturnValue(true);
 
     await expect(handleUnauthorizedResponse(error)).rejects.toBe(error);
 
@@ -30,7 +30,6 @@ describe("handleUnauthorizedResponse (api.ts 401 interceptor)", () => {
       isAxiosError: true,
       response: { status: 500 },
     };
-    vi.spyOn(axios, "isAxiosError").mockReturnValue(true);
 
     await expect(handleUnauthorizedResponse(error)).rejects.toBe(error);
 
@@ -43,7 +42,6 @@ describe("handleUnauthorizedResponse (api.ts 401 interceptor)", () => {
       config: { url: "/users/login" },
       response: { status: 401 },
     };
-    vi.spyOn(axios, "isAxiosError").mockReturnValue(true);
 
     await expect(handleUnauthorizedResponse(error)).rejects.toBe(error);
 

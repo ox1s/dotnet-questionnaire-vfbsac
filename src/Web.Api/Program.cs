@@ -20,7 +20,7 @@ builder.Services.AddSwaggerGenWithAuth();
 
 builder.Services
     .AddApplication()
-    .AddPresentation()
+    .AddPresentation(builder.Configuration)
     .AddInfrastructure(builder.Configuration);
 
 builder.Services.AddApiVersioning(options =>
@@ -56,6 +56,8 @@ app.MapHealthChecks("health", new HealthCheckOptions
 app.UseRequestContextLogging();
 
 app.UseExceptionHandler();
+
+app.UseCors(Web.Api.DependencyInjection.CorsPolicyName);
 
 app.UseAuthentication();
 

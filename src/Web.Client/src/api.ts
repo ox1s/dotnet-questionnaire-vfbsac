@@ -3,7 +3,7 @@ import { getDeviceId } from "./utils/device";
 import { logout } from "./utils/auth";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
 });
 
 api.interceptors.request.use((config) => {
@@ -14,7 +14,13 @@ api.interceptors.request.use((config) => {
   return config;
 });
 export const handleUnauthorizedResponse = (error: unknown) => {
-  if (axios.isAxiosError(error) && error.response?.status === 401) {
+  const isLoginRequest =
+    axios.isAxiosError(error) && error.config?.url === "/users/login";
+  if (
+    axios.isAxiosError(error) &&
+    error.response?.status === 401 &&
+    !isLoginRequest
+  ) {
     logout();
   }
   return Promise.reject(error);
@@ -71,6 +77,7 @@ export interface Form {
   title: string;
   isActive: boolean;
   requiredFilters: string[];
+  targetRole?: string | null;
 }
 
 export interface Question {

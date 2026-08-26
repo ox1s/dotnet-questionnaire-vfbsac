@@ -12,13 +12,15 @@ internal sealed class GetFormsQueryHandler(IApplicationDbContext context)
     {
         List<GetFormsQueryResponse> forms = await context.Forms
             .Where(f => query.IsActive == null || f.IsActive == query.IsActive)
+            .Where(f => query.CallerRole == null || f.TargetRole == null || f.TargetRole == query.CallerRole)
             .OrderBy(f => f.Title)
             .Select(f => new GetFormsQueryResponse
             {
                 Id = f.Id,
                 Title = f.Title,
                 IsActive = f.IsActive,
-                RequiredFilters = f.RequiredFilters
+                RequiredFilters = f.RequiredFilters,
+                TargetRole = f.TargetRole
             })
             .ToListAsync(cancellationToken);
 

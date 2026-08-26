@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
+import { ROLE_LABELS } from "@/utils/roles";
 
 const QuestionType = {
   Text: 1,
@@ -49,10 +50,16 @@ const QUESTION_TYPES = [
   { value: QuestionType.Text, label: "Текстовый комментарий" },
 ];
 
+const TARGET_ROLE_OPTIONS: { value: string; label: string }[] = [
+  { value: "", label: "Все пользователи" },
+  ...Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label })),
+];
+
 export const CreateFormPage = () => {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [selectedFilters, setSelectedFilters] = useState<FilterField[]>([]);
+  const [targetRole, setTargetRole] = useState("");
   const [questions, setQuestions] = useState<QuestionDraft[]>([]);
   const [newQText, setNewQText] = useState("");
   const [newQType, setNewQType] = useState<QuestionType>(
@@ -116,6 +123,7 @@ export const CreateFormPage = () => {
         title,
         requiredFilters: selectedFilters,
         questions,
+        targetRole: targetRole || undefined,
       });
       toast.success("Новая анкета создана!");
       navigate("/dashboard");
@@ -123,7 +131,7 @@ export const CreateFormPage = () => {
       console.error(e);
       toast.error("Ошибка при сохранении");
     }
-  }, [navigate, questions, selectedFilters, title]);
+  }, [navigate, questions, selectedFilters, targetRole, title]);
 
   const saveAction = useMemo(
     () => (
@@ -162,6 +170,23 @@ export const CreateFormPage = () => {
                 onChange={(e) => setTitle(e.target.value)}
                 className="bg-muted/50"
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Целевая аудитория</Label>
+              <p className="text-xs text-muted-foreground">
+                Кто увидит эту анкету у себя в списке.
+              </p>
+              <select
+                className="flex h-10 w-full border border-input bg-muted/50 px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                value={targetRole}
+                onChange={(e) => setTargetRole(e.target.value)}
+              >
+                {TARGET_ROLE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-3">
               <div>

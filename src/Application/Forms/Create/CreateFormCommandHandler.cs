@@ -11,7 +11,7 @@ internal sealed class CreateFormCommandHandler(IApplicationDbContext context)
 {
     public async Task<Result<Guid>> Handle(CreateFormCommand command, CancellationToken cancellationToken)
     {
-        Result<Form> formResult = Form.Create(command.Title, command.RequiredFilters);
+        Result<Form> formResult = Form.Create(command.Title, command.RequiredFilters, command.TargetRole);
         if (formResult.IsFailure)
         {
             return Result.Failure<Guid>(formResult.Error);

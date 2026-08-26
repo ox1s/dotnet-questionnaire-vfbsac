@@ -1,6 +1,7 @@
 using Application.Abstractions.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Infrastructure.Database;
@@ -8,7 +9,8 @@ namespace Infrastructure.Database;
 public class DbInitializer(
     IServiceProvider serviceProvider,
     ILogger<DbInitializer> logger,
-    DemoDataGenerator demoDataGenerator)
+    DemoDataGenerator demoDataGenerator,
+    IHostEnvironment hostEnvironment)
 {
     public async Task InitializeAsync()
     {
@@ -17,6 +19,12 @@ public class DbInitializer(
         IPasswordHasher passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
 
         await context.Database.MigrateAsync();
+
+        if (hostEnvironment.IsProduction())
+        {
+            logger.LogInformation("Production environment detected; skipping demo data seeding.");
+            return;
+        }
 
         if (await context.Forms.AnyAsync())
         {

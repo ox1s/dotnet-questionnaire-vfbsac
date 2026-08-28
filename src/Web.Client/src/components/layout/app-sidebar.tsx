@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { ModeToggle } from "../shared/mode-toggle";
+import { logout } from "@/utils/auth";
 
 const data = {
   navMain: [
@@ -121,12 +122,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {" "}
           <ModeToggle />
           <Button
-            onClick={() => {
-              window.location.href = "/login";
-            }}
+            onClick={logout}
             variant="outline"
             size="icon"
             className="ml-4"
+            aria-label="Выйти"
+            title="Выйти"
           >
             <LogOutIcon />
           </Button>

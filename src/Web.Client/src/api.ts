@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getDeviceId } from "./utils/device";
+import { logout } from "./utils/auth";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
@@ -12,17 +13,16 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+export const handleUnauthorizedResponse = (error: unknown) => {
+  if (axios.isAxiosError(error)) {
     const isLoginRequest = error.config?.url === "/users/login";
-    if (error.response && error.response.status === 401 && !isLoginRequest) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
+    if (error.response?.status === 401 && !isLoginRequest) {
+      logout();
     }
-    return Promise.reject(error);
-  },
-);
+  }
+  return Promise.reject(error);
+};
+api.interceptors.response.use((response) => response, handleUnauthorizedResponse);
 
 export interface DictionaryItem {
   id: string;

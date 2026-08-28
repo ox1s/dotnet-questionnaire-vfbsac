@@ -4,6 +4,16 @@ export interface UserPayload {
   exp: number;
 }
 
+export const AUTH_LOGOUT_EVENT = "auth:logout";
+
+// Clears the token and signals AuthSessionListener to navigate to /login
+// client-side, so callers outside the router tree (e.g. the axios
+// interceptor) never need a hard window.location navigation.
+export const logout = (): void => {
+  localStorage.removeItem("token");
+  window.dispatchEvent(new Event(AUTH_LOGOUT_EVENT));
+};
+
 export const getUserInfo = (): UserPayload | null => {
   const token = localStorage.getItem("token");
   if (!token) return null;

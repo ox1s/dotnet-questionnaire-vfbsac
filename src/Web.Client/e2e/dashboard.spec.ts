@@ -48,3 +48,56 @@ test.describe("Student dashboard", () => {
     expect(token).toBeNull();
   });
 });
+
+test.describe("Admin dashboard", () => {
+  // Regression test for the reported bug: logging out from an admin page used to
+  // hard-navigate to /login (window.location.href), which returned a real server
+  // "Not Found" on hosts with no SPA fallback. Logout must stay client-side, land
+  // on /login, and render the actual login form rather than a blank page.
+  test("sidebar logout stays client-side and lands on a fully-rendered login page", async ({
+    page,
+  }) => {
+    await loginAs(page, "Admin");
+    await mockForms(page, []);
+    await page.route("**/api/dictionaries/**", (route) =>
+      route.fulfill({ json: [] }),
+    );
+
+    await page.goto("/admin/teachers");
+    await expect(page).toHaveURL(/\/admin\/teachers$/);
+
+    const documentNavigations: string[] = [];
+    page.on("response", (response) => {
+      if (
+        response.request().resourceType() === "document" &&
+        new URL(response.url()).pathname === "/login"
+      ) {
+        documentNavigations.push(response.url());
+      }
+    });
+
+    // Below the sidebar's 768px mobile breakpoint (use-mobile.ts), the nav
+    // lives in a closed off-canvas Sheet, so the logout button isn't in the
+    // DOM until opened. Gate on the configured viewport rather than a
+    // point-in-time visibility check, and target the trigger by its unique
+    // data-sidebar attribute — SidebarRail also has an accessible name of
+    // "Toggle Sidebar" on wider viewports, which would otherwise match two
+    // elements.
+    if ((page.viewportSize()?.width ?? 1280) < 768) {
+      await page.locator('[data-sidebar="trigger"]').click();
+    }
+    await page.getByRole("button", { name: /Выйти/ }).click();
+
+    await expect(page).toHaveURL(/\/login$/);
+    const token = await page.evaluate(() => window.localStorage.getItem("token"));
+    expect(token).toBeNull();
+
+    // No document navigation to /login was ever issued by the browser.
+    expect(documentNavigations).toHaveLength(0);
+
+    await expect(page.getByText("Войдите в систему")).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Войти" }),
+    ).toBeVisible();
+  });
+});

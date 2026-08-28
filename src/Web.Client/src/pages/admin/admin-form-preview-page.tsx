@@ -30,6 +30,7 @@ const FILTER_FIELD_LABELS: Record<string, string> = {
   Department: "Филиал кафедры",
   Speciality: "Специальность",
   Specialization: "Специализация",
+  EmployeeCategory: "Категория персонала",
 };
 
 // Not a component (no JSX instantiation): callers need the actual return

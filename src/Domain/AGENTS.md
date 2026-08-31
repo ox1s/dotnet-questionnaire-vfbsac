@@ -25,7 +25,7 @@ The active domain layer of the questionnaire/evaluation platform. Contains all e
 ### `User/` at a glance
 - `User.cs` — `sealed class User : Entity, ISoftDeletable`. No public constructor; created only via three static factories: `CreateGroupUser(GroupName, Guid groupId, string passwordHash)` (role `StudentGroup`, sets `GroupId`), `CreateStaff(Login, fullName, teacherId?, departmentId?, passwordHash, role = Staff)` (validates non-blank `fullName`), and `CreateAdmin(Login, passwordHash)` (role `Admin`). Mutators: `UpdateDetails`, `SetPasswordByAdmin`, `ChangePassword`, `SetDepartment` (uses `Throw`'s `ThrowIfNull()` on the `Guid`, so passing `Guid.Empty` throws rather than returning a `Result`).
 - `Login.cs` / `GroupName.cs` — `sealed record` value objects with a `static Result<T> Create(string)` factory. `GroupName` additionally enforces an exact length of 5 characters (`UserErrors.GroupNameInvalid()` otherwise).
-- `UserRole.cs` — plain enum: `Admin = 1, DeputyHead = 2, StudentGroup = 3, Staff = 4, Employer = 5`.
+- `UserRole.cs` — plain enum: `Admin = 1, StudentGroup = 3, Staff = 4, Employer = 5`.
 - `UserErrors.cs` — `NotFound`, `NotFoundByLogin`, `Unauthorized`, `InvalidResetToken`, `ExpiredResetToken`, `UserExist`, `GroupExists`, `GroupNameInvalid`.
 
 ## For AI Agents

@@ -36,11 +36,7 @@ function App() {
               <Route path="/form/:id" element={<SurveyPage />} />
             </Route>
 
-            <Route
-              element={
-                <ProtectedRoute allowedRoles={["Admin", "DeputyHead"]} />
-              }
-            >
+            <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
               <Route path="/admin/stats/:id" element={<AdminStatsPage />} />
               <Route
                 path="/admin/preview/:id"

@@ -9,7 +9,7 @@ public class CreateStaffUserCommandValidator
     public CreateStaffUserCommandValidator()
     {
         RuleFor(x => x.Role)
-            .Must(r => r == UserRole.Staff || r == UserRole.DeputyHead)
+            .Must(r => r == UserRole.Staff)
             .WithMessage("Недопустимая роль для сотрудника.");
     }
 }

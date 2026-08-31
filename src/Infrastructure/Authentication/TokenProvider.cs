@@ -52,7 +52,6 @@ internal sealed class TokenProvider(IConfiguration configuration) : ITokenProvid
             UserRole.Admin => [Permissions.Admin, Permissions.UsersAccess, Permissions.DictionariesWrite, Permissions.ReportsView],
             UserRole.StudentGroup => [Permissions.SubmitForms],
             UserRole.Staff => [Permissions.SubmitForms],
-            UserRole.DeputyHead => [Permissions.SubmitForms, Permissions.ReportsView],
             UserRole.Employer => [Permissions.SubmitForms],
             _ => []
         };

@@ -292,16 +292,6 @@ public sealed class DemoDataGenerator
             users.Add(groupUser);
         }
 
-        Department ictDepartment = departments["ИКТ"];
-        User deputyHead = User.CreateStaff(
-            Login.Create("HEAD_ICT").Value,
-            "Зав. Кафедрой ИКТ",
-            teacherId: null,
-            departmentId: ictDepartment.Id,
-            passwordHash: defaultPasswordHash,
-            role: UserRole.DeputyHead).Value;
-        users.Add(deputyHead);
-
         for (int index = 0; index < Math.Min(teachers.Count, DepartmentNames.Length); index++)
         {
             Teacher teacher = teachers[index];
@@ -358,7 +348,7 @@ public sealed class DemoDataGenerator
         practiceForm.AddQuestion("Актуальность теоретических знаний", QuestionType.Number, 1);
         practiceForm.AddQuestion("Качество практических навыков", QuestionType.Number, 2);
         practiceForm.AddQuestion("Дисциплина и исполнительность", QuestionType.Number, 3);
-        practiceForm.AddQuestion("Затруднения при работе", QuestionType.SingleChoice, 4);
+        practiceForm.AddQuestion("Затруднения при работе", QuestionType.Text, 4);
         practiceForm.AddQuestion("Предложения", QuestionType.Text, 5);
         forms.Add(practiceForm);
 
@@ -527,7 +517,7 @@ public sealed class DemoDataGenerator
                     continue;
                 }
 
-                if (question.Type == QuestionType.SingleChoice)
+                if (question.Order == 4)
                 {
                     submission.AddAnswer(question.Id, value: PracticeDifficulties[NextInt(PracticeDifficulties.Length)]);
                     continue;

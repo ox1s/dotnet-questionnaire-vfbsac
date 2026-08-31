@@ -29,7 +29,7 @@ Route-level screens, one component per route registered in `src/App.tsx`, groupe
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| `admin/` | Dictionary CRUD screens, group/user management, semester settings, analytics/report screen — all Admin- (or Admin+DeputyHead-) only |
+| `admin/` | Dictionary CRUD screens, group/user management, semester settings, analytics/report screen — all Admin-only |
 | `auth/` | Login screen |
 | `dashboard/` | Post-login landing page (role-branching) |
 | `forms/` | Form builder (admin) and survey-taking flow (student) |

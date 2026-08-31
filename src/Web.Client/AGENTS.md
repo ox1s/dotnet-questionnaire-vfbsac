@@ -4,7 +4,7 @@
 # Web.Client
 
 ## Purpose
-`Web.Client` is the active React frontend of the college questionnaire/evaluation platform ("ВФБГАС" per the sidebar logo). It is a React 19 + TypeScript SPA built with Vite, styled with Tailwind CSS v4 and shadcn/Radix UI primitives, and talks exclusively to the `Web.Api` backend through a single axios instance proxied under `/api`. The app has two audiences: students/groups who fill out survey forms, and Admins/DeputyHeads who manage dictionaries (departments, teachers, disciplines, specialities, specializations), build forms, and view analytics/reports.
+`Web.Client` is the active React frontend of the college questionnaire/evaluation platform ("ВФБГАС" per the sidebar logo). It is a React 19 + TypeScript SPA built with Vite, styled with Tailwind CSS v4 and shadcn/Radix UI primitives, and talks exclusively to the `Web.Api` backend through a single axios instance proxied under `/api`. The app has two audiences: students/groups who fill out survey forms, and Admins who manage dictionaries (departments, teachers, disciplines, specialities, specializations), build forms, and view analytics/reports.
 
 ## Key Files
 | File | Description |

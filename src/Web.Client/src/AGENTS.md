@@ -22,7 +22,7 @@ This is the application source root for the Web.Client SPA. It contains the app 
 | `/` | redirect → `/dashboard` | none |
 | `/dashboard` | `DashboardPage` | `ProtectedRoute` (any authenticated user) |
 | `/form/:id` | `SurveyPage` | `ProtectedRoute` |
-| `/admin/stats/:id` | `AdminStatsPage` | `ProtectedRoute allowedRoles={["Admin","DeputyHead"]}` |
+| `/admin/stats/:id` | `AdminStatsPage` | `ProtectedRoute allowedRoles={["Admin"]}` |
 | `/admin/create-form` | `CreateFormPage` | `ProtectedRoute allowedRoles={["Admin"]}` + `AdminLayout` |
 | `/admin/teachers` | `AdminTeachersPage` | Admin + `AdminLayout` |
 | `/admin/disciplines` | `AdminDisciplinesPage` | Admin + `AdminLayout` |

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ROLE_LABELS } from "@/utils/roles";
+import { FILTER_FIELD_LABELS } from "@/utils/filter-fields";
 
 // Kept in sync with QUESTION_TYPES in create-form-page.tsx so a form reads the
 // same way in the builder and in the preview.
@@ -20,17 +21,6 @@ const QUESTION_TYPE_LABELS: Record<string, string> = {
   Number: "Числовая оценка (1-10)",
   Text: "Текстовый комментарий",
   SingleChoice: "Одиночный выбор",
-};
-
-// Kept in sync with FILTER_OPTIONS in create-form-page.tsx; Specialization has
-// no builder option yet but can still appear on seeded/legacy forms.
-const FILTER_FIELD_LABELS: Record<string, string> = {
-  Teacher: "Преподаватель",
-  Discipline: "Предмет",
-  Department: "Филиал кафедры",
-  Speciality: "Специальность",
-  Specialization: "Специализация",
-  EmployeeCategory: "Категория персонала",
 };
 
 // Not a component (no JSX instantiation): callers need the actual return

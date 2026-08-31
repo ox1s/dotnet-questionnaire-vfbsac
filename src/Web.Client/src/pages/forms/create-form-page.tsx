@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { ROLE_LABELS } from "@/utils/roles";
+import { FILTER_FIELD_LABELS } from "@/utils/filter-fields";
 
 const QuestionType = {
   Text: 1,
@@ -42,13 +43,17 @@ interface QuestionDraft {
   order: number;
 }
 
-const FILTER_OPTIONS: { key: FilterField; label: string }[] = [
-  { key: "Teacher", label: "Преподаватель" },
-  { key: "Discipline", label: "Предмет" },
-  { key: "Department", label: "Филиал кафедры" },
-  { key: "Speciality", label: "Специальность" },
-  { key: "EmployeeCategory", label: "Категория персонала" },
+const FILTER_KEYS: FilterField[] = [
+  "Teacher",
+  "Discipline",
+  "Department",
+  "Speciality",
+  "EmployeeCategory",
 ];
+
+const FILTER_OPTIONS: { key: FilterField; label: string }[] = FILTER_KEYS.map(
+  (key) => ({ key, label: FILTER_FIELD_LABELS[key] }),
+);
 
 const QUESTION_TYPES = [
   { value: QuestionType.WeightedRating, label: "Рейтинг (Оценка + Важность)" },

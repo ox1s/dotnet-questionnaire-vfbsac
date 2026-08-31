@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { type Form } from "../../api";
 import { ROLE_LABELS } from "@/utils/roles";
+import { FILTER_FIELD_LABELS } from "@/utils/filter-fields";
 import {
   FileText,
   BarChart3,
@@ -146,7 +147,7 @@ export const DashboardContent = ({
               {form.requiredFilters && form.requiredFilters.length > 0 ? (
                 form.requiredFilters.map((filter, i) => (
                   <Badge key={i} variant="secondary">
-                    {filter}
+                    {FILTER_FIELD_LABELS[filter] ?? filter}
                   </Badge>
                 ))
               ) : (

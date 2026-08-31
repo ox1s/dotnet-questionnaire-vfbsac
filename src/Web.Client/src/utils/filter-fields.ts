@@ -7,4 +7,5 @@ export const FILTER_FIELD_LABELS: Record<string, string> = {
   Speciality: "Специальность",
   Specialization: "Специализация",
   EmployeeCategory: "Категория персонала",
+  EducationForm: "Форма обучения",
 };

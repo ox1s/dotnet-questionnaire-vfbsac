@@ -30,6 +30,11 @@ const compareFieldOptions: { value: CompareField; label: string }[] = [
   { value: "teacherId", label: "Преподаватели" },
 ];
 
+const EDUCATION_FORM_OPTIONS = [
+  { id: "ДФПО", label: "Дневная (ДФПО)" },
+  { id: "ЗФПО", label: "Заочная (ЗФПО)" },
+];
+
 export function AnalyticsFilterPanel({
   mode,
   setMode,
@@ -276,6 +281,15 @@ export function AnalyticsFilterPanel({
               id: s.id,
               label: s.name,
             }))}
+          />
+        </AnalyticsField>
+
+        <AnalyticsField label="Форма обучения">
+          <FilterSelect
+            value={filters.educationForm}
+            onChange={(val) => updateFilter("educationForm", val)}
+            placeholder="Все формы обучения"
+            options={EDUCATION_FORM_OPTIONS}
           />
         </AnalyticsField>
 

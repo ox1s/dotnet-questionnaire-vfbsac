@@ -3,7 +3,7 @@
 public enum UserRole
 {
     Admin = 1,
-    StudentGroup = 3,
-    Staff = 4,
-    Employer = 5
+    StudentGroup = 2,
+    Staff = 3,
+    Employer = 4
 }

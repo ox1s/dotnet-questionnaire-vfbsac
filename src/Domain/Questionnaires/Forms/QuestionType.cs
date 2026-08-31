@@ -4,5 +4,5 @@ public enum QuestionType
 {
     Text = 1,
     Number = 2,
-    WeightedRating = 6
+    WeightedRating = 3
 }

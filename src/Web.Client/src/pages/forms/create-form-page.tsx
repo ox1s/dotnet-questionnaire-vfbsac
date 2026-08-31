@@ -25,7 +25,7 @@ import { FILTER_FIELD_LABELS } from "@/utils/filter-fields";
 const QuestionType = {
   Text: 1,
   Number: 2,
-  WeightedRating: 6,
+  WeightedRating: 3,
 } as const;
 
 type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
@@ -34,7 +34,8 @@ type FilterField =
   | "Discipline"
   | "Teacher"
   | "Speciality"
-  | "EmployeeCategory";
+  | "EmployeeCategory"
+  | "EducationForm";
 
 interface QuestionDraft {
   id?: string;
@@ -49,6 +50,7 @@ const FILTER_KEYS: FilterField[] = [
   "Department",
   "Speciality",
   "EmployeeCategory",
+  "EducationForm",
 ];
 
 const FILTER_OPTIONS: { key: FilterField; label: string }[] = FILTER_KEYS.map(

@@ -23,7 +23,7 @@ import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 const QuestionType = {
   Text: 1,
   Number: 2,
-  WeightedRating: 6,
+  WeightedRating: 5,
 } as const;
 
 type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];

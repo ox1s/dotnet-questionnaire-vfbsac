@@ -3,7 +3,6 @@
 export const ROLE_LABELS: Record<string, string> = {
   StudentGroup: "Студенты",
   Staff: "Сотрудники",
-  DeputyHead: "Заместитель декана",
   Employer: "Наниматели",
 };
 
@@ -11,6 +10,5 @@ export const ROLE_LABELS: Record<string, string> = {
 export const OWN_ROLE_LABELS: Record<string, string> = {
   StudentGroup: "Учащийся",
   Staff: "Сотрудник",
-  DeputyHead: "Заместитель декана",
   Employer: "Наниматель",
 };

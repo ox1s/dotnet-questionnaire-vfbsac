@@ -20,7 +20,6 @@ const QUESTION_TYPE_LABELS: Record<string, string> = {
   WeightedRating: "Рейтинг (Оценка + Важность)",
   Number: "Числовая оценка (1-10)",
   Text: "Текстовый комментарий",
-  SingleChoice: "Одиночный выбор",
 };
 
 // Not a component (no JSX instantiation): callers need the actual return
@@ -57,13 +56,6 @@ const renderQuestionPreview = (type: string): ReactNode | null => {
             Слева укажите важность критерия, справа - реальную оценку.
           </div>
         </div>
-      );
-    case "SingleChoice":
-      return (
-        <p className="text-sm text-muted-foreground italic">
-          Варианты ответа для этого типа вопроса пока не сохраняются в
-          системе, поэтому здесь их показать нельзя.
-        </p>
       );
     default:
       return null;

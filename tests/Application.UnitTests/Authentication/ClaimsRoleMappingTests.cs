@@ -51,10 +51,10 @@ public class ClaimsRoleMappingTests
     {
         // Guards the `?? principal?.FindFirstValue("role")` fallback: if MapInboundClaims
         // is ever turned off, the raw "role" claim key must still resolve correctly.
-        var identity = new ClaimsIdentity([new Claim("role", UserRole.DeputyHead.ToString())]);
+        var identity = new ClaimsIdentity([new Claim("role", UserRole.Staff.ToString())]);
         var principal = new ClaimsPrincipal(identity);
 
-        principal.GetRole().ShouldBe(UserRole.DeputyHead);
+        principal.GetRole().ShouldBe(UserRole.Staff);
     }
 
     private static string CreateToken(User user)

@@ -11,26 +11,13 @@ vi.mock("@/utils/auth", () => ({
   logout: vi.fn(),
 }));
 
-// Mirrors App.tsx: /dashboard mounts its own layout (and therefore its own
-// sidebar), while the /admin/* routes share a layout route. Navigating between
-// the two remounts the sidebar.
-const Shell = ({ children }: { children: React.ReactNode }) => (
+// Mirrors App.tsx: every sidebar-bearing screen sits under one <AppShell/>
+// layout route, so navigating between them re-renders only the <Outlet/>.
+const Shell = () => (
   <SidebarProvider>
     <AppSidebar />
-    {children}
-  </SidebarProvider>
-);
-
-const AdminLayoutStub = () => (
-  <Shell>
     <Outlet />
-  </Shell>
-);
-
-const DashboardStub = () => (
-  <Shell>
-    <div>dashboard page</div>
-  </Shell>
+  </SidebarProvider>
 );
 
 const renderApp = (initialPath: string) =>
@@ -39,8 +26,8 @@ const renderApp = (initialPath: string) =>
       <ThemeProvider>
         <TooltipProvider>
           <Routes>
-            <Route path="/dashboard" element={<DashboardStub />} />
-            <Route element={<AdminLayoutStub />}>
+            <Route element={<Shell />}>
+              <Route path="/dashboard" element={<div>dashboard page</div>} />
               <Route
                 path="/admin/create-form"
                 element={<div>create form page</div>}
@@ -111,5 +98,20 @@ describe("NavMain group expansion", () => {
     expect(screen.getByText("dashboard page")).toBeInTheDocument();
 
     expect(settingsGroupIsOpen()).toBe(false);
+  });
+
+  // The layout survives navigation but not a reload or a re-login, which is
+  // what the session-storage persistence in nav-main.tsx is there for.
+  it("restores the group state after a remount", async () => {
+    const first = renderApp("/dashboard");
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /Настройки/ }));
+    expect(settingsGroupIsOpen()).toBe(true);
+    first.unmount();
+
+    renderApp("/dashboard");
+
+    expect(settingsGroupIsOpen()).toBe(true);
   });
 });

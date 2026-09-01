@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { Download, RefreshCw } from "lucide-react";
@@ -25,7 +25,7 @@ import api, {
   type PeriodAnalyticsResponse,
   type TextAnswerItem,
 } from "../../api";
-import { AdminLayout } from "@/components/admin/admin-shared";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { AnalyticsFilterPanel } from "@/components/admin/admin-stats/analytics-filter-panel";
 import { AnalyticsSummaryCards } from "@/components/admin/admin-stats/analytics-summary-cards";
 import { AnalyticsChart } from "@/components/admin/admin-stats/analytics-chart";
@@ -403,88 +403,103 @@ export const AdminStatsPage = () => {
       ),
     );
 
+  // `exportReport` closes over the current filter state, so it is a new
+  // function on every render and can't go straight into a dependency array
+  // without re-running the header effect (and re-rendering) forever. The ref
+  // keeps the button pointed at the latest version while the element itself
+  // only changes when the header actually needs to.
+  const exportReportRef = useRef(exportReport);
+  exportReportRef.current = exportReport;
+
+  const exportAction = useMemo(
+    () =>
+      !loading && form ? (
+        <Button onClick={() => exportReportRef.current()}>
+          <Download size={16} className="mr-2" />
+          <span className="hidden md:inline">Экспорт в Excel</span>
+        </Button>
+      ) : undefined,
+    [loading, form],
+  );
+
+  useAdminPageConfig(
+    {
+      title: "Дашборд",
+      subtitle: loading
+        ? "Загрузка..."
+        : form
+          ? `Отчет по форме: ${form.title}`
+          : "Форма не найдена",
+      actions: exportAction,
+    },
+    // `exportAction` is memoized on exactly these two, so they are the whole
+    // signal for when the header changes.
+    [loading, form],
+  );
+
   return (
-    <AdminLayout
-      title="Дашборд"
-      subtitle={
-        loading
-          ? "Загрузка..."
-          : form
-            ? `Отчет по форме: ${form.title}`
-            : "Форма не найдена"
-      }
-      actions={
-        !loading && form ? (
-          <Button onClick={exportReport}>
-            <Download size={16} className="mr-2" />
-            <span className="hidden md:inline">Экспорт в Excel</span>
-          </Button>
-        ) : undefined
-      }
-    >
-      <div className="flex flex-1 flex-col gap-4 bg-background">
-        {loading ? (
-          <div className="flex h-full min-h-[50vh] items-center justify-center text-muted-foreground">
-            <RefreshCw className="animate-spin mr-2" size={24} /> Загрузка...
-          </div>
-        ) : (
-          <>
-            <AnalyticsFilterPanel
-              mode={mode}
-              setMode={setMode}
-              singleRange={singleRange}
-              setSingleRange={setSingleRange}
-              periods={periods}
-              setPeriods={setPeriods}
-              updatePeriod={updatePeriod}
-              filters={filters}
-              updateFilter={updateFilter}
-              teachers={teachers}
-              teacherLabel={teacherLabel}
-              availableLinkedOptions={availableLinkedOptions}
-              compareField={compareField}
-              setCompareField={setCompareField}
-              selectedIds={selectedIds}
-              setSelectedIds={setSelectedIds}
-              optionsFor={optionsFor}
-              refreshing={refreshing}
-              onRefresh={() => void loadReport()}
-              showOrganizationFilter={form?.targetRole === "Employer"}
-            />
+    <div className="flex flex-1 flex-col gap-4 bg-background">
+      {loading ? (
+        <div className="flex h-full min-h-[50vh] items-center justify-center text-muted-foreground">
+          <RefreshCw className="animate-spin mr-2" size={24} /> Загрузка...
+        </div>
+      ) : (
+        <>
+          <AnalyticsFilterPanel
+            mode={mode}
+            setMode={setMode}
+            singleRange={singleRange}
+            setSingleRange={setSingleRange}
+            periods={periods}
+            setPeriods={setPeriods}
+            updatePeriod={updatePeriod}
+            filters={filters}
+            updateFilter={updateFilter}
+            teachers={teachers}
+            teacherLabel={teacherLabel}
+            availableLinkedOptions={availableLinkedOptions}
+            compareField={compareField}
+            setCompareField={setCompareField}
+            selectedIds={selectedIds}
+            setSelectedIds={setSelectedIds}
+            optionsFor={optionsFor}
+            refreshing={refreshing}
+            onRefresh={() => void loadReport()}
+            showOrganizationFilter={form?.targetRole === "Employer"}
+          />
 
-            {refreshing ? (
-              <div className="flex justify-center p-10 text-muted-foreground">
-                <RefreshCw className="animate-spin" size={24} />
-              </div>
-            ) : null}
-            {hasReportData ? (
-              <AnalyticsSummaryCards report={report} />
-            ) : report !== null && report.length === 0 ? (
-              <div className="border bg-card p-10 text-center text-muted-foreground">
-                {mode === "groups"
-                  ? "Выберите группы для сравнения из списка выше."
-                  : "Нет данных для отображения."}
-              </div>
-            ) : (
-              <div className="border bg-card p-10 text-center text-muted-foreground">
-                Настройте период и срезы для аналитики.
-              </div>
-            )}
+          {refreshing ? (
+            <div className="flex justify-center p-10 text-muted-foreground">
+              <RefreshCw className="animate-spin" size={24} />
+            </div>
+          ) : null}
+          {hasReportData ? (
+            <AnalyticsSummaryCards report={report} />
+          ) : report !== null && report.length === 0 ? (
+            <div className="border bg-card p-10 text-center text-muted-foreground">
+              {mode === "groups"
+                ? "Выберите группы для сравнения из списка выше."
+                : "Нет данных для отображения."}
+            </div>
+          ) : (
+            <div className="border bg-card p-10 text-center text-muted-foreground">
+              Настройте период и срезы для аналитики.
+            </div>
+          )}
 
-            {hasReportData ? (
-              <AnalyticsChart report={report} questions={questions} />
-            ) : null}
+          {hasReportData ? (
+            <AnalyticsChart report={report} questions={questions} />
+          ) : null}
 
-            {hasReportData ? (
-              <QuestionsTable questions={questions} periods={report} />
-            ) : null}
+          {hasReportData ? (
+            <QuestionsTable questions={questions} periods={report} />
+          ) : null}
 
-            {hasReportData ? (
-              <TextAnswersSection answers={textAnswers} />
-            ) : null}
-          </>
-        )}
-      </div>
-    </AdminLayout>
+          {hasReportData ? (
+            <TextAnswersSection answers={textAnswers} />
+          ) : null}
+        </>
+      )}
+    </div>
   );
 };

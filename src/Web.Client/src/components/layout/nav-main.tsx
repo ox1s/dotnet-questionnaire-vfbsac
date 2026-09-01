@@ -27,10 +27,10 @@ type NavItem = {
   }[];
 };
 
-// The sidebar is mounted per layout, and some routes (the dashboard, the stats
-// and preview screens) bring their own layout. Navigating between them
-// remounts the sidebar, so the expanded/collapsed state of each group has to
-// live outside the component tree or it is lost on every such navigation.
+// Group state lives in session storage, not only in component state, so the
+// sidebar comes back the way the user left it after a reload or a deep link.
+// <AppShell/> keeps the sidebar mounted while navigating, so within one page
+// load this is a safety net rather than the mechanism — but a cheap one.
 const STORAGE_KEY = "sidebar:nav-groups";
 
 type GroupState = Record<string, boolean>;

@@ -20,17 +20,31 @@ This is the application source root for the Web.Client SPA. It contains the app 
 |------|---------|-------|
 | `/login` | `LoginPage` | none |
 | `/` | redirect → `/dashboard` | none |
-| `/dashboard` | `DashboardPage` | `ProtectedRoute` (any authenticated user) |
-| `/form/:id` | `SurveyPage` | `ProtectedRoute` |
-| `/admin/stats/:id` | `AdminStatsPage` | `ProtectedRoute allowedRoles={["Admin"]}` |
-| `/admin/create-form` | `CreateFormPage` | `ProtectedRoute allowedRoles={["Admin"]}` + `AdminLayout` |
-| `/admin/teachers` | `AdminTeachersPage` | Admin + `AdminLayout` |
-| `/admin/disciplines` | `AdminDisciplinesPage` | Admin + `AdminLayout` |
-| `/admin/departments` | `AdminDepartmentsPage` | Admin + `AdminLayout` |
-| `/admin/specialities` | `AdminSpecialitiesPage` | Admin + `AdminLayout` |
-| `/admin/specializations` | `AdminSpecializationsPage` | Admin + `AdminLayout` |
-| `/admin/groups` | `AdminGroupsPage` | Admin + `AdminLayout` |
-| `/admin/settings` | `AdminSettingsPage` | Admin + `AdminLayout` |
+| `/dashboard` | `DashboardPage` | `ProtectedRoute` (any authenticated user) + `AppShell` |
+| `/form/:id` | `SurveyPage` | `ProtectedRoute` (standalone, no sidebar) |
+| `/admin/stats/:id` | `AdminStatsPage` | Admin + `AppShell` |
+| `/admin/preview/:id` | `AdminFormPreviewPage` | Admin + `AppShell` |
+| `/admin/create-form` | `CreateFormPage` | Admin + `AppShell` |
+| `/admin/teachers` | `AdminTeachersPage` | Admin + `AppShell` |
+| `/admin/disciplines` | `AdminDisciplinesPage` | Admin + `AppShell` |
+| `/admin/departments` | `AdminDepartmentsPage` | Admin + `AppShell` |
+| `/admin/specialities` | `AdminSpecialitiesPage` | Admin + `AppShell` |
+| `/admin/specializations` | `AdminSpecializationsPage` | Admin + `AppShell` |
+| `/admin/groups` | `AdminGroupsPage` | Admin + `AppShell` |
+| `/admin/employers` | `AdminEmployersPage` | Admin + `AppShell` |
+| `/admin/settings` | `AdminSettingsPage` | Admin + `AppShell` |
+
+"Admin" above is `ProtectedRoute allowedRoles={["Admin"]}`, nested inside the
+`AppShell` layout route. `AppShell` (`components/layout/app-shell.tsx`) is the
+**only** place that mounts `AdminLayout`: React Router keeps a layout route's
+element mounted while you navigate between its children, so this is what stops
+the sidebar from being rebuilt (and losing its expanded groups) on every
+navigation. A page must never wrap itself in its own `AdminLayout` —
+`components/layout/app-shell.test.tsx` fails the build if one does. For a
+non-admin, `AppShell` renders the page directly, since every sidebar link
+points at an admin screen — but the `AdminPageProvider` sits *above* that
+branch, so `useAdminPageConfig` is safe to call on any page under the shell
+regardless of role.
 
 ## Subdirectories
 | Directory | Purpose |
@@ -45,7 +59,7 @@ This is the application source root for the Web.Client SPA. It contains the app 
 ## For AI Agents
 ### Working In This Directory
 - `api.ts` is the single source of truth for backend calls and DTO shapes — when the backend contract changes, this is the one file to update; there is no codegen from OpenAPI/Swagger.
-- Any new admin page that renders inside `AdminLayout` should call `useAdminPageConfig({ title, subtitle, actions }, deps)` once, near the top of the component, instead of hardcoding a header — see any file in `pages/admin/` for the pattern. Memoize `actions` (e.g. `useMemo`) if it depends on a callback, to avoid re-render loops through the `useEffect` dependency array.
+- Any page rendered inside `AppShell` must call `useAdminPageConfig({ title, subtitle, actions }, deps)` once, near the top of the component, rather than hardcoding a header or wrapping itself in a layout — see any file in `pages/admin/` for the pattern. Memoize `actions` (e.g. `useMemo`) if it depends on a callback, to avoid re-render loops through the `useEffect` dependency array; if the handler itself is recreated every render, keep it in a ref and let the memo depend only on what the header actually displays (`admin-stats-page.tsx` does this for its export button).
 - Cross-filtering UI (any place that has Department/Discipline/Speciality/Specialization selects that should narrow each other) should reuse `getLinkedFilterOptions` / `sanitizeLinkedFilters` from `utils/linked-filters.ts` rather than re-implementing filter logic — it is already used by both the survey-taking flow (`ContextSelector`) and the stats/report filters (`AdminStatsPage`).
 - `getDeviceId()` is the anonymous-submission identity mechanism: it is sent with every form submission and with `submissionsApi.getMyList()` (alongside the JWT `sub` claim) so a student's own past submissions can be looked up without a dedicated "my submissions" backend concept beyond `userId` + `deviceId` query params.
 

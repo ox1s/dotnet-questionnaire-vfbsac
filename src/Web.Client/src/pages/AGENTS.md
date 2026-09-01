@@ -4,7 +4,7 @@
 # pages
 
 ## Purpose
-Route-level screens, one component per route registered in `src/App.tsx`, grouped by area: `auth/` (login), `dashboard/` (the post-login landing page, which branches by role), `forms/` (form builder + survey-taking), and `admin/` (dictionary CRUD screens, group/user management, semester settings, and the analytics/report screen). Admin pages are rendered inside `<AdminLayout>` (from `components/admin/admin-shared.tsx`) either via the `/admin/*` route group in `App.tsx` or, for `AdminStatsPage`, by wrapping itself directly.
+Route-level screens, one component per route registered in `src/App.tsx`, grouped by area: `auth/` (login), `dashboard/` (the post-login landing page, which branches by role), `forms/` (form builder + survey-taking), and `admin/` (dictionary CRUD screens, group/user management, semester settings, and the analytics/report screen). Admin pages are rendered inside the shared `<AppShell>` layout route (`components/layout/app-shell.tsx`), which is the only thing that mounts `<AdminLayout>`. A page never wraps itself in a layout — it returns just its content and pushes its header through `useAdminPageConfig`.
 
 ## Key Files
 | File | Route | Description |
@@ -12,7 +12,7 @@ Route-level screens, one component per route registered in `src/App.tsx`, groupe
 | **auth/** | | |
 | `auth/login-page.tsx` | `/login` | `LoginPage` — login form (`login`/`password` fields, Russian "Группа" hint), `POST /users/login`, stores the returned JWT string directly in `localStorage["token"]`, navigates to `/dashboard`. No refresh-token/remember-me logic |
 | **dashboard/** | | |
-| `dashboard/dashboard-page.tsx` | `/dashboard` | `DashboardPage` — loads `GET /forms`, then renders `AdminDashboard` (inside `AdminLayout`) if `isAdmin()` else `UserDashboard`; owns `deleteForm` (`DELETE /forms/:id` + toast) passed down to the admin variant |
+| `dashboard/dashboard-page.tsx` | `/dashboard` | `DashboardPage` — a one-line role switch between two sibling components sharing a `useForms` hook: `AdminDashboardPage` (loads `formsApi.getAll()`, sets its header via `useAdminPageConfig`, owns `deleteForm`/`toggleFormActive`) and `UserDashboardPage` (loads `GET /forms`, renders the standalone `UserDashboard`). Two components rather than one branchy one, so each holds only the hooks its own variant needs |
 | **forms/** | | |
 | `forms/create-form-page.tsx` | `/admin/create-form` | `CreateFormPage` — the form builder: title textarea, toggleable required-filter buttons (`Teacher`/`Discipline`/`Department`/`Speciality`/`EmployeeCategory`), add/reorder (buttons + native HTML5 drag-and-drop)/remove questions (`Text`/`Number`/`WeightedRating`, numeric `QuestionType` enum matching the backend), `POST /forms` on save (save button disabled while in flight; errors surfaced via `getApiErrorMessage`). Uses `useAdminPageConfig` to push its title/save-button into the shared `AdminLayout` header |
 | `forms/survey-page.tsx` | `/form/:id` | `SurveyPage` — loads `GET /forms/:id`, renders `<ContextSelector>` then one `<Card>` per question keyed by `q.type` (`WeightedRating`→`WeightedRatingInput`, `Text`→`Textarea`, `Number`→`Input type=number`), validates required filters client-side before submit, `POST /submissions` with `deviceId` (from `getDeviceId()`) + context + answers; shows a Russian toast and redirects to `/dashboard` on success, handles HTTP 409 (already voted for this teacher/discipline) with a specific message |
@@ -45,7 +45,7 @@ Route-level screens, one component per route registered in `src/App.tsx`, groupe
 ## Dependencies
 ### Internal
 - `@/api` (axios instance, DTOs, `usersApi`/`settingsApi`/`dictionariesApi`/`submissionsApi`/`reportsApi`, `getApiErrorMessage`)
-- `@/components/admin/admin-shared` (`AdminLayout`, `AdminTable`, `AdminModal`, `AdminTableActions`, `AdminTableIconCell`, `AdminTableRow`, `AdminTableTextBadge`)
+- `@/components/admin/admin-shared` (`AdminTable`, `AdminModal`, `AdminTableActions`, `AdminTableIconCell`, `AdminTableRow`, `AdminTableTextBadge`) — note `AdminLayout` is deliberately absent: only `components/layout/app-shell.tsx` may import it
 - `@/components/dashboard/*`, `@/components/survey/*`, `@/components/shared/filter-select`
 - `@/hooks/use-admin-page-config`, `@/utils/auth`, `@/utils/device`, `@/utils/linked-filters`, `@/lib/utils`
 

@@ -1,32 +1,55 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import api, { formsApi, type Form } from "../../api";
 import { toast } from "sonner";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { UserDashboard } from "@/components/dashboard/user-dashboard";
-import { AdminLayout } from "@/components/admin/admin-shared";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { isAdmin, logout } from "@/utils/auth";
 
-export const DashboardPage = () => {
-  const [forms, setForms] = useState<Form[]>([]);
-  const userIsAdmin = isAdmin();
+// Admins see this page inside the shared <AppShell/> sidebar layout and get
+// the management view; everyone else gets the standalone user dashboard, which
+// brings its own chrome. Two components rather than one branchy component, so
+// each holds only the hooks its own variant needs.
+export const DashboardPage = () =>
+  isAdmin() ? <AdminDashboardPage /> : <UserDashboardPage />;
 
-  const loadForms = useCallback(async () => {
-    const res = userIsAdmin
-      ? await formsApi.getAll()
-      : await api.get<Form[]>("/forms");
-    setForms(res.data);
-  }, [userIsAdmin]);
+// Takes a plain discriminator rather than a loader function: as an effect
+// dependency, a string can't accidentally be passed as a fresh reference on
+// every render (which would turn this into a request loop).
+const useForms = (source: "admin" | "user") => {
+  const [forms, setForms] = useState<Form[]>([]);
 
   useEffect(() => {
-    // A 401 here is already handled globally (api.ts's interceptor calls
-    // logout(), which navigates to /login) — this catch is only for
-    // non-auth failures, so it must not also force a redirect.
-    // `setForms` runs after the awaited fetch resolves, not synchronously
-    // during the effect/commit, so this isn't the synchronous-setState
-    // pattern react-hooks/set-state-in-effect warns about.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadForms().catch(() => toast.error("Не удалось загрузить анкеты."));
-  }, [loadForms]);
+    let cancelled = false;
+    const request =
+      source === "admin"
+        ? formsApi.getAll()
+        : api.get<Form[]>("/forms");
+
+    request
+      .then((res) => {
+        if (!cancelled) setForms(res.data);
+      })
+      // A 401 here is already handled globally (api.ts's interceptor calls
+      // logout(), which navigates to /login) — this catch is only for
+      // non-auth failures, so it must not also force a redirect. The cancelled
+      // check keeps a slow failure from toasting over an unrelated screen.
+      .catch(() => {
+        if (!cancelled) toast.error("Не удалось загрузить анкеты.");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [source]);
+
+  return [forms, setForms] as const;
+};
+
+const AdminDashboardPage = () => {
+  const [forms, setForms] = useForms("admin");
+
+  useAdminPageConfig({ title: "Дашборд", subtitle: "Анкеты" });
 
   const deleteForm = async (id: string) => {
     try {
@@ -50,23 +73,23 @@ export const DashboardPage = () => {
           f.id === form.id ? { ...f, isActive: !f.isActive } : f,
         ),
       );
-      toast.success(
-        form.isActive ? "Анкета закрыта." : "Анкета открыта.",
-      );
+      toast.success(form.isActive ? "Анкета закрыта." : "Анкета открыта.");
     } catch {
       toast.error("Не удалось изменить статус анкеты.");
     }
   };
 
-  return userIsAdmin ? (
-    <AdminLayout title="Дашборд" subtitle="Анкеты">
-      <AdminDashboard
-        forms={forms}
-        deleteForm={deleteForm}
-        toggleFormActive={toggleFormActive}
-      />
-    </AdminLayout>
-  ) : (
-    <UserDashboard forms={forms} logout={logout} />
+  return (
+    <AdminDashboard
+      forms={forms}
+      deleteForm={deleteForm}
+      toggleFormActive={toggleFormActive}
+    />
   );
+};
+
+const UserDashboardPage = () => {
+  const [forms] = useForms("user");
+
+  return <UserDashboard forms={forms} logout={logout} />;
 };

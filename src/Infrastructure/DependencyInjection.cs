@@ -75,19 +75,14 @@ public static class DependencyInjection
 
         private IServiceCollection AddAuthenticationInternal(IConfiguration configuration)
         {
-            string jwtSecret = configuration["Jwt:Secret"] is { Length: > 0 } secret
-                ? secret
-                : throw new InvalidOperationException(
-                    "Configuration value 'Jwt:Secret' is missing or empty. Set the 'Jwt__Secret' " +
-                    "environment variable (double underscore) on the host running this service.");
-
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(o =>
                 {
                     o.RequireHttpsMetadata = false;
                     o.TokenValidationParameters = new TokenValidationParameters
                     {
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+                        IssuerSigningKey =
+                            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Secret"]!)),
                         ValidIssuer = configuration["Jwt:Issuer"],
                         ValidAudience = configuration["Jwt:Audience"],
                         ClockSkew = TimeSpan.Zero

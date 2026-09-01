@@ -13,3 +13,13 @@ if (!window.matchMedia) {
       dispatchEvent: () => false,
     }) as MediaQueryList;
 }
+
+// jsdom has no ResizeObserver, and Radix popper-based components (tooltips,
+// dropdowns) throw during layout effects without it.
+if (!window.ResizeObserver) {
+  window.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}

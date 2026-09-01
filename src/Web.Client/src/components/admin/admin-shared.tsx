@@ -1,7 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
 import { Edit2, Trash2, RotateCcw, SearchIcon, Trash2Icon } from "lucide-react";
-import { AdminPageProvider } from "@/contexts/admin-page-context";
 import { useAdminPage } from "@/hooks/use-admin-page";
 import {
   SidebarInset,
@@ -86,37 +85,13 @@ interface AdminModalProps {
   children: React.ReactNode;
   submitText?: string;
 }
-type AdminLayoutProps = {
-  title?: string;
-  subtitle?: string;
-  actions?: React.ReactNode;
-  children?: React.ReactNode;
-};
-
-export const AdminLayout = ({
-  title,
-  subtitle,
-  actions,
-  children,
-}: AdminLayoutProps) => {
-  return (
-    <AdminPageProvider>
-      <AdminLayoutContent title={title} subtitle={subtitle} actions={actions}>
-        {children}
-      </AdminLayoutContent>
-    </AdminPageProvider>
-  );
-};
-const AdminLayoutContent = ({
-  title,
-  subtitle,
-  actions,
-  children,
-}: AdminLayoutProps) => {
+// The admin chrome: sidebar + breadcrumb header. Mounted once, by the
+// <AppShell/> layout route, which also owns the AdminPageProvider this reads
+// from. Pages fill in the header through `useAdminPageConfig` instead of
+// passing props, so navigating between them re-renders only the <Outlet/> and
+// leaves the sidebar untouched.
+export const AdminLayout = () => {
   const { config } = useAdminPage();
-  const resolvedTitle = title ?? config.title;
-  const resolvedSubtitle = subtitle ?? config.subtitle;
-  const resolvedActions = actions ?? config.actions;
 
   return (
     <SidebarProvider
@@ -138,23 +113,23 @@ const AdminLayoutContent = ({
               <BreadcrumbList>
                 <BreadcrumbItem className="hidden md:block">
                   <BreadcrumbPage className="font-medium text-muted-foreground">
-                    {resolvedTitle}
+                    {config.title}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
                 <BreadcrumbItem>
                   <BreadcrumbPage className="font-bold text-foreground">
-                    {resolvedSubtitle}
+                    {config.subtitle}
                   </BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          {resolvedActions ? <div>{resolvedActions}</div> : null}
+          {config.actions ? <div>{config.actions}</div> : null}
         </header>
 
         <main className="p-4 md:p-6 max-w-7xl mx-auto w-full">
-          {children ?? <Outlet />}
+          <Outlet />
         </main>
       </SidebarInset>
     </SidebarProvider>

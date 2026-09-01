@@ -1,0 +1,11 @@
+# Netlify build config for the React client in this monorepo.
+# Only src/Web.Client deploys here; the .NET API and Postgres stay on Render.
+# Redirects live in src/Web.Client/public/_redirects (copied into dist/ at build).
+
+[build]
+  base = "src/Web.Client"
+  publish = "dist"
+  command = "npm run build"
+
+  [build.environment]
+    NODE_VERSION = "22"

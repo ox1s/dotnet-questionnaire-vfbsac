@@ -2,6 +2,7 @@ using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Domain.Questionnaires.Forms;
 using Domain.Questionnaires.Submissions;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -55,6 +56,13 @@ internal sealed class CreateSubmissionCommandHandler(
             return Result.Failure<Guid>(SubmissionErrors.AlreadySubmitted());
         }
 
+        // Employers already have their organization on file; trust that over whatever
+        // (if anything) the client sent, since the survey UI never asks them to type it.
+        User? user = await context.Users.FirstOrDefaultAsync(u => u.Id == command.UserId, cancellationToken);
+        string? organizationName = user?.Role == UserRole.Employer
+            ? user.OrganizationName
+            : command.OrganizationName;
+
         Result<Submission> submissionResult = Submission.Create(
             command.FormId,
             command.DeviceId,
@@ -65,7 +73,7 @@ internal sealed class CreateSubmissionCommandHandler(
             command.DepartmentId,
             command.SpecialityId,
             command.SpecializationId,
-            command.OrganizationName);
+            organizationName);
 
         if (submissionResult.IsFailure)
         {
@@ -139,10 +147,6 @@ internal sealed class CreateSubmissionCommandHandler(
             QuestionType.WeightedRating => numericValue is not null && weight is not null && value is null
                 ? Result.Success()
                 : Result.Failure(AnswerErrors.InvalidTypeForWeightedRating),
-
-            QuestionType.MultipleChoice => value is not null && numericValue is null && weight is null
-                ? Result.Success()
-                : Result.Failure(AnswerErrors.InvalidTypeForMultipleChoice),
 
             QuestionType.SingleChoice => value is not null && numericValue is null && weight is null
                 ? Result.Success()

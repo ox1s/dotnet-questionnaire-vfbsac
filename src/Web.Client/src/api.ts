@@ -2,7 +2,7 @@ import axios from "axios";
 import { getDeviceId } from "./utils/device";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_URL || "/api",
 });
 
 api.interceptors.request.use((config) => {
@@ -15,7 +15,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response && error.response.status === 401) {
+    const isLoginRequest = error.config?.url === "/users/login";
+    if (error.response && error.response.status === 401 && !isLoginRequest) {
       localStorage.removeItem("token");
       window.location.href = "/login";
     }
@@ -73,6 +74,7 @@ export interface Form {
   title: string;
   isActive: boolean;
   requiredFilters: string[];
+  targetRole?: string | null;
 }
 
 export interface Question {

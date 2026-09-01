@@ -6,4 +6,6 @@
   <Project Path="Infrastructure/Infrastructure.csproj" />
   <Project Path="SharedKernel/SharedKernel.csproj" />
   <Project Path="Web.Api/Web.Api.csproj" />
+  <Project Path="../tests/ArchitectureTests/ArchitectureTests.csproj" />
+  <Project Path="../tests/Application.UnitTests/Application.UnitTests.csproj" />
 </Solution>

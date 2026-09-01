@@ -23,6 +23,7 @@ export interface SubmissionContext {
   disciplineId?: string;
   teacherId?: string;
   departmentId?: string;
+  specialityId?: string;
   educationForm: string;
 }
 
@@ -34,6 +35,7 @@ export const ContextSelector: React.FC<Props> = ({
   const [departments, setDepartments] = useState<DictionaryItem[]>([]);
   const [teachers, setTeachers] = useState<TeacherItem[]>([]);
   const [disciplines, setDisciplines] = useState<DictionaryItem[]>([]);
+  const [specialities, setSpecialities] = useState<DictionaryItem[]>([]);
 
   const [context, setContext] = useState<SubmissionContext>({
     educationForm: "ДФПО",
@@ -55,6 +57,10 @@ export const ContextSelector: React.FC<Props> = ({
         if (requiredFilters.includes("Discipline")) {
           const res = await dictionariesApi.getDisciplines();
           setDisciplines(res.data.filter((item) => !item.isDeleted));
+        }
+        if (requiredFilters.includes("Speciality")) {
+          const res = await dictionariesApi.getSpecialities();
+          setSpecialities(res.data.filter((item) => !item.isDeleted));
         }
       } catch (e) {
         console.error("Ошибка загрузки справочников", e);
@@ -203,6 +209,29 @@ export const ContextSelector: React.FC<Props> = ({
                 {linkedOptions.disciplines.map((d) => (
                   <SelectItem key={d.id} value={d.id}>
                     {d.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ContextField>
+        )}
+
+        {requiredFilters?.includes("Speciality") && (
+          <ContextField label="Специальность">
+            <Select
+              value={context.specialityId ?? EMPTY_VALUE}
+              onValueChange={(value) =>
+                handleChange("specialityId", value === EMPTY_VALUE ? "" : value)
+              }
+            >
+              <SelectTrigger className="w-full bg-background text-sm">
+                <SelectValue placeholder="Выберите специальность" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value={EMPTY_VALUE}>Не выбрано</SelectItem>
+                {specialities.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name}
                   </SelectItem>
                 ))}
               </SelectContent>

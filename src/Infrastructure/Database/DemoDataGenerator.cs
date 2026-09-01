@@ -126,6 +126,22 @@ public sealed class DemoDataGenerator
         "Серьезных затруднений не было"
     ];
 
+    private static readonly string[] EmployerFeedback =
+    [
+        "Больше внимания практическим навыкам работы с оборудованием.",
+        "Углубить подготовку по нормативной документации.",
+        "В целом уровень подготовки соответствует ожиданиям.",
+        "Хотелось бы больше опыта работы в команде у выпускников.",
+        "Нужна более глубокая проработка профильных дисциплин."
+    ];
+
+    private static readonly (string Login, string DisplayName, string OrganizationName)[] EmployerAccounts =
+    [
+        ("EMPLOYER01", "Иванов И.И.", "РУП «Белтелеком»"),
+        ("EMPLOYER02", "Петрова А.С.", "ОАО «МТС»"),
+        ("EMPLOYER03", "Сидоров К.В.", "СООО «Айти-Мир»")
+    ];
+
     public async Task SeedAsync(ApplicationDbContext context, string defaultPasswordHash, CancellationToken cancellationToken = default)
     {
         Dictionary<string, Department> departments = CreateDepartments();
@@ -160,6 +176,7 @@ public sealed class DemoDataGenerator
             context,
             forms,
             users.Where(user => user.Role == UserRole.StudentGroup).ToList(),
+            users.Where(user => user.Role == UserRole.Employer).ToList(),
             departments.Values.ToList(),
             disciplines,
             teachers,
@@ -287,6 +304,17 @@ public sealed class DemoDataGenerator
             users.Add(staffUser);
         }
 
+        foreach ((string login, string displayName, string organizationName) in EmployerAccounts)
+        {
+            User employerUser = User.CreateEmployer(
+                Login.Create(login).Value,
+                displayName,
+                organizationName,
+                defaultPasswordHash).Value;
+
+            users.Add(employerUser);
+        }
+
         return users;
     }
 
@@ -296,7 +324,8 @@ public sealed class DemoDataGenerator
 
         Form disciplineForm = Form.Create(
             "Оценка удовлетворённости обучающихся преподаванием учебных дисциплин",
-            [FilterField.Discipline]).Value;
+            [FilterField.Discipline],
+            UserRole.StudentGroup).Value;
         disciplineForm.SetIdForSeeding(Guid.NewGuid());
         disciplineForm.AddQuestion("Содержание образовательной программы", QuestionType.WeightedRating, 1);
         disciplineForm.AddQuestion("Лекционные занятия (методы)", QuestionType.WeightedRating, 2);
@@ -308,14 +337,26 @@ public sealed class DemoDataGenerator
 
         Form practiceForm = Form.Create(
             "Оценка руководителей производственной практики",
-            [FilterField.Speciality]).Value;
+            [FilterField.Speciality],
+            UserRole.StudentGroup).Value;
         practiceForm.SetIdForSeeding(Guid.NewGuid());
         practiceForm.AddQuestion("Актуальность теоретических знаний", QuestionType.Number, 1);
         practiceForm.AddQuestion("Качество практических навыков", QuestionType.Number, 2);
         practiceForm.AddQuestion("Дисциплина и исполнительность", QuestionType.Number, 3);
-        practiceForm.AddQuestion("Затруднения при работе", QuestionType.MultipleChoice, 4);
+        practiceForm.AddQuestion("Затруднения при работе", QuestionType.SingleChoice, 4);
         practiceForm.AddQuestion("Предложения", QuestionType.Text, 5);
         forms.Add(practiceForm);
+
+        Form employerForm = Form.Create(
+            "Оценка удовлетворённости нанимателей подготовкой выпускников",
+            [FilterField.Speciality],
+            UserRole.Employer).Value;
+        employerForm.SetIdForSeeding(Guid.NewGuid());
+        employerForm.AddQuestion("Теоретическая подготовка выпускника", QuestionType.Number, 1);
+        employerForm.AddQuestion("Практические навыки выпускника", QuestionType.Number, 2);
+        employerForm.AddQuestion("Готовность к самостоятельной работе", QuestionType.Number, 3);
+        employerForm.AddQuestion("Пожелания по подготовке специалистов", QuestionType.Text, 4);
+        forms.Add(employerForm);
 
         return forms;
     }
@@ -324,6 +365,7 @@ public sealed class DemoDataGenerator
         ApplicationDbContext context,
         List<Form> forms,
         List<User> groupUsers,
+        List<User> employerUsers,
         List<Department> departments,
         List<Discipline> disciplines,
         List<Teacher> teachers,
@@ -333,10 +375,12 @@ public sealed class DemoDataGenerator
     {
         Form disciplineForm = forms[0];
         Form practiceForm = forms[1];
+        Form employerForm = forms[2];
 
         List<Submission> submissions = [];
         submissions.AddRange(CreateDisciplineFormSubmissions(disciplineForm, groupUsers, departments, disciplines, teachers, specialities, specializations));
         submissions.AddRange(CreatePracticeFormSubmissions(practiceForm, groupUsers, departments, disciplines, teachers, specialities, specializations));
+        submissions.AddRange(CreateEmployerFormSubmissions(employerForm, employerUsers, specialities, specializations));
 
         await context.Submissions.AddRangeAsync(submissions, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
@@ -453,13 +497,60 @@ public sealed class DemoDataGenerator
                     continue;
                 }
 
-                if (question.Type == QuestionType.MultipleChoice)
+                if (question.Type == QuestionType.SingleChoice)
                 {
                     submission.AddAnswer(question.Id, value: PracticeDifficulties[NextInt(PracticeDifficulties.Length)]);
                     continue;
                 }
 
                 submission.AddAnswer(question.Id, value: SuggestionTexts[NextInt(SuggestionTexts.Length)]);
+            }
+
+            submissions.Add(submission);
+        }
+
+        return submissions;
+    }
+
+    private List<Submission> CreateEmployerFormSubmissions(
+        Form form,
+        List<User> employerUsers,
+        List<Speciality> specialities,
+        List<Specialization> specializations)
+    {
+        List<Submission> submissions = [];
+
+        for (int index = 0; index < 15; index++)
+        {
+            User employerUser = employerUsers[NextInt(employerUsers.Count)];
+            Speciality speciality = specialities[NextInt(specialities.Count)];
+            var specializationCandidates = specializations
+                .Where(item => item.SpecialityId == speciality.Id)
+                .ToList();
+            Specialization specialization = specializationCandidates[NextInt(specializationCandidates.Count)];
+
+            Result<Submission> submissionResult = Submission.Create(
+                form.Id,
+                $"demo-employer-{index:000}",
+                employerUser.Id,
+                DateTime.UtcNow,
+                specialityId: speciality.Id,
+                specializationId: specialization.Id,
+                organizationName: employerUser.OrganizationName);
+
+            Submission submission = submissionResult.Value;
+            SetSubmittedAt(submission, GetHistoricalDate(index + 60));
+
+            foreach (Question question in form.Questions.OrderBy(item => item.Order))
+            {
+                if (question.Type == QuestionType.Number)
+                {
+                    decimal numericValue = NextInt(6, 11);
+                    submission.AddAnswer(question.Id, numericValue: numericValue);
+                    continue;
+                }
+
+                submission.AddAnswer(question.Id, value: EmployerFeedback[NextInt(EmployerFeedback.Length)]);
             }
 
             submissions.Add(submission);

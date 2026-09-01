@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { type Form } from "../../api";
+import { ROLE_LABELS } from "@/utils/roles";
 import {
   FileText,
   BarChart3,
@@ -132,6 +133,11 @@ export const DashboardContent = ({
             {isAdmin && !form.isActive && (
               <Badge variant="destructive" className="mt-2">
                 Неактивна
+              </Badge>
+            )}
+            {isAdmin && form.targetRole && (
+              <Badge variant="secondary" className="mt-2">
+                Аудитория: {ROLE_LABELS[form.targetRole] ?? form.targetRole}
               </Badge>
             )}
           </CardContent>

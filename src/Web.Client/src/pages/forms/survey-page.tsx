@@ -10,6 +10,11 @@ import {
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { getDeviceId } from "../../utils/device";
+import {
+  blockNonDigitKeydown,
+  digitsOnlyFromClipboard,
+  sanitizeDigitsOnly,
+} from "../../utils/numeric-input";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -58,6 +63,10 @@ export const SurveyPage = () => {
       toast.error("Пожалуйста, выберите дисциплину!");
       return;
     }
+    if (form.requiredFilters?.includes("Speciality") && !context.specialityId) {
+      toast.error("Пожалуйста, выберите специальность!");
+      return;
+    }
 
     const answersPayload = form.questions
       .map((q) => {
@@ -87,6 +96,7 @@ export const SurveyPage = () => {
         teacherId: context.teacherId || null,
         departmentId: context.departmentId || null,
         disciplineId: context.disciplineId || null,
+        specialityId: context.specialityId || null,
         answers: answersPayload,
       });
       toast.success("Анкета успешно отправлена!");
@@ -159,15 +169,31 @@ export const SurveyPage = () => {
                 {q.type === "Number" && (
                   <Input
                     type="number"
+                    inputMode="numeric"
                     placeholder="1–10"
                     className="w-32"
                     value={(answers[q.id] as number | undefined) || ""}
-                    onChange={(e) =>
-                      setAnswers({
-                        ...answers,
-                        [q.id]: parseFloat(e.target.value),
-                      })
-                    }
+                    onKeyDown={blockNonDigitKeydown}
+                    onPaste={(e) => {
+                      const digits = digitsOnlyFromClipboard(e);
+                      if (digits === "") {
+                        const nextAnswers = { ...answers };
+                        delete nextAnswers[q.id];
+                        setAnswers(nextAnswers);
+                      } else {
+                        setAnswers({ ...answers, [q.id]: Number(digits) });
+                      }
+                    }}
+                    onChange={(e) => {
+                      const digits = sanitizeDigitsOnly(e.target.value);
+                      if (digits === "") {
+                        const nextAnswers = { ...answers };
+                        delete nextAnswers[q.id];
+                        setAnswers(nextAnswers);
+                      } else {
+                        setAnswers({ ...answers, [q.id]: Number(digits) });
+                      }
+                    }}
                   />
                 )}
               </div>

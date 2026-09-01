@@ -3,6 +3,11 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  blockNonDigitKeydown,
+  digitsOnlyFromClipboard,
+  sanitizeDigitsOnly,
+} from "@/utils/numeric-input";
 
 interface Props {
   value: number | undefined;
@@ -26,7 +31,22 @@ export const WeightedRatingInput: React.FC<Props> = ({
     e: React.ChangeEvent<HTMLInputElement>,
     field: "value" | "weight",
   ) => {
-    const val = e.target.value === "" ? undefined : parseFloat(e.target.value);
+    const digits = sanitizeDigitsOnly(e.target.value);
+    const val = digits === "" ? undefined : Number(digits);
+
+    if (field === "weight") {
+      onChange(value, val);
+    } else {
+      onChange(val, weight);
+    }
+  };
+
+  const handlePaste = (
+    e: React.ClipboardEvent<HTMLInputElement>,
+    field: "value" | "weight",
+  ) => {
+    const digits = digitsOnlyFromClipboard(e);
+    const val = digits === "" ? undefined : Number(digits);
 
     if (field === "weight") {
       onChange(value, val);
@@ -44,11 +64,14 @@ export const WeightedRatingInput: React.FC<Props> = ({
           </Label>
           <Input
             type="number"
+            inputMode="numeric"
             min="1"
             max="10"
             className={isWeightInvalid ? "border-red-500 ring-1 ring-red-500" : ""}
             placeholder="10"
             value={weight ?? ""}
+            onKeyDown={blockNonDigitKeydown}
+            onPaste={(e) => handlePaste(e, "weight")}
             onChange={(e) => handleChange(e, "weight")}
           />
         </div>
@@ -61,6 +84,7 @@ export const WeightedRatingInput: React.FC<Props> = ({
           </Label>
           <Input
             type="number"
+            inputMode="numeric"
             min="1"
             max="10"
             className={
@@ -70,6 +94,8 @@ export const WeightedRatingInput: React.FC<Props> = ({
             }
             placeholder="8"
             value={value ?? ""}
+            onKeyDown={blockNonDigitKeydown}
+            onPaste={(e) => handlePaste(e, "value")}
             onChange={(e) => handleChange(e, "value")}
           />
         </div>

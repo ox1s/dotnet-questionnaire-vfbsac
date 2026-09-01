@@ -19,6 +19,9 @@ internal sealed class FormConfiguration : IEntityTypeConfiguration<Domain.Questi
         builder.Property(f => f.IsActive)
             .IsRequired();
 
+        builder.Property(f => f.TargetRole)
+            .HasConversion<int?>();
+
         var comparer = new ValueComparer<List<FilterField>>(
             (c1, c2) => c1 != null && c2 != null && c1.SequenceEqual(c2),
             c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),

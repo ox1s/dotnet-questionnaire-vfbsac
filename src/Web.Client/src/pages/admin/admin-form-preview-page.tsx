@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { RefreshCw } from "lucide-react";
 
 import api, { getApiErrorMessage, type FormDetail } from "../../api";
-import { AdminLayout } from "@/components/admin/admin-shared";
+import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -80,95 +80,94 @@ export const AdminFormPreviewPage = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  return (
-    <AdminLayout
-      title="Дашборд"
-      subtitle={
-        loading
-          ? "Загрузка..."
-          : loadError
-            ? "Ошибка загрузки"
-            : form
-              ? `Просмотр анкеты: ${form.title}`
-              : "Анкета не найдена"
-      }
-    >
-      {loading ? (
-        <div className="flex h-full min-h-[50vh] items-center justify-center text-muted-foreground">
-          <RefreshCw className="animate-spin mr-2" size={24} /> Загрузка...
-        </div>
-      ) : loadError ? (
+  useAdminPageConfig(
+    {
+      title: "Дашборд",
+      subtitle: loading
+        ? "Загрузка..."
+        : loadError
+          ? "Ошибка загрузки"
+          : form
+            ? `Просмотр анкеты: ${form.title}`
+            : "Анкета не найдена",
+    },
+    [loading, loadError, form],
+  );
+
+  return loading ? (
+    <div className="flex h-full min-h-[50vh] items-center justify-center text-muted-foreground">
+      <RefreshCw className="animate-spin mr-2" size={24} /> Загрузка...
+    </div>
+  ) : loadError ? (
+    <div className="border bg-card p-10 text-center text-muted-foreground">
+      Не удалось загрузить анкету. Попробуйте обновить страницу.
+    </div>
+  ) : !form ? (
+    <div className="border bg-card p-10 text-center text-muted-foreground">
+      Анкета не найдена.
+    </div>
+  ) : (
+    <div className="max-w-3xl mx-auto w-full space-y-6">
+      <Card>
+        <CardContent className="p-6 space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-lg font-semibold">{form.title}</h2>
+            <Badge variant={form.isActive ? "default" : "destructive"}>
+              {form.isActive ? "Активна" : "Неактивна"}
+            </Badge>
+            {form.targetRole && (
+              <Badge variant="secondary">
+                Аудитория: {ROLE_LABELS[form.targetRole] ?? form.targetRole}
+              </Badge>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {form.requiredFilters && form.requiredFilters.length > 0 ? (
+              form.requiredFilters.map((filter) => (
+                <Badge key={filter} variant="secondary">
+                  {FILTER_FIELD_LABELS[filter] ?? filter}
+                </Badge>
+              ))
+            ) : (
+              <Badge variant="outline">Без фильтров</Badge>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {form.questions.length === 0 ? (
         <div className="border bg-card p-10 text-center text-muted-foreground">
-          Не удалось загрузить анкету. Попробуйте обновить страницу.
-        </div>
-      ) : !form ? (
-        <div className="border bg-card p-10 text-center text-muted-foreground">
-          Анкета не найдена.
+          У этой анкеты пока нет вопросов.
         </div>
       ) : (
-        <div className="max-w-3xl mx-auto w-full space-y-6">
-          <Card>
-            <CardContent className="p-6 space-y-3">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg font-semibold">{form.title}</h2>
-                <Badge variant={form.isActive ? "default" : "destructive"}>
-                  {form.isActive ? "Активна" : "Неактивна"}
-                </Badge>
-                {form.targetRole && (
-                  <Badge variant="secondary">
-                    Аудитория: {ROLE_LABELS[form.targetRole] ?? form.targetRole}
-                  </Badge>
-                )}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {form.requiredFilters && form.requiredFilters.length > 0 ? (
-                  form.requiredFilters.map((filter) => (
-                    <Badge key={filter} variant="secondary">
-                      {FILTER_FIELD_LABELS[filter] ?? filter}
-                    </Badge>
-                  ))
-                ) : (
-                  <Badge variant="outline">Без фильтров</Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {form.questions.length === 0 ? (
-            <div className="border bg-card p-10 text-center text-muted-foreground">
-              У этой анкеты пока нет вопросов.
-            </div>
-          ) : (
-            form.questions.map((q, idx) => {
-              const preview = renderQuestionPreview(q.type);
-              return (
-                <Card key={q.id}>
-                  <CardContent className="p-6 space-y-4">
-                    <div className="flex gap-3 items-start justify-between">
-                      <div className="flex gap-3">
-                        <div className="flex size-8 shrink-0 items-center justify-center bg-muted text-sm font-medium">
-                          {idx + 1}
-                        </div>
-                        <p className="font-medium leading-snug">{q.text}</p>
-                      </div>
-                      <Badge variant="outline" className="shrink-0">
-                        {QUESTION_TYPE_LABELS[q.type] ?? q.type}
-                      </Badge>
+        form.questions.map((q, idx) => {
+          const preview = renderQuestionPreview(q.type);
+          return (
+            <Card key={q.id}>
+              <CardContent className="p-6 space-y-4">
+                <div className="flex gap-3 items-start justify-between">
+                  <div className="flex gap-3">
+                    <div className="flex size-8 shrink-0 items-center justify-center bg-muted text-sm font-medium">
+                      {idx + 1}
                     </div>
+                    <p className="font-medium leading-snug">{q.text}</p>
+                  </div>
+                  <Badge variant="outline" className="shrink-0">
+                    {QUESTION_TYPE_LABELS[q.type] ?? q.type}
+                  </Badge>
+                </div>
 
-                    {preview !== null && (
-                      <>
-                        <Separator />
-                        <div className="pl-11">{preview}</div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </div>
+                {preview !== null && (
+                  <>
+                    <Separator />
+                    <div className="pl-11">{preview}</div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })
       )}
-    </AdminLayout>
+    </div>
   );
 };

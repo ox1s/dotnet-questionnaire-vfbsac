@@ -1,4 +1,9 @@
-import { useEffect, useRef, type DependencyList, type ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  type DependencyList,
+  type ReactNode,
+} from "react";
 import { useAdminPage } from "@/hooks/use-admin-page";
 
 type AdminPageConfig = {
@@ -18,7 +23,12 @@ export const useAdminPageConfig = (
   const configRef = useRef(config);
   configRef.current = config;
 
-  useEffect(() => {
+  // Layout effect, not a passive one: the header is rendered from this config,
+  // so committing it after paint shows one frame of an empty (on mount) or
+  // previous-page (on navigation) breadcrumb before it corrects itself.
+  // React still flushes every cleanup before any setup within a commit, so
+  // the outgoing page's reset can't clobber the incoming page's config.
+  useLayoutEffect(() => {
     setConfig(configRef.current);
 
     return () => setConfig({});

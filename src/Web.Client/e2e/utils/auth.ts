@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 
-export type Role = "Admin" | "DeputyHead" | "Student" | "Employer";
+export type Role = "Admin" | "Student" | "Employer" | "Staff";
 
 /**
  * The client only decodes the JWT payload client-side (see src/utils/auth.ts) and

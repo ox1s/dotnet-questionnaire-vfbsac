@@ -148,10 +148,6 @@ internal sealed class CreateSubmissionCommandHandler(
                 ? Result.Success()
                 : Result.Failure(AnswerErrors.InvalidTypeForWeightedRating),
 
-            QuestionType.SingleChoice => value is not null && numericValue is null && weight is null
-                ? Result.Success()
-                : Result.Failure(AnswerErrors.InvalidTypeForSingleChoice),
-
             _ => Result.Failure(AnswerErrors.UnknownQuestionType)
         };
     }

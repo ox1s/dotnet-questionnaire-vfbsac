@@ -142,6 +142,20 @@ public sealed class DemoDataGenerator
         ("EMPLOYER03", "Сидоров К.В.", "СООО «Айти-Мир»")
     ];
 
+    // Personnel categories from "Методика оценки удовлетворенности потребителей":
+    // АУП (административно-управленческий персонал), ППС (профессорско-преподавательский
+    // состав), УВП (учебно-вспомогательный персонал), ПОП (прочий обслуживающий персонал).
+    private static readonly string[] EmployeeCategories = ["АУП", "ППС", "УВП", "ПОП"];
+
+    private static readonly string[] StaffSuggestionTexts =
+    [
+        "Хотелось бы больше возможностей для повышения квалификации.",
+        "Улучшить материально-техническое оснащение рабочих мест.",
+        "В целом условия труда устраивают.",
+        "Нужна более прозрачная система премирования.",
+        "Больше внимания командной работе между подразделениями."
+    ];
+
     public async Task SeedAsync(ApplicationDbContext context, string defaultPasswordHash, CancellationToken cancellationToken = default)
     {
         Dictionary<string, Department> departments = CreateDepartments();
@@ -177,6 +191,7 @@ public sealed class DemoDataGenerator
             forms,
             users.Where(user => user.Role == UserRole.StudentGroup).ToList(),
             users.Where(user => user.Role == UserRole.Employer).ToList(),
+            users.Where(user => user.Role == UserRole.Staff).ToList(),
             departments.Values.ToList(),
             disciplines,
             teachers,
@@ -277,16 +292,6 @@ public sealed class DemoDataGenerator
             users.Add(groupUser);
         }
 
-        Department ictDepartment = departments["ИКТ"];
-        User deputyHead = User.CreateStaff(
-            Login.Create("HEAD_ICT").Value,
-            "Зав. Кафедрой ИКТ",
-            teacherId: null,
-            departmentId: ictDepartment.Id,
-            passwordHash: defaultPasswordHash,
-            role: UserRole.DeputyHead).Value;
-        users.Add(deputyHead);
-
         for (int index = 0; index < Math.Min(teachers.Count, DepartmentNames.Length); index++)
         {
             Teacher teacher = teachers[index];
@@ -343,7 +348,7 @@ public sealed class DemoDataGenerator
         practiceForm.AddQuestion("Актуальность теоретических знаний", QuestionType.Number, 1);
         practiceForm.AddQuestion("Качество практических навыков", QuestionType.Number, 2);
         practiceForm.AddQuestion("Дисциплина и исполнительность", QuestionType.Number, 3);
-        practiceForm.AddQuestion("Затруднения при работе", QuestionType.SingleChoice, 4);
+        practiceForm.AddQuestion("Затруднения при работе", QuestionType.Text, 4);
         practiceForm.AddQuestion("Предложения", QuestionType.Text, 5);
         forms.Add(practiceForm);
 
@@ -358,6 +363,18 @@ public sealed class DemoDataGenerator
         employerForm.AddQuestion("Пожелания по подготовке специалистов", QuestionType.Text, 4);
         forms.Add(employerForm);
 
+        Form staffForm = Form.Create(
+            "Оценка удовлетворённости персонала работой в колледже",
+            [FilterField.EmployeeCategory],
+            UserRole.Staff).Value;
+        staffForm.SetIdForSeeding(Guid.NewGuid());
+        staffForm.AddQuestion("Условия труда", QuestionType.WeightedRating, 1);
+        staffForm.AddQuestion("Оплата труда и система премирования", QuestionType.WeightedRating, 2);
+        staffForm.AddQuestion("Взаимоотношения в коллективе", QuestionType.WeightedRating, 3);
+        staffForm.AddQuestion("Возможности профессионального развития", QuestionType.WeightedRating, 4);
+        staffForm.AddQuestion("Ваши предложения по улучшению", QuestionType.Text, 5);
+        forms.Add(staffForm);
+
         return forms;
     }
 
@@ -366,6 +383,7 @@ public sealed class DemoDataGenerator
         List<Form> forms,
         List<User> groupUsers,
         List<User> employerUsers,
+        List<User> staffUsers,
         List<Department> departments,
         List<Discipline> disciplines,
         List<Teacher> teachers,
@@ -376,11 +394,13 @@ public sealed class DemoDataGenerator
         Form disciplineForm = forms[0];
         Form practiceForm = forms[1];
         Form employerForm = forms[2];
+        Form staffForm = forms[3];
 
         List<Submission> submissions = [];
         submissions.AddRange(CreateDisciplineFormSubmissions(disciplineForm, groupUsers, departments, disciplines, teachers, specialities, specializations));
         submissions.AddRange(CreatePracticeFormSubmissions(practiceForm, groupUsers, departments, disciplines, teachers, specialities, specializations));
         submissions.AddRange(CreateEmployerFormSubmissions(employerForm, employerUsers, specialities, specializations));
+        submissions.AddRange(CreateStaffFormSubmissions(staffForm, staffUsers));
 
         await context.Submissions.AddRangeAsync(submissions, cancellationToken);
         await context.SaveChangesAsync(cancellationToken);
@@ -497,7 +517,7 @@ public sealed class DemoDataGenerator
                     continue;
                 }
 
-                if (question.Type == QuestionType.SingleChoice)
+                if (question.Order == 4)
                 {
                     submission.AddAnswer(question.Id, value: PracticeDifficulties[NextInt(PracticeDifficulties.Length)]);
                     continue;
@@ -551,6 +571,49 @@ public sealed class DemoDataGenerator
                 }
 
                 submission.AddAnswer(question.Id, value: EmployerFeedback[NextInt(EmployerFeedback.Length)]);
+            }
+
+            submissions.Add(submission);
+        }
+
+        return submissions;
+    }
+
+    private List<Submission> CreateStaffFormSubmissions(Form form, List<User> staffUsers)
+    {
+        List<Submission> submissions = [];
+
+        for (int index = 0; index < 60; index++)
+        {
+            User staffUser = staffUsers[NextInt(staffUsers.Count)];
+            // Cycle through all four categories deterministically (rather than
+            // picking one at random each time) so every seeded run covers
+            // АУП/ППС/УВП/ПОП, matching the college's paper form.
+            string employeeCategory = EmployeeCategories[index % EmployeeCategories.Length];
+
+            Result<Submission> submissionResult = Submission.Create(
+                form.Id,
+                $"demo-staff-{index:000}",
+                staffUser.Id,
+                DateTime.UtcNow,
+                organizationName: "Белорусская государственная академия связи");
+
+            Submission submission = submissionResult.Value;
+            submission.UpdateContext(submission.Context with { EmployeeCategory = employeeCategory });
+            SetSubmittedAt(submission, GetHistoricalDate(index + 75));
+
+            foreach (Question question in form.Questions.OrderBy(item => item.Order))
+            {
+                if (question.Type == QuestionType.WeightedRating)
+                {
+                    decimal weight = NextInt(6, 11);
+                    decimal rawScore = 7.5m + NextDecimalDelta(1.5m);
+                    decimal boundedScore = Math.Max(1, Math.Min(weight, Math.Round(rawScore, 0, MidpointRounding.AwayFromZero)));
+                    submission.AddAnswer(question.Id, numericValue: boundedScore, weight: weight);
+                    continue;
+                }
+
+                submission.AddAnswer(question.Id, value: StaffSuggestionTexts[NextInt(StaffSuggestionTexts.Length)]);
             }
 
             submissions.Add(submission);

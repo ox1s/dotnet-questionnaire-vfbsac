@@ -6,5 +6,7 @@ public enum FilterField
     Discipline,
     Speciality,
     Specialization,
-    Teacher
+    Teacher,
+    EmployeeCategory,
+    EducationForm
 }

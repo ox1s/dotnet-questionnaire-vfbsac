@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api, { formsApi, type Form } from "../../api";
 import { toast } from "sonner";
 import { AdminDashboard } from "@/components/dashboard/admin-dashboard";
 import { UserDashboard } from "@/components/dashboard/user-dashboard";
 import { AdminLayout } from "@/components/admin/admin-shared";
-import { isAdmin } from "@/utils/auth";
+import { isAdmin, logout } from "@/utils/auth";
 
 export const DashboardPage = () => {
   const [forms, setForms] = useState<Form[]>([]);
-  const navigate = useNavigate();
   const userIsAdmin = isAdmin();
 
   const loadForms = useCallback(async () => {
@@ -20,17 +18,15 @@ export const DashboardPage = () => {
   }, [userIsAdmin]);
 
   useEffect(() => {
+    // A 401 here is already handled globally (api.ts's interceptor calls
+    // logout(), which navigates to /login) — this catch is only for
+    // non-auth failures, so it must not also force a redirect.
     // `setForms` runs after the awaited fetch resolves, not synchronously
     // during the effect/commit, so this isn't the synchronous-setState
     // pattern react-hooks/set-state-in-effect warns about.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    loadForms().catch(() => navigate("/login"));
-  }, [loadForms, navigate]);
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+    loadForms().catch(() => toast.error("Не удалось загрузить анкеты."));
+  }, [loadForms]);
 
   const deleteForm = async (id: string) => {
     try {

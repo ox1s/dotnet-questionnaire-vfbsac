@@ -30,6 +30,11 @@ const compareFieldOptions: { value: CompareField; label: string }[] = [
   { value: "teacherId", label: "Преподаватели" },
 ];
 
+const EDUCATION_FORM_OPTIONS = [
+  { id: "ДФПО", label: "Дневная (ДФПО)" },
+  { id: "ЗФПО", label: "Заочная (ЗФПО)" },
+];
+
 export function AnalyticsFilterPanel({
   mode,
   setMode,
@@ -50,6 +55,7 @@ export function AnalyticsFilterPanel({
   optionsFor,
   refreshing,
   onRefresh,
+  showOrganizationFilter,
 }: {
   mode: Mode;
   setMode: (mode: Mode) => void;
@@ -70,6 +76,10 @@ export function AnalyticsFilterPanel({
   optionsFor: () => { value: string; label: string }[];
   refreshing: boolean;
   onRefresh: () => void;
+  // Only Employer-targeted forms ever populate OrganizationName (see
+  // CreateSubmissionCommandHandler), so the filter is meaningless noise on
+  // any other form's stats page.
+  showOrganizationFilter: boolean;
 }) {
   return (
     <div className="mb-6 border bg-card p-6 shadow-sm">
@@ -274,17 +284,28 @@ export function AnalyticsFilterPanel({
           />
         </AnalyticsField>
 
-        <AnalyticsField label="Организация">
-          <Input
-            type="text"
-            className="w-full text-sm"
-            placeholder="Название организации..."
-            value={filters.organizationName || ""}
-            onChange={(event) =>
-              updateFilter("organizationName", event.target.value)
-            }
+        <AnalyticsField label="Форма обучения">
+          <FilterSelect
+            value={filters.educationForm}
+            onChange={(val) => updateFilter("educationForm", val)}
+            placeholder="Все формы обучения"
+            options={EDUCATION_FORM_OPTIONS}
           />
         </AnalyticsField>
+
+        {showOrganizationFilter && (
+          <AnalyticsField label="Организация">
+            <Input
+              type="text"
+              className="w-full text-sm"
+              placeholder="Название организации..."
+              value={filters.organizationName || ""}
+              onChange={(event) =>
+                updateFilter("organizationName", event.target.value)
+              }
+            />
+          </AnalyticsField>
+        )}
       </div>
 
       {mode === "groups" ? (

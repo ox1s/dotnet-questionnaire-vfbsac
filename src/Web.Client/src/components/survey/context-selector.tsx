@@ -25,7 +25,10 @@ export interface SubmissionContext {
   departmentId?: string;
   specialityId?: string;
   educationForm: string;
+  employeeCategory?: string;
 }
+
+const EMPLOYEE_CATEGORY_OPTIONS = ["АУП", "ППС", "УВП", "ПОП"];
 
 export const ContextSelector: React.FC<Props> = ({
   requiredFilters,
@@ -255,6 +258,32 @@ export const ContextSelector: React.FC<Props> = ({
                 {teachers.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
                     {getTeacherLabel(t)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </ContextField>
+        )}
+
+        {requiredFilters?.includes("EmployeeCategory") && (
+          <ContextField label="Категория персонала">
+            <Select
+              value={context.employeeCategory ?? EMPTY_VALUE}
+              onValueChange={(value) =>
+                handleChange(
+                  "employeeCategory",
+                  value === EMPTY_VALUE ? "" : value,
+                )
+              }
+            >
+              <SelectTrigger className="w-full bg-background text-sm">
+                <SelectValue placeholder="Выберите категорию персонала" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value={EMPTY_VALUE}>Не выбрано</SelectItem>
+                {EMPLOYEE_CATEGORY_OPTIONS.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
                   </SelectItem>
                 ))}
               </SelectContent>

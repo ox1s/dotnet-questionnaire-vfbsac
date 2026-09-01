@@ -18,12 +18,14 @@ import { AdminSpecializationsPage } from "./pages/admin/admin-specializations-pa
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { AdminLayout } from "./components/admin/admin-shared";
+import { AuthSessionListener } from "./components/auth/auth-session-listener";
 
 function App() {
   return (
     <BrowserRouter>
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
         <TooltipProvider delayDuration={0}>
+          <AuthSessionListener />
           <Toaster position="top-center" />
           <Routes>
             <Route path="/login" element={<LoginPage />} />
@@ -34,11 +36,7 @@ function App() {
               <Route path="/form/:id" element={<SurveyPage />} />
             </Route>
 
-            <Route
-              element={
-                <ProtectedRoute allowedRoles={["Admin", "DeputyHead"]} />
-              }
-            >
+            <Route element={<ProtectedRoute allowedRoles={["Admin"]} />}>
               <Route path="/admin/stats/:id" element={<AdminStatsPage />} />
               <Route
                 path="/admin/preview/:id"
@@ -74,6 +72,8 @@ function App() {
                 <Route path="/admin/settings" element={<AdminSettingsPage />} />
               </Route>
             </Route>
+
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </TooltipProvider>
       </ThemeProvider>

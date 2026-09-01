@@ -449,6 +449,7 @@ export const AdminStatsPage = () => {
               optionsFor={optionsFor}
               refreshing={refreshing}
               onRefresh={() => void loadReport()}
+              showOrganizationFilter={form?.targetRole === "Employer"}
             />
 
             {refreshing ? (

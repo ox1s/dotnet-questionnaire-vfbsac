@@ -1,0 +1,22 @@
+# Netlify redirect rules for the Web.Client SPA.
+# Lives in public/ so Vite copies it into dist/ (the Netlify publish directory).
+# Rules are processed top-down, first match wins, and before netlify.toml.
+
+# --- Optional: same-origin API proxy (disabled by default) ---
+# Uncommenting this makes Netlify proxy /api/* to the .NET API server-side, so
+# every request is same-origin. CORS then stops applying entirely and
+# VITE_API_URL can stay unset -- api.ts falls back to baseURL "/api", which
+# mirrors the dev proxy in vite.config.ts.
+#
+# WARNING: Netlify proxy rewrites time out after 26 seconds. The dev API runs on
+# Render's free plan, which spins down when idle, and Program.cs runs EF
+# migrations + DbInitializer before serving traffic. A cold start can exceed 26s
+# and return a gateway error. Only enable this once the API is on a paid plan or
+# is kept warm.
+#
+# /api/*  https://dotnet-questionnaire-vfbsac-nbtr.onrender.com/:splat  200
+
+# SPA fallback: serve index.html for client-side routes, so a hard reload or a
+# shared deep link (/admin/specialities, /form/:id, ...) does not 404.
+# Must stay last -- /* matches everything.
+/*  /index.html  200

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api";
+import api, { getApiErrorMessage } from "../../api";
 import {
   Plus,
   Trash2,
@@ -20,15 +20,22 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { ROLE_LABELS } from "@/utils/roles";
+import { FILTER_FIELD_LABELS } from "@/utils/filter-fields";
 
 const QuestionType = {
   Text: 1,
   Number: 2,
-  WeightedRating: 6,
+  WeightedRating: 3,
 } as const;
 
 type QuestionType = (typeof QuestionType)[keyof typeof QuestionType];
-type FilterField = "Department" | "Discipline" | "Teacher" | "Speciality";
+type FilterField =
+  | "Department"
+  | "Discipline"
+  | "Teacher"
+  | "Speciality"
+  | "EmployeeCategory"
+  | "EducationForm";
 
 interface QuestionDraft {
   id?: string;
@@ -37,12 +44,18 @@ interface QuestionDraft {
   order: number;
 }
 
-const FILTER_OPTIONS: { key: FilterField; label: string }[] = [
-  { key: "Teacher", label: "Преподаватель" },
-  { key: "Discipline", label: "Предмет" },
-  { key: "Department", label: "Филиал кафедры" },
-  { key: "Speciality", label: "Специальность" },
+const FILTER_KEYS: FilterField[] = [
+  "Teacher",
+  "Discipline",
+  "Department",
+  "Speciality",
+  "EmployeeCategory",
+  "EducationForm",
 ];
+
+const FILTER_OPTIONS: { key: FilterField; label: string }[] = FILTER_KEYS.map(
+  (key) => ({ key, label: FILTER_FIELD_LABELS[key] }),
+);
 
 const QUESTION_TYPES = [
   { value: QuestionType.WeightedRating, label: "Рейтинг (Оценка + Важность)" },
@@ -66,6 +79,7 @@ export const CreateFormPage = () => {
     QuestionType.WeightedRating,
   );
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
   const toggleFilter = (filter: FilterField) => {
     setSelectedFilters((prev) =>
@@ -113,11 +127,14 @@ export const CreateFormPage = () => {
   const handleDragEnd = () => setDraggedIdx(null);
 
   const handleSave = useCallback(async () => {
+    if (isSaving) return;
+
     if (!title.trim() || questions.length === 0) {
       toast.error("Заполните название и добавьте вопросы");
       return;
     }
 
+    setIsSaving(true);
     try {
       await api.post("/forms", {
         title,
@@ -129,17 +146,20 @@ export const CreateFormPage = () => {
       navigate("/dashboard");
     } catch (e) {
       console.error(e);
-      toast.error("Ошибка при сохранении");
+      toast.error(getApiErrorMessage(e, "Ошибка при сохранении"));
+    } finally {
+      setIsSaving(false);
     }
-  }, [navigate, questions, selectedFilters, targetRole, title]);
+  }, [isSaving, navigate, questions, selectedFilters, targetRole, title]);
 
   const saveAction = useMemo(
     () => (
-      <Button onClick={handleSave}>
-        <Save size={16} className="mr-2" /> Сохранить анкету
+      <Button onClick={handleSave} disabled={isSaving}>
+        <Save size={16} className="mr-2" />
+        {isSaving ? "Сохранение..." : "Сохранить анкету"}
       </Button>
     ),
-    [handleSave],
+    [handleSave, isSaving],
   );
 
   useAdminPageConfig(

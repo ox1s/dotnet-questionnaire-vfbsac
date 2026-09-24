@@ -377,11 +377,7 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # VS Code files for those working on multiple tools
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+.vscode/
 *.code-workspace
 
 # Local History for Visual Studio Code
@@ -405,18 +401,9 @@ FodyWeavers.xsd
 
 .kiro/*
 
-# oh-my-claudecode (OMC) ephemeral session/runtime state - not meant for
-# version control. .omc/project-memory.json (shared project knowledge) is
-# intentionally kept tracked and is NOT covered by these rules.
-.omc/autopilot/
-.omc/plans/
-.omc/sessions/
-.omc/state/
-.omc/*.tmp.*
-**/.omc/state/
-**/.omc/sessions/
-**/.omc/autopilot/
-**/.omc/plans/
+# Local tooling state (oh-my-claudecode, Aspire CLI) - not meant for version control
+**/.omc/
+.aspire/
 
 # Front-end build output (regenerated via `npm run build`)
 src/Web.Client/dist/

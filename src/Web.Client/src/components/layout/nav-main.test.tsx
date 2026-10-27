@@ -13,20 +13,20 @@ vi.mock("@/utils/auth", () => ({
 
 // Mirrors App.tsx: every sidebar-bearing screen sits under one <AppShell/>
 // layout route, so navigating between them re-renders only the <Outlet/>.
-const Shell = () => (
-  <SidebarProvider>
+const Shell = ({ defaultOpen = true }: { defaultOpen?: boolean }) => (
+  <SidebarProvider defaultOpen={defaultOpen}>
     <AppSidebar />
     <Outlet />
   </SidebarProvider>
 );
 
-const renderApp = (initialPath: string) =>
+const renderApp = (initialPath: string, { collapsed = false } = {}) =>
   render(
     <MemoryRouter initialEntries={[initialPath]}>
       <ThemeProvider>
         <TooltipProvider>
           <Routes>
-            <Route element={<Shell />}>
+            <Route element={<Shell defaultOpen={!collapsed} />}>
               <Route path="/dashboard" element={<div>dashboard page</div>} />
               <Route
                 path="/admin/create-form"
@@ -113,5 +113,24 @@ describe("NavMain group expansion", () => {
     renderApp("/dashboard");
 
     expect(settingsGroupIsOpen()).toBe(true);
+  });
+});
+
+// Collapsed to icons, a group cannot expand in place: its pages would be
+// hidden with the rest of the labels, so the icon opens them as a menu.
+describe("NavMain collapsed to icons", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.sessionStorage.clear();
+  });
+
+  it("opens a group's pages from its icon and navigates to one", async () => {
+    renderApp("/dashboard", { collapsed: true });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /Настройки/ }));
+    await user.click(screen.getByRole("menuitem", { name: "Семестр" }));
+
+    expect(screen.getByText("settings page")).toBeInTheDocument();
   });
 });

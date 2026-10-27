@@ -131,14 +131,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-4 py-3 flex justify-end items-center">
-          {" "}
+        <div className="flex items-center justify-end gap-4 px-4 py-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-0">
           <ModeToggle />
           <Button
             onClick={() => setIsPasswordOpen(true)}
             variant="outline"
             size="icon"
-            className="ml-4"
             aria-label="Сменить пароль"
             title="Сменить пароль"
           >
@@ -148,7 +146,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             onClick={logout}
             variant="outline"
             size="icon"
-            className="ml-4"
             aria-label="Выйти"
             title="Выйти"
           >

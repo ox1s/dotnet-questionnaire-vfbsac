@@ -7,7 +7,6 @@ import { AdminStatsPage } from "./pages/admin/admin-stats-page";
 import { AdminFormPreviewPage } from "./pages/admin/admin-form-preview-page";
 import { CreateFormPage } from "./pages/forms/create-form-page";
 import { AdminTeachersPage } from "./pages/admin/admin-teachers-page";
-import { AdminTeacherAccountsPage } from "./pages/admin/admin-teacher-accounts-page";
 import { AdminDisciplinesPage } from "./pages/admin/admin-disciplines-page";
 import { AdminDepartmentsPage } from "./pages/admin/admin-departments-page";
 import { AdminGroupsPage } from "./pages/admin/admin-groups-page";
@@ -47,7 +46,10 @@ const AppRoutes = () => (
           <Route path="/admin/teachers" element={<AdminTeachersPage />} />
           <Route path="/admin/disciplines" element={<AdminDisciplinesPage />} />
           <Route path="/admin/departments" element={<AdminDepartmentsPage />} />
-          <Route path="/admin/specialities" element={<AdminSpecialitiesPage />} />
+          <Route
+            path="/admin/specialities"
+            element={<AdminSpecialitiesPage />}
+          />
           <Route
             path="/admin/specializations"
             element={<AdminSpecializationsPage />}
@@ -55,9 +57,10 @@ const AppRoutes = () => (
           <Route path="/admin/groups" element={<AdminGroupsPage />} />
           <Route path="/admin/employers" element={<AdminEmployersPage />} />
           <Route path="/admin/staff" element={<AdminStaffPage />} />
+          {/* Teacher logins moved onto the teachers page; keep old links working. */}
           <Route
             path="/admin/teacher-accounts"
-            element={<AdminTeacherAccountsPage />}
+            element={<Navigate to="/admin/teachers" replace />}
           />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
         </Route>

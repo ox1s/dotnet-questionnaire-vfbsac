@@ -164,8 +164,8 @@ export const CreateFormPage = () => {
 
   useAdminPageConfig(
     {
-      title: "Дашборд",
-      subtitle: "Конструктор анкет",
+      title: "Анкеты",
+      subtitle: "Конструктор",
       actions: saveAction,
     },
     [saveAction],

@@ -85,7 +85,7 @@ export const AdminGroupsPage = () => {
   });
 
   useAdminPageConfig({
-    title: "Пользователи",
+    title: "Участники",
     subtitle: "Группы",
     actions: (
       <Button onClick={() => openModal()}>

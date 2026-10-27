@@ -82,7 +82,7 @@ export const AdminFormPreviewPage = () => {
 
   useAdminPageConfig(
     {
-      title: "Дашборд",
+      title: "Анкеты",
       subtitle: loading
         ? "Загрузка..."
         : loadError

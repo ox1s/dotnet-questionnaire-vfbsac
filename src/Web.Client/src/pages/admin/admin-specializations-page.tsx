@@ -80,7 +80,7 @@ export const AdminSpecializationsPage = () => {
   });
 
   useAdminPageConfig({
-    title: "Справочники",
+    title: "Учебная структура",
     subtitle: "Специализации",
     actions: (
       <Button onClick={() => openModal()}>

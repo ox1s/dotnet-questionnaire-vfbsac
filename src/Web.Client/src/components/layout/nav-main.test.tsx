@@ -54,7 +54,7 @@ describe("NavMain group expansion", () => {
     window.sessionStorage.clear();
   });
 
-  it("keeps the Настройки group expanded after navigating to Конструктор анкет", async () => {
+  it("keeps the Настройки group expanded after navigating to Конструктор", async () => {
     renderApp("/dashboard");
     const user = userEvent.setup();
 
@@ -62,20 +62,20 @@ describe("NavMain group expansion", () => {
     await user.click(screen.getByRole("button", { name: /Настройки/ }));
     expect(settingsGroupIsOpen()).toBe(true);
 
-    await user.click(screen.getByRole("link", { name: "Конструктор анкет" }));
+    await user.click(screen.getByRole("link", { name: "Конструктор" }));
     expect(screen.getByText("create form page")).toBeInTheDocument();
 
     expect(settingsGroupIsOpen()).toBe(true);
   });
 
-  it("keeps the Настройки group expanded after navigating to Анкеты", async () => {
+  it("keeps the Настройки group expanded after navigating to Все анкеты", async () => {
     renderApp("/admin/create-form");
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("button", { name: /Настройки/ }));
     expect(settingsGroupIsOpen()).toBe(true);
 
-    await user.click(screen.getByRole("link", { name: "Анкеты" }));
+    await user.click(screen.getByRole("link", { name: "Все анкеты" }));
     expect(screen.getByText("dashboard page")).toBeInTheDocument();
 
     expect(settingsGroupIsOpen()).toBe(true);
@@ -94,7 +94,7 @@ describe("NavMain group expansion", () => {
     await user.click(screen.getByRole("button", { name: /Настройки/ }));
     expect(settingsGroupIsOpen()).toBe(false);
 
-    await user.click(screen.getByRole("link", { name: "Анкеты" }));
+    await user.click(screen.getByRole("link", { name: "Все анкеты" }));
     expect(screen.getByText("dashboard page")).toBeInTheDocument();
 
     expect(settingsGroupIsOpen()).toBe(false);

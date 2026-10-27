@@ -17,7 +17,7 @@ import {
 import {
   Settings2Icon,
   BookIcon,
-  ChartAreaIcon,
+  ClipboardListIcon,
   KeyRoundIcon,
   LogOutIcon,
   UsersIcon,
@@ -27,26 +27,54 @@ import { ModeToggle } from "../shared/mode-toggle";
 import { ChangePasswordModal } from "@/components/admin/change-password-modal";
 import { logout } from "@/utils/auth";
 
+// Grouped by what the admin actually maintains: the forms, the people who fill
+// them in (access is managed on each person's own page, not in a separate
+// users section) and the teaching structure being evaluated. Specializations
+// are opened from their speciality, so they have no entry of their own.
 const data = {
   navMain: [
     {
-      title: "Дашборд",
-      icon: <ChartAreaIcon />,
+      title: "Анкеты",
+      icon: <ClipboardListIcon />,
       url: "#",
       isActive: true,
       items: [
         {
-          title: "Анкеты",
+          title: "Все анкеты",
           url: "/dashboard",
         },
         {
-          title: "Конструктор анкет",
+          title: "Конструктор",
           url: "/admin/create-form",
         },
       ],
     },
     {
-      title: "Справочники",
+      title: "Участники",
+      url: "#",
+      icon: <UsersIcon />,
+      isActive: true,
+      items: [
+        {
+          title: "Преподаватели",
+          url: "/admin/teachers",
+        },
+        {
+          title: "Сотрудники",
+          url: "/admin/staff",
+        },
+        {
+          title: "Группы",
+          url: "/admin/groups",
+        },
+        {
+          title: "Наниматели",
+          url: "/admin/employers",
+        },
+      ],
+    },
+    {
+      title: "Учебная структура",
       url: "#",
       icon: <BookIcon />,
       isActive: true,
@@ -56,45 +84,12 @@ const data = {
           url: "/admin/departments",
         },
         {
-          title: "Преподаватели",
-          url: "/admin/teachers",
-        },
-        {
-          title: "Дисциплины",
-          url: "/admin/disciplines",
-        },
-        {
           title: "Специальности",
           url: "/admin/specialities",
         },
         {
-          title: "Специализации",
-          url: "/admin/specializations",
-        },
-        {
-          title: "Наниматели",
-          url: "/admin/employers",
-        },
-      ],
-    },
-    {
-      // Everyone who can sign in. Reference data about the same people (e.g.
-      // the teacher directory) stays under "Справочники".
-      title: "Пользователи",
-      url: "#",
-      icon: <UsersIcon />,
-      items: [
-        {
-          title: "Группы",
-          url: "/admin/groups",
-        },
-        {
-          title: "Преподаватели",
-          url: "/admin/teacher-accounts",
-        },
-        {
-          title: "Сотрудники",
-          url: "/admin/staff",
+          title: "Дисциплины",
+          url: "/admin/disciplines",
         },
       ],
     },

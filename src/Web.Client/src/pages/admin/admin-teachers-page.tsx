@@ -1,10 +1,14 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   dictionariesApi,
+  getApiErrorMessage,
+  usersApi,
   type DictionaryItem,
   type TeacherItem,
+  type TeacherUser,
 } from "@/api.ts";
-import { CheckCircle2, Plus } from "lucide-react";
+import { CheckCircle2, Plus, RefreshCw } from "lucide-react";
 import {
   AdminModal,
   AdminTable,
@@ -19,11 +23,34 @@ import { Input } from "@/components/ui/input";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
 import { Label } from "@/components/ui/label";
+import {
+  CredentialsBanner,
+  type IssuedCredentials,
+} from "@/components/admin/credentials-banner";
+import { generateSecurePassword, MIN_PASSWORD_LENGTH } from "@/utils/password";
 
+// A teacher and their sign-in access are edited in one dialog, like every
+// other participant: the login is optional, so a teacher can be listed before
+// they are given access.
 export const AdminTeachersPage = () => {
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>(
     [],
   );
+  const [teacherUsers, setTeacherUsers] = useState<TeacherUser[]>([]);
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+  const [issuedCredentials, setIssuedCredentials] =
+    useState<IssuedCredentials | null>(null);
+
+  const findTeacherUser = (teacherId: string) =>
+    teacherUsers.find((account) => account.teacherId === teacherId) ?? null;
+
+  const issueCredentials = (issuedLogin: string, issuedPassword: string) =>
+    setIssuedCredentials({
+      login: issuedLogin,
+      pass: issuedPassword,
+      link: `${window.location.origin}/login`,
+    });
 
   const {
     related: departments,
@@ -31,6 +58,7 @@ export const AdminTeachersPage = () => {
     searchQuery,
     setSearchQuery,
     isFormOpen,
+    isSubmitting,
     closeModal,
     openModal,
     editingId,
@@ -41,28 +69,111 @@ export const AdminTeachersPage = () => {
     handleSubmit,
   } = useDictionaryCrud<TeacherItem, DictionaryItem>({
     fetch: async () => {
-      const [teachersRes, departmentsRes] = await Promise.all([
+      const [teachersRes, departmentsRes, teacherUsersRes] = await Promise.all([
         dictionariesApi.getTeachers(),
         dictionariesApi.getDepartments(),
+        usersApi.getTeacherUsers(),
       ]);
+      setTeacherUsers(teacherUsersRes.data);
       return { items: teachersRes.data, related: departmentsRes.data };
     },
-    searchText: (t) => t.fullName,
+    searchText: (t) => [t.fullName, findTeacherUser(t.id)?.login ?? ""],
     formName: (t) => t.fullName,
-    fillForm: (t) => setSelectedDepartmentIds(t?.departmentIds ?? []),
+    fillForm: (t) => {
+      setSelectedDepartmentIds(t?.departmentIds ?? []);
+      setLogin(t ? (findTeacherUser(t.id)?.login ?? "") : "");
+      // A new teacher gets a ready password in case a login is entered; an
+      // existing one keeps theirs unless a new one is typed in.
+      setPassword(t ? "" : generateSecurePassword());
+    },
+    validate: () => {
+      const account = editingId ? findTeacherUser(editingId) : null;
+      if (!name.trim()) {
+        toast.error("Введите ФИО");
+        return false;
+      }
+      if (account && !login.trim()) {
+        toast.error("Логин нельзя удалить");
+        return false;
+      }
+      if (!account && login.trim() && !password.trim()) {
+        toast.error("Введите пароль для нового логина");
+        return false;
+      }
+      if (password.trim() && password.trim().length < MIN_PASSWORD_LENGTH) {
+        toast.error(
+          `Пароль должен содержать не менее ${MIN_PASSWORD_LENGTH} символов`,
+        );
+        return false;
+      }
+      return true;
+    },
     submit: async (id) => {
-      if (id)
-        await dictionariesApi.updateTeacher(id, name, selectedDepartmentIds);
-      else await dictionariesApi.createTeacher(name, selectedDepartmentIds);
+      const fullName = name.trim();
+      const trimmedLogin = login.trim();
+      const trimmedPassword = password.trim();
+
+      if (id) {
+        await dictionariesApi.updateTeacher(
+          id,
+          fullName,
+          selectedDepartmentIds,
+        );
+
+        const account = findTeacherUser(id);
+        if (account) {
+          if (
+            trimmedLogin !== account.login ||
+            fullName !== account.displayName
+          ) {
+            await usersApi.updateUser(account.id, trimmedLogin, fullName);
+          }
+          if (trimmedPassword) {
+            await usersApi.setPassword(account.id, trimmedPassword);
+            issueCredentials(trimmedLogin, trimmedPassword);
+          }
+        } else if (trimmedLogin) {
+          await usersApi.createTeacherUser(id, trimmedLogin, trimmedPassword);
+          issueCredentials(trimmedLogin, trimmedPassword);
+        }
+        return;
+      }
+
+      const { data: teacherId } = await dictionariesApi.createTeacher(
+        fullName,
+        selectedDepartmentIds,
+      );
+      if (!trimmedLogin) return;
+
+      // The teacher already exists at this point: failing the whole save would
+      // keep the dialog open and a retry would create them twice. Report it
+      // and let the admin issue access by editing the teacher.
+      try {
+        await usersApi.createTeacherUser(
+          teacherId,
+          trimmedLogin,
+          trimmedPassword,
+        );
+        issueCredentials(trimmedLogin, trimmedPassword);
+      } catch (e) {
+        toast.error(
+          getApiErrorMessage(
+            e,
+            "Преподаватель добавлен, но доступ не выдан: возможно, логин занят.",
+          ),
+        );
+      }
     },
     remove: dictionariesApi.deleteTeacher,
     restore: dictionariesApi.restoreTeacher,
     confirmDelete: () => "Вы уверены, что хотите удалить этого преподавателя?",
     restoreSuccessMessage: "Преподаватель успешно восстановлен.",
+    saveErrorMessage:
+      "Ошибка. Возможно, логин занят или содержит недопустимые символы.",
   });
 
   useAdminPageConfig({
-    title: "Справочники",
+    title: "Участники",
     subtitle: "Преподаватели",
     actions: (
       <Button onClick={() => openModal()}>
@@ -70,6 +181,8 @@ export const AdminTeachersPage = () => {
       </Button>
     ),
   });
+
+  const editingAccount = editingId ? findTeacherUser(editingId) : null;
 
   const getDepartmentName = (departmentId?: string) =>
     departments.find((department) => department.id === departmentId)?.name ??
@@ -106,45 +219,68 @@ export const AdminTeachersPage = () => {
       <AdminTable
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        searchPlaceholder="Поиск преподавателя..."
+        searchPlaceholder="Поиск по ФИО или логину..."
         data={filteredTeachers}
+        topContent={
+          issuedCredentials && (
+            <CredentialsBanner
+              title="Доступ преподавателя"
+              credentials={issuedCredentials}
+              onClose={() => setIssuedCredentials(null)}
+            />
+          )
+        }
         columns={[
           { header: "ФИО" },
           { header: "Филиал кафедры" },
+          { header: "Логин" },
           { header: "Действия", className: "text-right w-32" },
         ]}
-        renderRow={(teacher) => (
-          <AdminTableRow key={teacher.id} isDeleted={teacher.isDeleted}>
-            <TableCell className="align-top">
-              <AdminTableIconCell
-                textIcon={teacher.fullName.substring(0, 1)}
-                iconColorClass="bg-chart-2/15 text-chart-2"
-                title={
-                  teacher.fullName.length > 20
-                    ? truncateFirstWord(teacher.fullName)
-                    : formatTeacherLabel(teacher)
-                }
-                isDeleted={teacher.isDeleted}
-              />
-            </TableCell>
+        renderRow={(teacher) => {
+          const account = findTeacherUser(teacher.id);
+          return (
+            <AdminTableRow key={teacher.id} isDeleted={teacher.isDeleted}>
+              <TableCell className="align-top">
+                <AdminTableIconCell
+                  textIcon={teacher.fullName.substring(0, 1)}
+                  iconColorClass="bg-chart-2/15 text-chart-2"
+                  title={
+                    teacher.fullName.length > 20
+                      ? truncateFirstWord(teacher.fullName)
+                      : formatTeacherLabel(teacher)
+                  }
+                  isDeleted={teacher.isDeleted}
+                />
+              </TableCell>
 
-            <TableCell className="align-top">
-              <AdminTableTextBadge
-                text={getDepartmentNames(teacher.departmentIds)}
-              />
-            </TableCell>
+              <TableCell className="align-top">
+                <AdminTableTextBadge
+                  text={getDepartmentNames(teacher.departmentIds)}
+                />
+              </TableCell>
 
-            <TableCell className="align-top text-right">
-              <AdminTableActions
-                isDeleted={teacher.isDeleted}
-                onEdit={() => openModal(teacher)}
-                onDelete={() => handleDelete(teacher)}
-                onRestore={() => handleRestore(teacher)}
-                deleteDescription={`Вы уверены, что хотите удалить преподавателя "${formatTeacherLabel(teacher)}"? Его логин для входа тоже будет удален.`}
-              />
-            </TableCell>
-          </AdminTableRow>
-        )}
+              <TableCell className="align-top">
+                {account ? (
+                  <span className="font-mono text-sm">{account.login}</span>
+                ) : (
+                  <span className="text-xs text-muted-foreground">
+                    Нет доступа
+                  </span>
+                )}
+              </TableCell>
+
+              <TableCell className="align-top text-right">
+                <AdminTableActions
+                  isDeleted={teacher.isDeleted}
+                  onEdit={() => openModal(teacher)}
+                  onDelete={() => handleDelete(teacher)}
+                  onRestore={() => handleRestore(teacher)}
+                  deleteDescription={`Вы уверены, что хотите удалить преподавателя "${formatTeacherLabel(teacher)}"? Его логин для входа тоже будет удален.`}
+                />
+              </TableCell>
+            </AdminTableRow>
+          );
+        }}
       />
 
       <AdminModal
@@ -152,10 +288,12 @@ export const AdminTeachersPage = () => {
         onClose={closeModal}
         title={editingId ? "Редактирование" : "Новый преподаватель"}
         onSubmit={handleSubmit}
+        submitText={isSubmitting ? "Сохранение..." : "Сохранить"}
       >
         <div className="space-y-2">
-          <Label>ФИО</Label>
+          <Label htmlFor="teacher-full-name">ФИО</Label>
           <Input
+            id="teacher-full-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Введите фио..."
@@ -185,6 +323,52 @@ export const AdminTeachersPage = () => {
                 );
               })}
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="teacher-login">Логин</Label>
+          <Input
+            id="teacher-login"
+            value={login}
+            onChange={(e) => setLogin(e.target.value)}
+            placeholder={
+              editingAccount
+                ? "Например: IVANOVA"
+                : "Оставьте пустым, если доступ пока не нужен"
+            }
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
+            <Label htmlFor="teacher-password">
+              {editingAccount ? "Новый пароль" : "Пароль"}
+            </Label>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setPassword(generateSecurePassword())}
+              className="h-8 px-3"
+            >
+              <RefreshCw size={14} className="mr-2" />
+              Сгенерировать
+            </Button>
+          </div>
+          <Input
+            id="teacher-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder={
+              editingAccount
+                ? "Оставьте пустым, чтобы не менять пароль"
+                : "Введите или сгенерируйте пароль"
+            }
+          />
+          <p className="text-xs text-muted-foreground">
+            {editingAccount
+              ? "Если поле пустое, пароль преподавателя останется прежним."
+              : `Нужен только вместе с логином. Не менее ${MIN_PASSWORD_LENGTH} символов; после сохранения появятся данные для входа.`}
+          </p>
         </div>
       </AdminModal>
     </>

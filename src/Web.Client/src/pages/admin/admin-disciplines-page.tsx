@@ -63,7 +63,7 @@ export const AdminDisciplinesPage = () => {
   });
 
   useAdminPageConfig({
-    title: "Справочники",
+    title: "Учебная структура",
     subtitle: "Дисциплины",
     actions: (
       <Button onClick={() => openModal()}>

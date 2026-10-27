@@ -424,7 +424,7 @@ export const AdminStatsPage = () => {
 
   useAdminPageConfig(
     {
-      title: "Дашборд",
+      title: "Анкеты",
       subtitle: loading
         ? "Загрузка..."
         : form

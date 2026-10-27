@@ -15,7 +15,7 @@ import { logout } from "@/utils/auth";
 
 const renderSidebar = () =>
   render(
-    <MemoryRouter initialEntries={["/admin/teacher-accounts"]}>
+    <MemoryRouter initialEntries={["/admin/teachers"]}>
       <ThemeProvider>
         <TooltipProvider>
           <SidebarProvider>
@@ -47,6 +47,12 @@ describe("AppSidebar logout button", () => {
 });
 
 describe("AppSidebar sections", () => {
+  // NavMain remembers expanded groups in session storage; start each test
+  // from the defaults so expanding a group in one doesn't toggle it in the next.
+  beforeEach(() => {
+    window.sessionStorage.clear();
+  });
+
   it("links to the staff accounts page", () => {
     renderSidebar();
 
@@ -56,17 +62,40 @@ describe("AppSidebar sections", () => {
     );
   });
 
-  it("keeps the teacher directory and teacher logins on separate pages", () => {
+  it("follows the Admin IA group and page order", async () => {
+    renderSidebar();
+    await expandGroup("Настройки");
+
+    const titles = screen
+      .getAllByRole("link")
+      .map((link) => link.textContent)
+      .filter((title) => title !== "ВФБГАС");
+
+    expect(titles).toEqual([
+      "Все анкеты",
+      "Конструктор",
+      "Преподаватели",
+      "Сотрудники",
+      "Группы",
+      "Наниматели",
+      "Кафедры",
+      "Специальности",
+      "Дисциплины",
+      "Семестр",
+    ]);
+  });
+
+  it("has one teacher page covering both the directory and logins", () => {
     renderSidebar();
 
     const hrefs = screen
       .getAllByRole("link", { name: "Преподаватели" })
       .map((link) => link.getAttribute("href"));
 
-    expect(hrefs).toEqual(["/admin/teachers", "/admin/teacher-accounts"]);
+    expect(hrefs).toEqual(["/admin/teachers"]);
   });
 
-  it("lists employers under the dictionaries, not the settings", async () => {
+  it("lists employers among the participants, not the settings", async () => {
     renderSidebar();
     await expandGroup("Настройки");
 

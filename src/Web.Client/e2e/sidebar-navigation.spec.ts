@@ -3,7 +3,7 @@ import { loginAs } from "./utils/auth";
 import { mockForms } from "./utils/mock-api";
 
 // Regression test for the reported bug: expanding "Настройки" and then clicking
-// "Анкеты" or "Конструктор анкет" collapsed the group again. /dashboard used to
+// "Анкеты" or "Конструктор анкет" (now "Все анкеты" / "Конструктор") collapsed the group again. /dashboard used to
 // render its own <AdminLayout>, so moving between it and the /admin/* pages
 // unmounted and rebuilt the whole sidebar. Everything now shares one <AppShell>
 // layout route, so the sidebar simply stays mounted.
@@ -12,7 +12,7 @@ import { mockForms } from "./utils/mock-api";
 // for whether that group is expanded.
 
 // Locators are scoped to the sidebar because the breadcrumb in the header also
-// exposes "Анкеты" with a link role, which would otherwise be ambiguous.
+// exposes "Все анкеты" with a link role, which would otherwise be ambiguous.
 const sidebarOf = (page: Page) => page.locator('[data-sidebar="sidebar"]');
 
 test.describe("Sidebar navigation", () => {
@@ -44,11 +44,11 @@ test.describe("Sidebar navigation", () => {
     await sidebar.getByRole("button", { name: /Настройки/ }).click();
     await expect(semesterLink).toBeVisible();
 
-    await sidebar.getByRole("link", { name: "Конструктор анкет" }).click();
+    await sidebar.getByRole("link", { name: "Конструктор" }).click();
     await expect(page).toHaveURL(/\/admin\/create-form$/);
     await expect(semesterLink).toBeVisible();
 
-    await sidebar.getByRole("link", { name: "Анкеты" }).click();
+    await sidebar.getByRole("link", { name: "Все анкеты" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(semesterLink).toBeVisible();
   });
@@ -66,7 +66,7 @@ test.describe("Sidebar navigation", () => {
     await sidebar.getByRole("button", { name: /Настройки/ }).click();
     await expect(semesterLink).toBeHidden();
 
-    await sidebar.getByRole("link", { name: "Анкеты" }).click();
+    await sidebar.getByRole("link", { name: "Все анкеты" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(semesterLink).toBeHidden();
   });

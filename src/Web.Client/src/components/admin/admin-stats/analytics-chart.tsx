@@ -5,7 +5,7 @@ import {
   ChartContainer,
   type ChartConfig,
 } from "@/components/ui/chart";
-import type { PeriodAnalyticsResponse } from "../../../api";
+import type { PeriodAnalyticsResponse } from "@/api.ts";
 
 const colors = [
   "var(--chart-5)",

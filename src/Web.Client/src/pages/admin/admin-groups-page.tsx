@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usersApi, type GroupUser } from "../../api";
+import { usersApi, type GroupUser } from "@/api.ts";
 import {
   AdminModal,
   AdminTable,

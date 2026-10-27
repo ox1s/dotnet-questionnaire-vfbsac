@@ -3,7 +3,7 @@ import {
   dictionariesApi,
   type DictionaryItem,
   type TeacherItem,
-} from "../../api";
+} from "@/api.ts";
 import { CheckCircle2, Plus } from "lucide-react";
 import {
   AdminModal,

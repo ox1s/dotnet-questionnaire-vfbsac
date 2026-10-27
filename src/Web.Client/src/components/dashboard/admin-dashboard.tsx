@@ -1,4 +1,4 @@
-import { type Form } from "../../api";
+import { type Form } from "@/api.ts";
 import { DashboardContent } from "./dashboard-content";
 
 export const AdminDashboard = ({

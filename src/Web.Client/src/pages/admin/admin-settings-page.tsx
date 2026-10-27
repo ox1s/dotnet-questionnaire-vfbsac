@@ -7,8 +7,8 @@ import {
   LockKeyholeOpenIcon,
   CheckIcon,
 } from "lucide-react";
-import { usersApi, settingsApi, getApiErrorMessage } from "../../api";
-import { getUserInfo } from "../../utils/auth";
+import { usersApi, settingsApi, getApiErrorMessage } from "@/api.ts";
+import { getUserInfo } from "@/utils/auth.ts";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getApiErrorMessage, usersApi, type EmployerUser } from "../../api";
+import { getApiErrorMessage, usersApi, type EmployerUser } from "@/api.ts";
 import {
   AdminModal,
   AdminTable,

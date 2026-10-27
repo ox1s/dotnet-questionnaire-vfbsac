@@ -9,12 +9,12 @@ import {
 } from "@/components/survey/context-selector";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
-import { getDeviceId } from "../../utils/device";
+import { getDeviceId } from "@/utils/device.ts";
 import {
   blockNonDigitKeydown,
   digitsOnlyFromClipboard,
   sanitizeDigitsOnly,
-} from "../../utils/numeric-input";
+} from "@/utils/numeric-input.ts";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

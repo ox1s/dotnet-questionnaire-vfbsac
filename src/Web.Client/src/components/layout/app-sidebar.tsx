@@ -18,13 +18,11 @@ import {
   Settings2Icon,
   BookIcon,
   ClipboardListIcon,
-  KeyRoundIcon,
   LogOutIcon,
   UsersIcon,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { ModeToggle } from "../shared/mode-toggle";
-import { ChangePasswordModal } from "@/components/admin/change-password-modal";
 import { logout } from "@/utils/auth";
 
 // Grouped by what the admin actually maintains: the forms, the people who fill
@@ -102,14 +100,20 @@ const data = {
           title: "Семестр",
           url: "/admin/settings",
         },
+        {
+          title: "Аккаунт",
+          url: "/admin/account",
+        },
+        {
+          title: "Администраторы",
+          url: "/admin/admins",
+        },
       ],
     },
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [isPasswordOpen, setIsPasswordOpen] = React.useState(false);
-
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -134,15 +138,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="flex items-center justify-end gap-4 px-4 py-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-0">
           <ModeToggle />
           <Button
-            onClick={() => setIsPasswordOpen(true)}
-            variant="outline"
-            size="icon"
-            aria-label="Сменить пароль"
-            title="Сменить пароль"
-          >
-            <KeyRoundIcon />
-          </Button>
-          <Button
             onClick={logout}
             variant="outline"
             size="icon"
@@ -154,10 +149,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarFooter>
       <SidebarRail />
-      <ChangePasswordModal
-        isOpen={isPasswordOpen}
-        onClose={() => setIsPasswordOpen(false)}
-      />
     </Sidebar>
   );
 }

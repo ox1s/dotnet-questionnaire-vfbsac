@@ -82,6 +82,8 @@ describe("AppSidebar sections", () => {
       "Специальности",
       "Дисциплины",
       "Семестр",
+      "Аккаунт",
+      "Администраторы",
     ]);
   });
 
@@ -109,11 +111,25 @@ describe("AppSidebar sections", () => {
     );
   });
 
-  it("offers the admin's own password change from the footer", () => {
+  it("moves the admin's own login and password to the Аккаунт page", async () => {
     renderSidebar();
+    await expandGroup("Настройки");
+
+    expect(screen.getByRole("link", { name: "Аккаунт" })).toHaveAttribute(
+      "href",
+      "/admin/account",
+    );
+    expect(
+      screen.queryByRole("button", { name: "Сменить пароль" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("manages other admins from the settings", async () => {
+    renderSidebar();
+    await expandGroup("Настройки");
 
     expect(
-      screen.getByRole("button", { name: "Сменить пароль" }),
-    ).toBeInTheDocument();
+      screen.getByRole("link", { name: "Администраторы" }),
+    ).toHaveAttribute("href", "/admin/admins");
   });
 });

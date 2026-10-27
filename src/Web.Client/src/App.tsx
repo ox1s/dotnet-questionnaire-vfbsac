@@ -14,6 +14,8 @@ import { AdminEmployersPage } from "./pages/admin/admin-employers-page";
 import { AdminStaffPage } from "./pages/admin/admin-staff-page";
 import { ProtectedRoute } from "./components/auth/protected-route";
 import { AdminSettingsPage } from "./pages/admin/admin-settings-page";
+import { AdminAccountPage } from "./pages/admin/admin-account-page";
+import { AdminAdminsPage } from "./pages/admin/admin-admins-page";
 import { AdminSpecialitiesPage } from "./pages/admin/admin-specialities-page";
 import { AdminSpecializationsPage } from "./pages/admin/admin-specializations-page";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -63,6 +65,8 @@ const AppRoutes = () => (
             element={<Navigate to="/admin/teachers" replace />}
           />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
+          <Route path="/admin/account" element={<AdminAccountPage />} />
+          <Route path="/admin/admins" element={<AdminAdminsPage />} />
         </Route>
       </Route>
     </Route>

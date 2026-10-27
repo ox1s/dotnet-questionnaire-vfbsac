@@ -259,6 +259,11 @@ export const usersApi = {
 
   getStaff: () => api.get<GroupUser[]>("/users/staff"),
 
+  getMe: () => api.get<GroupUser>("/users/me"),
+  getAdmins: () => api.get<GroupUser[]>("/users/admins"),
+  createAdmin: (login: string, password: string) =>
+    api.post<string>("/users/admins", { login, password }),
+
   createTeacherUser: (teacherId: string, login: string, password: string) =>
     api.post<string>("/users/teachers", { teacherId, login, password }),
   getTeacherUsers: () => api.get<TeacherUser[]>("/users/teachers"),

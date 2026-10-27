@@ -111,7 +111,7 @@ export const AdminStaffPage = () => {
   });
 
   useAdminPageConfig({
-    title: "Настройки",
+    title: "Пользователи",
     subtitle: "Сотрудники",
     actions: (
       <Button onClick={() => openModal()}>

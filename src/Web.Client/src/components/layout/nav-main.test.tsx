@@ -43,10 +43,10 @@ const renderApp = (initialPath: string) =>
     </MemoryRouter>,
   );
 
-// "Наниматели" only exists under the "Настройки" group, so it is a reliable
+// "Семестр" only exists under the "Настройки" group, so it is a reliable
 // marker for whether that group is expanded.
 const settingsGroupIsOpen = () =>
-  screen.queryByRole("link", { name: "Наниматели" }) !== null;
+  screen.queryByRole("link", { name: "Семестр" }) !== null;
 
 describe("NavMain group expansion", () => {
   beforeEach(() => {

@@ -7,6 +7,7 @@ import { AdminStatsPage } from "./pages/admin/admin-stats-page";
 import { AdminFormPreviewPage } from "./pages/admin/admin-form-preview-page";
 import { CreateFormPage } from "./pages/forms/create-form-page";
 import { AdminTeachersPage } from "./pages/admin/admin-teachers-page";
+import { AdminTeacherAccountsPage } from "./pages/admin/admin-teacher-accounts-page";
 import { AdminDisciplinesPage } from "./pages/admin/admin-disciplines-page";
 import { AdminDepartmentsPage } from "./pages/admin/admin-departments-page";
 import { AdminGroupsPage } from "./pages/admin/admin-groups-page";
@@ -54,6 +55,10 @@ const AppRoutes = () => (
           <Route path="/admin/groups" element={<AdminGroupsPage />} />
           <Route path="/admin/employers" element={<AdminEmployersPage />} />
           <Route path="/admin/staff" element={<AdminStaffPage />} />
+          <Route
+            path="/admin/teacher-accounts"
+            element={<AdminTeacherAccountsPage />}
+          />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
         </Route>
       </Route>

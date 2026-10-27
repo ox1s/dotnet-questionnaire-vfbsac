@@ -18,10 +18,13 @@ import {
   Settings2Icon,
   BookIcon,
   ChartAreaIcon,
+  KeyRoundIcon,
   LogOutIcon,
+  UsersIcon,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { ModeToggle } from "../shared/mode-toggle";
+import { ChangePasswordModal } from "@/components/admin/change-password-modal";
 import { logout } from "@/utils/auth";
 
 const data = {
@@ -68,6 +71,31 @@ const data = {
           title: "Специализации",
           url: "/admin/specializations",
         },
+        {
+          title: "Наниматели",
+          url: "/admin/employers",
+        },
+      ],
+    },
+    {
+      // Everyone who can sign in. Reference data about the same people (e.g.
+      // the teacher directory) stays under "Справочники".
+      title: "Пользователи",
+      url: "#",
+      icon: <UsersIcon />,
+      items: [
+        {
+          title: "Группы",
+          url: "/admin/groups",
+        },
+        {
+          title: "Преподаватели",
+          url: "/admin/teacher-accounts",
+        },
+        {
+          title: "Сотрудники",
+          url: "/admin/staff",
+        },
       ],
     },
     {
@@ -76,24 +104,8 @@ const data = {
       icon: <Settings2Icon />,
       items: [
         {
-          title: "Общие",
+          title: "Семестр",
           url: "/admin/settings",
-        },
-        {
-          title: "Группы",
-          url: "/admin/groups",
-        },
-        {
-          title: "Преподаватели",
-          url: "/admin/teachers",
-        },
-        {
-          title: "Сотрудники",
-          url: "/admin/staff",
-        },
-        {
-          title: "Наниматели",
-          url: "/admin/employers",
         },
       ],
     },
@@ -101,6 +113,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const [isPasswordOpen, setIsPasswordOpen] = React.useState(false);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -126,6 +140,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           {" "}
           <ModeToggle />
           <Button
+            onClick={() => setIsPasswordOpen(true)}
+            variant="outline"
+            size="icon"
+            className="ml-4"
+            aria-label="Сменить пароль"
+            title="Сменить пароль"
+          >
+            <KeyRoundIcon />
+          </Button>
+          <Button
             onClick={logout}
             variant="outline"
             size="icon"
@@ -138,6 +162,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarFooter>
       <SidebarRail />
+      <ChangePasswordModal
+        isOpen={isPasswordOpen}
+        onClose={() => setIsPasswordOpen(false)}
+      />
     </Sidebar>
   );
 }

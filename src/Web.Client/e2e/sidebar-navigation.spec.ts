@@ -8,7 +8,7 @@ import { mockForms } from "./utils/mock-api";
 // unmounted and rebuilt the whole sidebar. Everything now shares one <AppShell>
 // layout route, so the sidebar simply stays mounted.
 //
-// "Наниматели" only exists under "Настройки", which makes it a reliable marker
+// "Семестр" only exists under "Настройки", which makes it a reliable marker
 // for whether that group is expanded.
 
 // Locators are scoped to the sidebar because the breadcrumb in the header also
@@ -36,38 +36,38 @@ test.describe("Sidebar navigation", () => {
     page,
   }) => {
     const sidebar = sidebarOf(page);
-    const employersLink = sidebar.getByRole("link", { name: "Наниматели" });
+    const semesterLink = sidebar.getByRole("link", { name: "Семестр" });
 
     await page.goto("/dashboard");
-    await expect(employersLink).toBeHidden();
+    await expect(semesterLink).toBeHidden();
 
     await sidebar.getByRole("button", { name: /Настройки/ }).click();
-    await expect(employersLink).toBeVisible();
+    await expect(semesterLink).toBeVisible();
 
     await sidebar.getByRole("link", { name: "Конструктор анкет" }).click();
     await expect(page).toHaveURL(/\/admin\/create-form$/);
-    await expect(employersLink).toBeVisible();
+    await expect(semesterLink).toBeVisible();
 
     await sidebar.getByRole("link", { name: "Анкеты" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(employersLink).toBeVisible();
+    await expect(semesterLink).toBeVisible();
   });
 
   test("a group the user collapsed by hand stays collapsed across navigation", async ({
     page,
   }) => {
     const sidebar = sidebarOf(page);
-    const employersLink = sidebar.getByRole("link", { name: "Наниматели" });
+    const semesterLink = sidebar.getByRole("link", { name: "Семестр" });
 
     // /admin/settings lives under "Настройки", so the group auto-expands.
     await page.goto("/admin/settings");
-    await expect(employersLink).toBeVisible();
+    await expect(semesterLink).toBeVisible();
 
     await sidebar.getByRole("button", { name: /Настройки/ }).click();
-    await expect(employersLink).toBeHidden();
+    await expect(semesterLink).toBeHidden();
 
     await sidebar.getByRole("link", { name: "Анкеты" }).click();
     await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(employersLink).toBeHidden();
+    await expect(semesterLink).toBeHidden();
   });
 });

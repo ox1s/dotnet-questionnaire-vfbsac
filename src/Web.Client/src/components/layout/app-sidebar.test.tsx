@@ -15,7 +15,7 @@ import { logout } from "@/utils/auth";
 
 const renderSidebar = () =>
   render(
-    <MemoryRouter initialEntries={["/admin/teachers"]}>
+    <MemoryRouter initialEntries={["/admin/teacher-accounts"]}>
       <ThemeProvider>
         <TooltipProvider>
           <SidebarProvider>
@@ -25,6 +25,11 @@ const renderSidebar = () =>
       </ThemeProvider>
     </MemoryRouter>,
   );
+
+// Collapsed groups don't render their links, so expand one by its trigger.
+const expandGroup = async (name: string) => {
+  await userEvent.setup().click(screen.getByRole("button", { name }));
+};
 
 describe("AppSidebar logout button", () => {
   beforeEach(() => {
@@ -41,7 +46,7 @@ describe("AppSidebar logout button", () => {
   });
 });
 
-describe("AppSidebar settings links", () => {
+describe("AppSidebar sections", () => {
   it("links to the staff accounts page", () => {
     renderSidebar();
 
@@ -49,5 +54,37 @@ describe("AppSidebar settings links", () => {
       "href",
       "/admin/staff",
     );
+  });
+
+  it("keeps the teacher directory and teacher logins on separate pages", () => {
+    renderSidebar();
+
+    const hrefs = screen
+      .getAllByRole("link", { name: "Преподаватели" })
+      .map((link) => link.getAttribute("href"));
+
+    expect(hrefs).toEqual(["/admin/teachers", "/admin/teacher-accounts"]);
+  });
+
+  it("lists employers under the dictionaries, not the settings", async () => {
+    renderSidebar();
+    await expandGroup("Настройки");
+
+    expect(screen.getByRole("link", { name: "Наниматели" })).toHaveAttribute(
+      "href",
+      "/admin/employers",
+    );
+    expect(screen.getByRole("link", { name: "Семестр" })).toHaveAttribute(
+      "href",
+      "/admin/settings",
+    );
+  });
+
+  it("offers the admin's own password change from the footer", () => {
+    renderSidebar();
+
+    expect(
+      screen.getByRole("button", { name: "Сменить пароль" }),
+    ).toBeInTheDocument();
   });
 });

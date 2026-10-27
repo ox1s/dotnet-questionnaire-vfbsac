@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { PeriodAnalyticsResponse } from "../../../api";
+import type { PeriodAnalyticsResponse } from "@/api.ts";
 import { ratingLabels } from "./admin-stats-utils";
 
 export function AnalyticsSummaryCards({

@@ -11,8 +11,11 @@ import { AdminDisciplinesPage } from "./pages/admin/admin-disciplines-page";
 import { AdminDepartmentsPage } from "./pages/admin/admin-departments-page";
 import { AdminGroupsPage } from "./pages/admin/admin-groups-page";
 import { AdminEmployersPage } from "./pages/admin/admin-employers-page";
+import { AdminStaffPage } from "./pages/admin/admin-staff-page";
 import { ProtectedRoute } from "./components/auth/protected-route";
 import { AdminSettingsPage } from "./pages/admin/admin-settings-page";
+import { AdminAccountPage } from "./pages/admin/admin-account-page";
+import { AdminAdminsPage } from "./pages/admin/admin-admins-page";
 import { AdminSpecialitiesPage } from "./pages/admin/admin-specialities-page";
 import { AdminSpecializationsPage } from "./pages/admin/admin-specializations-page";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -45,14 +48,25 @@ const AppRoutes = () => (
           <Route path="/admin/teachers" element={<AdminTeachersPage />} />
           <Route path="/admin/disciplines" element={<AdminDisciplinesPage />} />
           <Route path="/admin/departments" element={<AdminDepartmentsPage />} />
-          <Route path="/admin/specialities" element={<AdminSpecialitiesPage />} />
+          <Route
+            path="/admin/specialities"
+            element={<AdminSpecialitiesPage />}
+          />
           <Route
             path="/admin/specializations"
             element={<AdminSpecializationsPage />}
           />
           <Route path="/admin/groups" element={<AdminGroupsPage />} />
           <Route path="/admin/employers" element={<AdminEmployersPage />} />
+          <Route path="/admin/staff" element={<AdminStaffPage />} />
+          {/* Teacher logins moved onto the teachers page; keep old links working. */}
+          <Route
+            path="/admin/teacher-accounts"
+            element={<Navigate to="/admin/teachers" replace />}
+          />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
+          <Route path="/admin/account" element={<AdminAccountPage />} />
+          <Route path="/admin/admins" element={<AdminAdminsPage />} />
         </Route>
       </Route>
     </Route>

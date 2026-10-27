@@ -17,33 +17,62 @@ import {
 import {
   Settings2Icon,
   BookIcon,
-  ChartAreaIcon,
+  ClipboardListIcon,
   LogOutIcon,
+  UsersIcon,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { ModeToggle } from "../shared/mode-toggle";
 import { logout } from "@/utils/auth";
 
+// Grouped by what the admin actually maintains: the forms, the people who fill
+// them in (access is managed on each person's own page, not in a separate
+// users section) and the teaching structure being evaluated. Specializations
+// are opened from their speciality, so they have no entry of their own.
 const data = {
   navMain: [
     {
-      title: "Дашборд",
-      icon: <ChartAreaIcon />,
+      title: "Анкеты",
+      icon: <ClipboardListIcon />,
       url: "#",
       isActive: true,
       items: [
         {
-          title: "Анкеты",
+          title: "Все анкеты",
           url: "/dashboard",
         },
         {
-          title: "Конструктор анкет",
+          title: "Конструктор",
           url: "/admin/create-form",
         },
       ],
     },
     {
-      title: "Справочники",
+      title: "Участники",
+      url: "#",
+      icon: <UsersIcon />,
+      isActive: true,
+      items: [
+        {
+          title: "Преподаватели",
+          url: "/admin/teachers",
+        },
+        {
+          title: "Сотрудники",
+          url: "/admin/staff",
+        },
+        {
+          title: "Группы",
+          url: "/admin/groups",
+        },
+        {
+          title: "Наниматели",
+          url: "/admin/employers",
+        },
+      ],
+    },
+    {
+      title: "Учебная структура",
       url: "#",
       icon: <BookIcon />,
       isActive: true,
@@ -53,20 +82,12 @@ const data = {
           url: "/admin/departments",
         },
         {
-          title: "Преподаватели",
-          url: "/admin/teachers",
-        },
-        {
-          title: "Дисциплины",
-          url: "/admin/disciplines",
-        },
-        {
           title: "Специальности",
           url: "/admin/specialities",
         },
         {
-          title: "Специализации",
-          url: "/admin/specializations",
+          title: "Дисциплины",
+          url: "/admin/disciplines",
         },
       ],
     },
@@ -76,20 +97,16 @@ const data = {
       icon: <Settings2Icon />,
       items: [
         {
-          title: "Общие",
+          title: "Семестр",
           url: "/admin/settings",
         },
         {
-          title: "Группы",
-          url: "/admin/groups",
+          title: "Аккаунт",
+          url: "/admin/account",
         },
         {
-          title: "Преподаватели",
-          url: "/admin/teachers",
-        },
-        {
-          title: "Наниматели",
-          url: "/admin/employers",
+          title: "Администраторы",
+          url: "/admin/admins",
         },
       ],
     },
@@ -118,14 +135,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-4 py-3 flex justify-end items-center">
-          {" "}
+        <div className="flex items-center justify-end gap-4 px-4 py-3 group-data-[collapsible=icon]:flex-col group-data-[collapsible=icon]:gap-2 group-data-[collapsible=icon]:px-0">
           <ModeToggle />
           <Button
             onClick={logout}
             variant="outline"
             size="icon"
-            className="ml-4"
             aria-label="Выйти"
             title="Выйти"
           >

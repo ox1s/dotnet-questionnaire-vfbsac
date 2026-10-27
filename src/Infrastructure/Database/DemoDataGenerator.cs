@@ -300,13 +300,21 @@ public sealed class DemoDataGenerator
 
             User staffUser = User.CreateStaff(
                 Login.Create(loginValue).Value,
-                teacher.FullName,
-                teacherId: teacher.Id,
+                $"Сотрудник кафедры {department.Name}",
+                teacherId: null,
                 departmentId: department.Id,
                 passwordHash: defaultPasswordHash,
                 role: UserRole.Staff).Value;
 
             users.Add(staffUser);
+
+            User teacherUser = User.CreateTeacher(
+                Login.Create($"TEACHER{index + 1:00}").Value,
+                teacher.FullName,
+                teacher.Id,
+                defaultPasswordHash).Value;
+
+            users.Add(teacherUser);
         }
 
         foreach ((string login, string displayName, string organizationName) in EmployerAccounts)

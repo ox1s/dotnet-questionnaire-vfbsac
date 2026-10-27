@@ -6,7 +6,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { PeriodAnalyticsResponse } from "../../../api";
+import type { PeriodAnalyticsResponse } from "@/api.ts";
 import { ratingLabels } from "./admin-stats-utils";
 
 export function QuestionsTable({

@@ -1,7 +1,5 @@
 using Application.Abstractions.Messaging;
-using Application.Users.CreateGroup;
 using Application.Users.CreateStaff;
-using Domain.User;
 using SharedKernel;
 using Web.Api.Extensions;
 using Web.Api.Infrastructure;
@@ -10,17 +8,16 @@ namespace Web.Api.Endpoints.Users;
 
 internal sealed class CreateStaff : IEndpoint
 {
-    private sealed record CreateGroupRequest(
+    public sealed record CreateStaffRequest(
         string Login,
         string FullName,
         string Password,
-        Guid? DepartmentId,
-        UserRole Role);
+        Guid? DepartmentId = null);
 
     public void MapEndpoint(IEndpointRouteBuilder app)
     {
         app.MapPost("users/staff", async (
-            CreateGroupRequest request,
+            CreateStaffRequest request,
             ICommandHandler<CreateStaffUserCommand, Guid> handler,
             CancellationToken cancellationToken) =>
         {
@@ -28,8 +25,7 @@ internal sealed class CreateStaff : IEndpoint
                 Login: request.Login,
                 FullName: request.FullName,
                 Password: request.Password,
-                DepartmentId: request.DepartmentId,
-                Role: request.Role
+                DepartmentId: request.DepartmentId
             );
             Result<Guid> result = await handler.Handle(command, cancellationToken);
 

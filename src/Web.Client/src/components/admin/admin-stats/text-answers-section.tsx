@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { TextAnswerItem } from "../../../api";
+import type { TextAnswerItem } from "@/api.ts";
 
 type GroupBy = "none" | "teacher" | "department" | "discipline";
 

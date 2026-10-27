@@ -5,5 +5,6 @@ public enum UserRole
     Admin = 1,
     StudentGroup = 2,
     Staff = 3,
-    Employer = 4
+    Employer = 4,
+    Teacher = 5
 }

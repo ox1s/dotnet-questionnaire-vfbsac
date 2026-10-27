@@ -405,6 +405,13 @@ FodyWeavers.xsd
 **/.omc/
 .aspire/
 
+# AI agent tooling - local Claude Code settings/worktrees, installed agent
+# skills, and the Neon CLI project marker
+.claude/
+.agents/
+.neon
+skills-lock.json
+
 # Front-end build output (regenerated via `npm run build`)
 src/Web.Client/dist/
 

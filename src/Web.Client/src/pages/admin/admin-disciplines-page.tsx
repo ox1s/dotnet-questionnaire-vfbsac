@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { dictionariesApi, type DictionaryItem } from "../../api";
+import { dictionariesApi, type DictionaryItem } from "@/api.ts";
 import { Plus, Book } from "lucide-react";
 import {
   AdminModal,
@@ -63,7 +63,7 @@ export const AdminDisciplinesPage = () => {
   });
 
   useAdminPageConfig({
-    title: "Справочники",
+    title: "Учебная структура",
     subtitle: "Дисциплины",
     actions: (
       <Button onClick={() => openModal()}>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { dictionariesApi, type DictionaryItem } from "../../api";
+import { dictionariesApi, type DictionaryItem } from "@/api.ts";
 import { Plus, Layers3 } from "lucide-react";
 import {
   AdminModal,
@@ -80,7 +80,10 @@ export const AdminSpecializationsPage = () => {
   });
 
   useAdminPageConfig({
-    title: "Справочники",
+    title: "Учебная структура",
+    // No sidebar entry of their own: Specializations are reached from
+    // Specialities, so the breadcrumb leads back there.
+    parents: [{ label: "Специальности", to: "/admin/specialities" }],
     subtitle: "Специализации",
     actions: (
       <Button onClick={() => openModal()}>

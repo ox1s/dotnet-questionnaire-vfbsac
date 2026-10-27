@@ -1,16 +1,13 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ShieldAlert,
-  KeyRound,
   AlertTriangle,
   LockKeyholeIcon,
   LockKeyholeOpenIcon,
   CheckIcon,
 } from "lucide-react";
-import { usersApi, settingsApi, getApiErrorMessage } from "../../api";
-import { getUserInfo } from "../../utils/auth";
+import { settingsApi, getApiErrorMessage } from "@/api.ts";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Card,
   CardContent,
@@ -18,43 +15,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 
 export const AdminSettingsPage = () => {
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
 
   useAdminPageConfig({
     title: "Настройки",
-    subtitle: "Общее",
+    subtitle: "Семестр",
   });
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newPassword.length < 8)
-      return toast.error("Пароль должен содержать минимум 8 символов");
-    if (newPassword !== confirmPassword)
-      return toast.error("Пароли не совпадают");
-
-    try {
-      setIsSaving(true);
-      const user = getUserInfo();
-      if (!user?.sub) throw new Error("Пользователь не найден");
-      await usersApi.setPassword(user.sub, newPassword);
-      toast.success("Ваш пароль успешно изменен!");
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (e) {
-      toast.error(getApiErrorMessage(e, "Ошибка при смене пароля"));
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleCloseSemester = async () => {
     if (
@@ -92,50 +63,7 @@ export const AdminSettingsPage = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-3">
-              <div className="bg-primary/15 p-2 text-primary">
-                <KeyRound size={20} />
-              </div>
-              Смена пароля
-            </CardTitle>
-            <CardDescription>Обновите пароль администратора</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handlePasswordChange} className="space-y-4">
-              <div className="space-y-2">
-                <Label>Новый пароль</Label>
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Повторите пароль</Label>
-                <Input
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button
-                type="submit"
-                disabled={isSaving || !newPassword || !confirmPassword}
-                className="w-full sm:w-auto mt-2"
-              >
-                {isSaving ? "Сохранение..." : "Сохранить новый пароль"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-
+      <div className="max-w-2xl">
         <Card className="border-destructive/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">

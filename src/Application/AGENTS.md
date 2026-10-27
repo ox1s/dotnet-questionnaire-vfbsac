@@ -67,6 +67,8 @@ Forms are toggled active/inactive in bulk by `Users/OpenSemester` and `Users/Clo
 | `SignIn/LoginUserCommand(Login, Password)` | Looks up by `Login` value object, verifies via `IPasswordHasher.Verify`, issues a JWT-like token string via `ITokenProvider.Create(user)`. Both "no such login" and "bad password" map to the same `UserErrors.NotFoundByLogin` (comment notes this is deliberate to avoid leaking which case failed). |
 | `CreateGroup/CreateGroupUserCommand(GroupName, Password)` | Validates `GroupName` value object, uses its normalized value as the `Login`; rejects duplicates via `UserErrors.GroupExists`; creates via `User.CreateGroupUser(...)`. |
 | `CreateStaff/CreateStaffUserCommand(Login, FullName, Password, DepartmentId?, UserRole Role)` | Validates `Login`; rejects duplicates via `UserErrors.UserExist()`; creates via `User.CreateStaff(...)` with `teacherId: null`. Validator restricts `Role` to `Staff` only. |
+| `CreateAdmin/CreateAdminUserCommand(Login, Password)` | Validates `Login` (password ≥ 12 via validator); rejects duplicates via `UserErrors.UserExist()`; creates via `User.CreateAdmin(...)`, whose display name is the login. |
+| `GetAdmins/GetAdminsQuery()` | Lists users with `Role == UserRole.Admin`, ordered by login. |
 | `AdminSetPassword/AdminSetPasswordCommand(UserId, NewPassword)` | Admin-forced password reset, bypassing normal change-password rules; calls `user.SetPasswordByAdmin(hash)`. |
 | `Update/UpdateUserCommand(UserId, Login, DisplayName)` | Re-validates `Login`, checks for a conflicting login only if it actually changed, calls `user.UpdateDetails(...)`. |
 | `Delete/DeleteUserCommand(UserId)` | Soft-delete only. |

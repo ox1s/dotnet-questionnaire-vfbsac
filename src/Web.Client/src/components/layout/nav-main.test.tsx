@@ -13,20 +13,20 @@ vi.mock("@/utils/auth", () => ({
 
 // Mirrors App.tsx: every sidebar-bearing screen sits under one <AppShell/>
 // layout route, so navigating between them re-renders only the <Outlet/>.
-const Shell = () => (
-  <SidebarProvider>
+const Shell = ({ defaultOpen = true }: { defaultOpen?: boolean }) => (
+  <SidebarProvider defaultOpen={defaultOpen}>
     <AppSidebar />
     <Outlet />
   </SidebarProvider>
 );
 
-const renderApp = (initialPath: string) =>
+const renderApp = (initialPath: string, { collapsed = false } = {}) =>
   render(
     <MemoryRouter initialEntries={[initialPath]}>
       <ThemeProvider>
         <TooltipProvider>
           <Routes>
-            <Route element={<Shell />}>
+            <Route element={<Shell defaultOpen={!collapsed} />}>
               <Route path="/dashboard" element={<div>dashboard page</div>} />
               <Route
                 path="/admin/create-form"
@@ -43,10 +43,10 @@ const renderApp = (initialPath: string) =>
     </MemoryRouter>,
   );
 
-// "Наниматели" only exists under the "Настройки" group, so it is a reliable
+// "Семестр" only exists under the "Настройки" group, so it is a reliable
 // marker for whether that group is expanded.
 const settingsGroupIsOpen = () =>
-  screen.queryByRole("link", { name: "Наниматели" }) !== null;
+  screen.queryByRole("link", { name: "Семестр" }) !== null;
 
 describe("NavMain group expansion", () => {
   beforeEach(() => {
@@ -54,7 +54,7 @@ describe("NavMain group expansion", () => {
     window.sessionStorage.clear();
   });
 
-  it("keeps the Настройки group expanded after navigating to Конструктор анкет", async () => {
+  it("keeps the Настройки group expanded after navigating to Конструктор", async () => {
     renderApp("/dashboard");
     const user = userEvent.setup();
 
@@ -62,20 +62,20 @@ describe("NavMain group expansion", () => {
     await user.click(screen.getByRole("button", { name: /Настройки/ }));
     expect(settingsGroupIsOpen()).toBe(true);
 
-    await user.click(screen.getByRole("link", { name: "Конструктор анкет" }));
+    await user.click(screen.getByRole("link", { name: "Конструктор" }));
     expect(screen.getByText("create form page")).toBeInTheDocument();
 
     expect(settingsGroupIsOpen()).toBe(true);
   });
 
-  it("keeps the Настройки group expanded after navigating to Анкеты", async () => {
+  it("keeps the Настройки group expanded after navigating to Все анкеты", async () => {
     renderApp("/admin/create-form");
     const user = userEvent.setup();
 
     await user.click(screen.getByRole("button", { name: /Настройки/ }));
     expect(settingsGroupIsOpen()).toBe(true);
 
-    await user.click(screen.getByRole("link", { name: "Анкеты" }));
+    await user.click(screen.getByRole("link", { name: "Все анкеты" }));
     expect(screen.getByText("dashboard page")).toBeInTheDocument();
 
     expect(settingsGroupIsOpen()).toBe(true);
@@ -94,7 +94,7 @@ describe("NavMain group expansion", () => {
     await user.click(screen.getByRole("button", { name: /Настройки/ }));
     expect(settingsGroupIsOpen()).toBe(false);
 
-    await user.click(screen.getByRole("link", { name: "Анкеты" }));
+    await user.click(screen.getByRole("link", { name: "Все анкеты" }));
     expect(screen.getByText("dashboard page")).toBeInTheDocument();
 
     expect(settingsGroupIsOpen()).toBe(false);
@@ -113,5 +113,24 @@ describe("NavMain group expansion", () => {
     renderApp("/dashboard");
 
     expect(settingsGroupIsOpen()).toBe(true);
+  });
+});
+
+// Collapsed to icons, a group cannot expand in place: its pages would be
+// hidden with the rest of the labels, so the icon opens them as a menu.
+describe("NavMain collapsed to icons", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    window.sessionStorage.clear();
+  });
+
+  it("opens a group's pages from its icon and navigates to one", async () => {
+    renderApp("/dashboard", { collapsed: true });
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole("button", { name: /Настройки/ }));
+    await user.click(screen.getByRole("menuitem", { name: "Семестр" }));
+
+    expect(screen.getByText("settings page")).toBeInTheDocument();
   });
 });

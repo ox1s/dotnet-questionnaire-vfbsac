@@ -49,7 +49,7 @@ const useForms = (source: "admin" | "user") => {
 const AdminDashboardPage = () => {
   const [forms, setForms] = useForms("admin");
 
-  useAdminPageConfig({ title: "Дашборд", subtitle: "Анкеты" });
+  useAdminPageConfig({ title: "Анкеты", subtitle: "Все анкеты" });
 
   const deleteForm = async (id: string) => {
     try {

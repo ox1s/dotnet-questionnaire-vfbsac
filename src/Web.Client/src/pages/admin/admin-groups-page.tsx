@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usersApi, type GroupUser } from "../../api";
+import { usersApi, type GroupUser } from "@/api.ts";
 import {
   AdminModal,
   AdminTable,
@@ -85,7 +85,7 @@ export const AdminGroupsPage = () => {
   });
 
   useAdminPageConfig({
-    title: "Настройки",
+    title: "Участники",
     subtitle: "Группы",
     actions: (
       <Button onClick={() => openModal()}>

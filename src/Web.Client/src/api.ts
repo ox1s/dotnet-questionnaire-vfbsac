@@ -45,6 +45,13 @@ export interface GroupUser {
   displayName: string;
 }
 
+export interface TeacherUser {
+  id: string;
+  login: string;
+  displayName: string;
+  teacherId: string;
+}
+
 export interface EmployerUser {
   id: string;
   login: string;
@@ -247,10 +254,19 @@ export interface TextAnswerItem {
 export const usersApi = {
   createGroup: (groupName: string, password: string) =>
     api.post<string>("/users/groups", { groupName, password }),
-  createStaff: (login: string, displayName: string, password: string) =>
-    api.post<string>("/users/staff", { login, displayName, password }),
+  createStaff: (login: string, fullName: string, password: string) =>
+    api.post<string>("/users/staff", { login, fullName, password }),
 
   getStaff: () => api.get<GroupUser[]>("/users/staff"),
+
+  getMe: () => api.get<GroupUser>("/users/me"),
+  getAdmins: () => api.get<GroupUser[]>("/users/admins"),
+  createAdmin: (login: string, password: string) =>
+    api.post<string>("/users/admins", { login, password }),
+
+  createTeacherUser: (teacherId: string, login: string, password: string) =>
+    api.post<string>("/users/teachers", { teacherId, login, password }),
+  getTeacherUsers: () => api.get<TeacherUser[]>("/users/teachers"),
   getGroups: () => api.get<GroupUser[]>("/users/groups"),
 
   createEmployer: (

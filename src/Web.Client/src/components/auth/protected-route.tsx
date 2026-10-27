@@ -1,5 +1,5 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { getUserInfo } from "../../utils/auth";
+import { getUserInfo } from "@/utils/auth.ts";
 
 interface ProtectedRouteProps {
   allowedRoles?: string[];

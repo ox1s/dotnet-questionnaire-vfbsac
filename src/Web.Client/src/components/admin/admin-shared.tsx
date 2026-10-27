@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import { Edit2, Trash2, RotateCcw, SearchIcon, Trash2Icon } from "lucide-react";
 import { useAdminPage } from "@/hooks/use-admin-page";
 import {
@@ -10,6 +10,7 @@ import {
 import {
   Breadcrumb,
   BreadcrumbItem,
+  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
@@ -118,6 +119,16 @@ export const AdminLayout = () => {
                   </BreadcrumbPage>
                 </BreadcrumbItem>
                 <BreadcrumbSeparator className="hidden md:block" />
+                {config.parents?.map((parent) => (
+                  <React.Fragment key={parent.to}>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink asChild className="font-medium">
+                        <Link to={parent.to}>{parent.label}</Link>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    <BreadcrumbSeparator />
+                  </React.Fragment>
+                ))}
                 <BreadcrumbItem>
                   <BreadcrumbPage className="font-bold text-foreground">
                     {config.subtitle}

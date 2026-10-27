@@ -81,6 +81,9 @@ export const AdminSpecializationsPage = () => {
 
   useAdminPageConfig({
     title: "Учебная структура",
+    // No sidebar entry of their own: Specializations are reached from
+    // Specialities, so the breadcrumb leads back there.
+    parents: [{ label: "Специальности", to: "/admin/specialities" }],
     subtitle: "Специализации",
     actions: (
       <Button onClick={() => openModal()}>

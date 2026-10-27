@@ -1,7 +1,15 @@
 import { createContext, useContext, type ReactNode } from "react";
 
+export type AdminPageBreadcrumb = {
+  label: string;
+  to: string;
+};
+
 export type AdminPageConfig = {
   title?: string;
+  // Clickable crumbs between `title` and `subtitle`, for pages that sit
+  // under another page rather than directly in the sidebar.
+  parents?: AdminPageBreadcrumb[];
   subtitle?: string;
   actions?: ReactNode;
 };

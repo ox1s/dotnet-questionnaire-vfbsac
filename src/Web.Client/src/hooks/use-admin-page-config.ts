@@ -1,16 +1,5 @@
-import {
-  useLayoutEffect,
-  useRef,
-  type DependencyList,
-  type ReactNode,
-} from "react";
-import { useAdminPage } from "@/hooks/use-admin-page";
-
-type AdminPageConfig = {
-  title?: string;
-  subtitle?: string;
-  actions?: ReactNode;
-};
+import { useLayoutEffect, useRef, type DependencyList } from "react";
+import { useAdminPage, type AdminPageConfig } from "@/hooks/use-admin-page";
 
 export const useAdminPageConfig = (
   config: AdminPageConfig,

@@ -4,6 +4,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Link, useLocation } from "react-router-dom";
 import {
   SidebarGroup,
@@ -14,6 +21,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import { useSidebar } from "@/hooks/use-sidebar";
 import { ChevronRightIcon } from "lucide-react";
 
 type NavItem = {
@@ -65,6 +73,10 @@ const writeGroupState = (groups: GroupState): GroupState => {
 
 export function NavMain({ items }: { items: NavItem[] }) {
   const location = useLocation();
+  const { state, isMobile } = useSidebar();
+  // Collapsed to icons, a group's sub-list is hidden along with every label,
+  // so expanding it in place would show nothing; its pages open as a menu.
+  const isIconOnly = state === "collapsed" && !isMobile;
   const [openGroups, setOpenGroups] =
     React.useState<GroupState>(readGroupState);
 
@@ -98,6 +110,45 @@ export function NavMain({ items }: { items: NavItem[] }) {
           const isOpen =
             openGroups[item.title] ??
             (hasActiveChild || item.isActive || false);
+
+          if (isIconOnly) {
+            return (
+              <SidebarMenuItem key={item.title}>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <SidebarMenuButton
+                      tooltip={item.title}
+                      isActive={hasActiveChild}
+                    >
+                      {item.icon}
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="right"
+                    align="start"
+                    className="w-48"
+                  >
+                    <DropdownMenuLabel>{item.title}</DropdownMenuLabel>
+                    {item.items?.map((subItem) => (
+                      <DropdownMenuItem key={subItem.title} asChild>
+                        <Link
+                          to={subItem.url}
+                          className={
+                            subItem.url === location.pathname
+                              ? "font-medium text-primary"
+                              : undefined
+                          }
+                        >
+                          {subItem.title}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            );
+          }
 
           return (
             <Collapsible

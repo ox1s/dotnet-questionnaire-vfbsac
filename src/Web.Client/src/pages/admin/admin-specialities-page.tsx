@@ -1,5 +1,6 @@
 import { dictionariesApi, type DictionaryItem } from "@/api.ts";
-import { Plus, Book } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Plus, Book, Layers3 } from "lucide-react";
 import {
   AdminModal,
   AdminTable,
@@ -48,12 +49,20 @@ export const AdminSpecialitiesPage = () => {
   });
 
   useAdminPageConfig({
-    title: "Справочники",
+    title: "Учебная структура",
     subtitle: "Специальности",
+    // Specializations have no sidebar entry; they are reached from here.
     actions: (
-      <Button onClick={() => openModal()}>
-        <Plus size={18} /> Добавить
-      </Button>
+      <div className="flex gap-2">
+        <Button variant="outline" asChild>
+          <Link to="/admin/specializations">
+            <Layers3 size={18} /> Специализации
+          </Link>
+        </Button>
+        <Button onClick={() => openModal()}>
+          <Plus size={18} /> Добавить
+        </Button>
+      </div>
     ),
   });
 

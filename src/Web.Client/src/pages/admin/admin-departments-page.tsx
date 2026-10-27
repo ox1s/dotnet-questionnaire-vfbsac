@@ -44,7 +44,7 @@ export const AdminDepartmentsPage = () => {
     });
 
     useAdminPageConfig({
-        title: "Справочники",
+        title: "Учебная структура",
         subtitle: "Кафедры",
         actions: (
             <Button onClick={() => openModal()}>

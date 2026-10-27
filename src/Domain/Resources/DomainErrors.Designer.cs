@@ -419,6 +419,12 @@ namespace Domain.Resources {
             }
         }
         
+        internal static string Users_TeacherAccountExists {
+            get {
+                return ResourceManager.GetString("Users_TeacherAccountExists", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Вы не авторизованы для выполняния этого действия.
         /// </summary>

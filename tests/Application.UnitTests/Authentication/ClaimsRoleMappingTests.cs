@@ -47,6 +47,21 @@ public class ClaimsRoleMappingTests
     }
 
     [Fact]
+    public async Task TeacherToken_CarriesTeacherRole_AndPermissionToSubmitForms()
+    {
+        User teacher = User.CreateTeacher(
+            Login.Create("TEACHER_TEST").Value,
+            "Test Teacher",
+            Guid.NewGuid(),
+            passwordHash: "hash").Value;
+
+        ClaimsPrincipal principal = await ValidateAsync(CreateToken(teacher));
+
+        principal.GetRole().ShouldBe(UserRole.Teacher);
+        principal.FindAll("permission").Select(c => c.Value).ShouldContain(Permissions.SubmitForms);
+    }
+
+    [Fact]
     public async Task GetRole_WithoutClaimsMappingApplied_StillFindsTheRoleViaTheRawClaimFallback()
     {
         // Guards the `?? principal?.FindFirstValue("role")` fallback: if MapInboundClaims

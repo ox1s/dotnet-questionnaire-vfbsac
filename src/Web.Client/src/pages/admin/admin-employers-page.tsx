@@ -14,18 +14,7 @@ import { toast } from "sonner";
 import { Plus, Building2, Key, X, RefreshCw, Copy } from "lucide-react";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
-
-const PASSWORD_ALPHABET =
-  "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-
-const generateSecurePassword = (length = 12): string => {
-  const randomValues = new Uint32Array(length);
-  crypto.getRandomValues(randomValues);
-  return Array.from(
-    randomValues,
-    (value) => PASSWORD_ALPHABET[value % PASSWORD_ALPHABET.length],
-  ).join("");
-};
+import { generateSecurePassword } from "@/utils/password";
 
 export const AdminEmployersPage = () => {
   const [login, setLogin] = useState("");

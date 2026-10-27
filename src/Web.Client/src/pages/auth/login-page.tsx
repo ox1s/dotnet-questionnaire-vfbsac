@@ -52,12 +52,12 @@ export const LoginPage = () => {
               <form onSubmit={handleLogin}>
                 <FieldGroup>
                   <Field>
-                    <FieldLabel>Логин (Группа)</FieldLabel>
+                    <FieldLabel>Логин</FieldLabel>
                     <Input
                       type="text"
                       value={login}
                       onChange={(e) => setLogin(e.target.value)}
-                      placeholder="Например: ПО111"
+                      placeholder="Например: ПО111 или IVANOVA"
                     />
                   </Field>
                   <Field>

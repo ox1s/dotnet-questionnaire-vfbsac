@@ -11,6 +11,7 @@ import { AdminDisciplinesPage } from "./pages/admin/admin-disciplines-page";
 import { AdminDepartmentsPage } from "./pages/admin/admin-departments-page";
 import { AdminGroupsPage } from "./pages/admin/admin-groups-page";
 import { AdminEmployersPage } from "./pages/admin/admin-employers-page";
+import { AdminStaffPage } from "./pages/admin/admin-staff-page";
 import { ProtectedRoute } from "./components/auth/protected-route";
 import { AdminSettingsPage } from "./pages/admin/admin-settings-page";
 import { AdminSpecialitiesPage } from "./pages/admin/admin-specialities-page";
@@ -52,6 +53,7 @@ const AppRoutes = () => (
           />
           <Route path="/admin/groups" element={<AdminGroupsPage />} />
           <Route path="/admin/employers" element={<AdminEmployersPage />} />
+          <Route path="/admin/staff" element={<AdminStaffPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
         </Route>
       </Route>

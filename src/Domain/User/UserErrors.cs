@@ -31,6 +31,10 @@ public static class UserErrors
         "Users.GroupExists", 
         $"{Resources.DomainErrors.Users_GroupExists}, Login = {login}");
 
+    public static Error TeacherAccountExists(Guid teacherId) => Error.Conflict(
+        "Users.TeacherAccountExists",
+        $"{Resources.DomainErrors.Users_TeacherAccountExists}, TeacherId = '{teacherId}'");
+
     public static Error GroupNameInvalid() => Error.Failure(
         "Users.GroupNameInvalid",
         $"{Resources.DomainErrors.Users_GroupNameInvalid}");

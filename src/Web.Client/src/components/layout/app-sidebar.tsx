@@ -88,6 +88,10 @@ const data = {
           url: "/admin/teachers",
         },
         {
+          title: "Сотрудники",
+          url: "/admin/staff",
+        },
+        {
           title: "Наниматели",
           url: "/admin/employers",
         },

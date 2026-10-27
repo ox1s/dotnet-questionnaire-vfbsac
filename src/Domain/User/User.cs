@@ -69,6 +69,32 @@ public sealed class User : Entity, ISoftDeletable
         };
     }
 
+    public static Result<User> CreateTeacher(
+        Login login,
+        string fullName,
+        Guid teacherId,
+        string passwordHash)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+        {
+            return Result.Failure<User>(Error.NullValue);
+        }
+
+        return new User
+        {
+            Id = Guid.NewGuid(),
+            Login = login,
+            DisplayName = fullName.Trim(),
+            PasswordHash = passwordHash,
+            Role = UserRole.Teacher,
+            TeacherId = teacherId,
+            DepartmentId = null,
+            GroupId = null,
+            OrganizationName = null,
+            IsActive = true
+        };
+    }
+
     public static Result<User> CreateEmployer(
         Login login,
         string displayName,

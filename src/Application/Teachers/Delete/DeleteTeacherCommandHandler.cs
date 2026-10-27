@@ -1,6 +1,7 @@
 using Application.Abstractions.Data;
 using Application.Abstractions.Messaging;
 using Domain.College.Teachers;
+using Domain.User;
 using Microsoft.EntityFrameworkCore;
 using SharedKernel;
 
@@ -21,11 +22,21 @@ internal sealed class DeleteTeacherCommandHandler(IApplicationDbContext context)
         }
 
         bool hasUsers = await context.Users
-            .AnyAsync(u => u.TeacherId == command.TeacherId, cancellationToken);
+            .AnyAsync(u => u.TeacherId == command.TeacherId && u.Role != UserRole.Teacher, cancellationToken);
 
         if (hasUsers)
         {
             return Result.Failure(TeacherErrors.HasUsers());
+        }
+
+        // The teacher's own login goes with them; other linked users block the delete above.
+        List<User> teacherAccounts = await context.Users
+            .Where(u => u.TeacherId == command.TeacherId && u.Role == UserRole.Teacher)
+            .ToListAsync(cancellationToken);
+
+        foreach (User account in teacherAccounts)
+        {
+            account.IsDeleted = true;
         }
 
         bool usedInSubmissions = await context.Submissions

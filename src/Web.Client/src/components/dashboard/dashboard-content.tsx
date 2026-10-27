@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { type Form } from "../../api";
+import { type Form } from "@/api.ts";
 import { ROLE_LABELS } from "@/utils/roles";
 import { FILTER_FIELD_LABELS } from "@/utils/filter-fields";
 import {

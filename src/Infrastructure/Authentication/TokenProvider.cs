@@ -53,6 +53,7 @@ internal sealed class TokenProvider(IConfiguration configuration) : ITokenProvid
             UserRole.StudentGroup => [Permissions.SubmitForms],
             UserRole.Staff => [Permissions.SubmitForms],
             UserRole.Employer => [Permissions.SubmitForms],
+            UserRole.Teacher => [Permissions.SubmitForms],
             _ => []
         };
     }

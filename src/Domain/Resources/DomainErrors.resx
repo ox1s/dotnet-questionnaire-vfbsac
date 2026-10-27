@@ -135,6 +135,9 @@
   <data name="Users_UserExist" xml:space="preserve">
     <value>Пользователь уже существует</value>
   </data>
+  <data name="Users_TeacherAccountExists" xml:space="preserve">
+    <value>У преподавателя уже есть логин для входа</value>
+  </data>
   <data name="Users_GroupExists" xml:space="preserve">
     <value>Группа с таким логином уже существует</value>
   </data>

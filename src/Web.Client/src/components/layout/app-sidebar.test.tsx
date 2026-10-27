@@ -40,3 +40,14 @@ describe("AppSidebar logout button", () => {
     expect(logout).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("AppSidebar settings links", () => {
+  it("links to the staff accounts page", () => {
+    renderSidebar();
+
+    expect(screen.getByRole("link", { name: "Сотрудники" })).toHaveAttribute(
+      "href",
+      "/admin/staff",
+    );
+  });
+});

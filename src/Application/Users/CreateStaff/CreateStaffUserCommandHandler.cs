@@ -32,8 +32,7 @@ internal sealed class CreateStaffUserCommandHandler(
             command.FullName,
             teacherId: null,
             departmentId: command.DepartmentId,
-            passwordHash: hash,
-            role: command.Role
+            passwordHash: hash
         );
 
         if (userResult.IsFailure)

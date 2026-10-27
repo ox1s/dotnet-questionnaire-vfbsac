@@ -1,4 +1,4 @@
-import { type Form } from "../../api";
+import { type Form } from "@/api.ts";
 import { LogOut, FileText, User, Building2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

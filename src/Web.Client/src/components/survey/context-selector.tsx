@@ -3,7 +3,7 @@ import {
   dictionariesApi,
   type DictionaryItem,
   type TeacherItem,
-} from "../../api";
+} from "@/api.ts";
 import { getLinkedFilterOptions } from "@/utils/linked-filters";
 import { Label } from "@/components/ui/label";
 import {

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { dictionariesApi, type DictionaryItem } from "../../api";
+import { dictionariesApi, type DictionaryItem } from "@/api.ts";
 import { Plus, Layers3 } from "lucide-react";
 import {
   AdminModal,

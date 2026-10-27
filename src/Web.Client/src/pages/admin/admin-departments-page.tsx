@@ -1,4 +1,4 @@
-import {dictionariesApi, type DictionaryItem} from "../../api";
+import {dictionariesApi, type DictionaryItem} from "@/api.ts";
 import {Plus, Building2} from "lucide-react";
 import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";

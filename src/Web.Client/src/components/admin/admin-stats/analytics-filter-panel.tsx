@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { StatisticsFilters, TeacherItem } from "../../../api";
+import type { StatisticsFilters, TeacherItem } from "@/api.ts";
 import type { LinkedFilterOptions } from "@/utils/linked-filters";
 import { AnalyticsField } from "./analytics-field";
 import { DatePickerInput } from "./date-picker-input";

@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import type { SatisfactionRating } from "../../../api";
+import type { SatisfactionRating } from "@/api.ts";
 
 export type Mode = "single" | "periods" | "groups";
 

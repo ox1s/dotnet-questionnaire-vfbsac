@@ -1,10 +1,12 @@
 import { useState } from "react";
 import {
   dictionariesApi,
+  usersApi,
   type DictionaryItem,
   type TeacherItem,
-} from "../../api";
-import { CheckCircle2, Plus } from "lucide-react";
+  type TeacherUser,
+} from "@/api.ts";
+import { CheckCircle2, KeyRound, Plus } from "lucide-react";
 import {
   AdminModal,
   AdminTable,
@@ -19,11 +21,23 @@ import { Input } from "@/components/ui/input";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
 import { useDictionaryCrud } from "@/hooks/use-dictionary-crud";
 import { Label } from "@/components/ui/label";
+import { TeacherAccessModal } from "@/components/admin/teacher-access-modal";
+import {
+  CredentialsBanner,
+  type IssuedCredentials,
+} from "@/components/admin/credentials-banner";
 
 export const AdminTeachersPage = () => {
   const [selectedDepartmentIds, setSelectedDepartmentIds] = useState<string[]>(
     [],
   );
+  const [teacherUsers, setTeacherUsers] = useState<TeacherUser[]>([]);
+  const [accessTeacher, setAccessTeacher] = useState<TeacherItem | null>(null);
+  const [issuedCredentials, setIssuedCredentials] =
+    useState<IssuedCredentials | null>(null);
+
+  const findTeacherUser = (teacherId: string) =>
+    teacherUsers.find((account) => account.teacherId === teacherId) ?? null;
 
   const {
     related: departments,
@@ -39,12 +53,17 @@ export const AdminTeachersPage = () => {
     handleDelete,
     handleRestore,
     handleSubmit,
+    reload,
   } = useDictionaryCrud<TeacherItem, DictionaryItem>({
     fetch: async () => {
-      const [teachersRes, departmentsRes] = await Promise.all([
+      const [teachersRes, departmentsRes, teacherUsersRes] = await Promise.all([
         dictionariesApi.getTeachers(),
         dictionariesApi.getDepartments(),
+        usersApi.getTeacherUsers(),
       ]);
+      // Logins are reloaded with the list, so deleting a teacher (which also
+      // retires their login) or issuing access is reflected straight away.
+      setTeacherUsers(teacherUsersRes.data);
       return { items: teachersRes.data, related: departmentsRes.data };
     },
     searchText: (t) => t.fullName,
@@ -108,9 +127,19 @@ export const AdminTeachersPage = () => {
         onSearchChange={setSearchQuery}
         searchPlaceholder="Поиск преподавателя..."
         data={filteredTeachers}
+        topContent={
+          issuedCredentials && (
+            <CredentialsBanner
+              title="Доступ преподавателя"
+              credentials={issuedCredentials}
+              onClose={() => setIssuedCredentials(null)}
+            />
+          )
+        }
         columns={[
           { header: "ФИО" },
           { header: "Филиал кафедры" },
+          { header: "Логин" },
           { header: "Действия", className: "text-right w-32" },
         ]}
         renderRow={(teacher) => (
@@ -134,18 +163,59 @@ export const AdminTeachersPage = () => {
               />
             </TableCell>
 
+            <TableCell className="align-top">
+              {findTeacherUser(teacher.id) ? (
+                <span className="font-mono text-sm">
+                  {findTeacherUser(teacher.id)?.login}
+                </span>
+              ) : (
+                <span className="text-xs text-muted-foreground">
+                  Нет доступа
+                </span>
+              )}
+            </TableCell>
+
             <TableCell className="align-top text-right">
-              <AdminTableActions
-                isDeleted={teacher.isDeleted}
-                onEdit={() => openModal(teacher)}
-                onDelete={() => handleDelete(teacher)}
-                onRestore={() => handleRestore(teacher)}
-                deleteDescription={`Вы уверены, что хотите удалить преподавателя "${formatTeacherLabel(teacher)}"?`}
-              />
+              <div className="flex items-center justify-end gap-1">
+                {!teacher.isDeleted && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setAccessTeacher(teacher)}
+                    title={
+                      findTeacherUser(teacher.id)
+                        ? "Сменить пароль"
+                        : "Выдать доступ"
+                    }
+                  >
+                    <KeyRound size={16} />
+                  </Button>
+                )}
+                <AdminTableActions
+                  isDeleted={teacher.isDeleted}
+                  onEdit={() => openModal(teacher)}
+                  onDelete={() => handleDelete(teacher)}
+                  onRestore={() => handleRestore(teacher)}
+                  deleteDescription={`Вы уверены, что хотите удалить преподавателя "${formatTeacherLabel(teacher)}"? Его логин для входа тоже будет удален.`}
+                />
+              </div>
             </TableCell>
           </AdminTableRow>
         )}
       />
+
+      {accessTeacher && (
+        <TeacherAccessModal
+          teacher={accessTeacher}
+          account={findTeacherUser(accessTeacher.id)}
+          onClose={() => setAccessTeacher(null)}
+          onSaved={async (credentials) => {
+            setAccessTeacher(null);
+            setIssuedCredentials(credentials);
+            await reload();
+          }}
+        />
+      )}
 
       <AdminModal
         isOpen={isFormOpen}

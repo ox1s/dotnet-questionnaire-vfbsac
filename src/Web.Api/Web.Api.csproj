@@ -17,6 +17,10 @@
         <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets"/>
         <PackageReference Include="Swashbuckle.AspNetCore"/>
         <PackageReference Include="Microsoft.OpenApi"/>
+        <!-- Pins the design-time EF Core Tools dependency to a patched version. -->
+        <PackageReference Include="System.Security.Cryptography.Pkcs">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Aspire.ServiceDefaults\Aspire.ServiceDefaults.csproj"/>

@@ -8,7 +8,7 @@ import {
   type TeacherItem,
   type TeacherUser,
 } from "@/api.ts";
-import { CheckCircle2, Plus, RefreshCw } from "lucide-react";
+import { ChevronDownIcon, Plus, RefreshCw } from "lucide-react";
 import {
   AdminModal,
   AdminTable,
@@ -18,6 +18,12 @@ import {
   AdminTableTextBadge,
 } from "@/components/admin/admin-shared";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { TableCell } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useAdminPageConfig } from "@/hooks/use-admin-page-config";
@@ -233,7 +239,6 @@ export const AdminTeachersPage = () => {
         columns={[
           { header: "ФИО" },
           { header: "Филиал кафедры" },
-          { header: "Логин" },
           { header: "Действия", className: "text-right w-32" },
         ]}
         renderRow={(teacher) => {
@@ -249,6 +254,13 @@ export const AdminTeachersPage = () => {
                       ? truncateFirstWord(teacher.fullName)
                       : formatTeacherLabel(teacher)
                   }
+                  subtitle={
+                    account ? (
+                      <span className="font-mono">{account.login}</span>
+                    ) : (
+                      "Нет доступа"
+                    )
+                  }
                   isDeleted={teacher.isDeleted}
                 />
               </TableCell>
@@ -257,16 +269,6 @@ export const AdminTeachersPage = () => {
                 <AdminTableTextBadge
                   text={getDepartmentNames(teacher.departmentIds)}
                 />
-              </TableCell>
-
-              <TableCell className="align-top">
-                {account ? (
-                  <span className="font-mono text-sm">{account.login}</span>
-                ) : (
-                  <span className="text-xs text-muted-foreground">
-                    Нет доступа
-                  </span>
-                )}
               </TableCell>
 
               <TableCell className="align-top text-right">
@@ -300,29 +302,40 @@ export const AdminTeachersPage = () => {
           />
         </div>
         <div className="space-y-2">
-          <Label>Филиалы кафедры</Label>
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {departments
-              .filter((department) => !department.isDeleted)
-              .map((department) => {
-                const active = selectedDepartmentIds.includes(department.id);
-                return (
-                  <button
+          <Label htmlFor="teacher-departments">Филиалы кафедры</Label>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                id="teacher-departments"
+                type="button"
+                className="flex h-8 w-full items-center justify-between gap-1.5 border border-input bg-transparent pr-2 pl-2.5 text-xs transition-colors outline-none focus-visible:border-ring focus-visible:ring-1 focus-visible:ring-ring/50 dark:bg-input/30 dark:hover:bg-input/50"
+              >
+                <span
+                  className={`truncate ${selectedDepartmentIds.length > 0 ? "" : "text-muted-foreground"}`}
+                >
+                  {selectedDepartmentIds.length > 0
+                    ? getDepartmentNames(selectedDepartmentIds)
+                    : "Выберите филиалы"}
+                </span>
+                <ChevronDownIcon className="size-4 shrink-0 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="max-h-60">
+              {departments
+                .filter((department) => !department.isDeleted)
+                .map((department) => (
+                  <DropdownMenuCheckboxItem
                     key={department.id}
-                    type="button"
-                    onClick={() => toggleDepartment(department.id)}
-                    className={`flex w-full items-center justify-between border px-4 py-2 text-sm font-medium transition-all ${
-                      active
-                        ? "bg-primary border-primary text-primary-foreground shadow-sm"
-                        : "bg-background border-border text-foreground hover:bg-muted"
-                    }`}
+                    checked={selectedDepartmentIds.includes(department.id)}
+                    onCheckedChange={() => toggleDepartment(department.id)}
+                    // Keep the list open so several departments can be picked.
+                    onSelect={(e) => e.preventDefault()}
                   >
                     {department.name}
-                    {active && <CheckCircle2 size={16} />}
-                  </button>
-                );
-              })}
-          </div>
+                  </DropdownMenuCheckboxItem>
+                ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
         <div className="space-y-2">

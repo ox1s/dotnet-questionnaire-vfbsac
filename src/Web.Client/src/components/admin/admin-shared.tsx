@@ -57,6 +57,7 @@ interface AdminTableIconCellProps {
   textIcon?: string;
   iconColorClass?: string;
   title: string;
+  subtitle?: React.ReactNode;
   isDeleted?: boolean;
 }
 interface AdminTableProps<T> {
@@ -160,6 +161,7 @@ export const AdminTableIconCell = ({
   textIcon,
   iconColorClass = "bg-primary/15 text-primary",
   title,
+  subtitle,
   isDeleted,
 }: AdminTableIconCellProps) => (
   <div className="flex items-start gap-3">
@@ -168,11 +170,16 @@ export const AdminTableIconCell = ({
     >
       {icon ? icon : <span className="text-xs font-bold">{textIcon}</span>}
     </div>
-    <span
-      className={`text-sm font-bold line-clamp-3 pt-1 ${isDeleted ? "text-muted-foreground" : "text-foreground"}`}
-    >
-      {title}
-    </span>
+    <div className="pt-1">
+      <div
+        className={`text-sm font-bold line-clamp-3 ${isDeleted ? "text-muted-foreground" : "text-foreground"}`}
+      >
+        {title}
+      </div>
+      {subtitle && (
+        <div className="text-xs text-muted-foreground">{subtitle}</div>
+      )}
+    </div>
     {isDeleted && (
       <Badge
         variant="secondary"

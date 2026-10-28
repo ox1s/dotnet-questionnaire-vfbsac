@@ -24,6 +24,8 @@ import {
 import { Button } from "../ui/button";
 import { ModeToggle } from "../shared/mode-toggle";
 import { logout } from "@/utils/auth";
+import { getEnvLabel } from "@/utils/env-label";
+import { Badge } from "@/components/ui/badge";
 
 // Grouped by what the admin actually maintains: the forms, the people who fill
 // them in (access is managed on each person's own page, not in a separate
@@ -114,6 +116,8 @@ const data = {
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const envLabel = getEnvLabel();
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -126,6 +130,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               <Link to="/dashboard">
                 <img src="/logo.png" alt="Logo" className="size-5!" />
                 <span className="text-base font-semibold">ВФБГАС</span>
+                {envLabel && (
+                  <Badge variant="destructive" data-testid="env-label">
+                    {envLabel}
+                  </Badge>
+                )}
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

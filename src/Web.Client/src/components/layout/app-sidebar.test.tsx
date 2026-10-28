@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
@@ -43,6 +43,26 @@ describe("AppSidebar logout button", () => {
     await user.click(screen.getByRole("button", { name: /выйти|logout/i }));
 
     expect(logout).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("AppSidebar environment badge", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("marks a test deploy next to the logo", () => {
+    vi.stubEnv("VITE_ENV_LABEL", "ТЕСТ");
+    renderSidebar();
+
+    expect(screen.getByText("ТЕСТ")).toBeInTheDocument();
+  });
+
+  it("shows no badge on production", () => {
+    vi.stubEnv("VITE_ENV_LABEL", "");
+    renderSidebar();
+
+    expect(screen.queryByTestId("env-label")).not.toBeInTheDocument();
   });
 });
 
